@@ -1,0 +1,61 @@
+\documentclass[12pt]{article}
+\usepackage[paperheight=11.5in,paperwidth=8.65in,margin=0in]{geometry}
+
+% postscript courier and times in place of cm fonts
+\usepackage{courier}
+\usepackage{times}
+
+\usepackage{graphicx}
+\usepackage[dvipsnames]{xcolor}
+\usepackage[prologue,table]{pstricks}
+%\usepackage{pst-grad}
+%\usepackage{pst-ghsb}
+%\usepackage{pst-slpe}
+
+% define colors
+%\definecolor{CodeBackGround}{cmyk}{0.0,0.0,0,0.05}     % light gray
+%\definecolor{CodeComment}{cmyk}{0.0,0.0,0,0.07}        % light gray
+%\definecolor{CodeComment}{rgb}{1,0.5,0}                % orange {1,0.5,0} 
+%\definecolor{CodeComment}{rgb}{0,0.08,0.45}            % dark blue {0,0.08,0.45}
+\definecolor{CoverColor}{rgb}{0,0.35,0.08}              % dark green {0,0.45,0.08}
+\definecolor{TitleColor}{rgb}{0,0.35,0.08}              % pure white{1,1.00,1.00}
+\definecolor{BackTextColor}{rgb}{1,1.00,1.00}           % pure white
+
+\begin{document}
+\thispagestyle{empty}
+
+\newsavebox\IBackBox
+\sbox\IBackBox{\includegraphics[height=11.5in]{jod_clouds.eps}}
+%\sbox\IBackBox{\includegraphics[height=11.5in]{jod_85x11_back_2.eps}}
+
+\newsavebox\IBox
+\sbox\IBox{\includegraphics[height=3.5in, width=7.0in]{jodlogo01.eps}}
+
+\DeclareFixedFont{\PT}{T1}{ppl}{b}{n}{0.78in}
+\DeclareFixedFont{\PTsmall}{T1}{ppl}{b}{it}{0.4in}
+%\DeclareFixedFont{\PTsmallest}{T1}{ppl}{b}{it}{0.3in}
+%\DeclareFixedFont{\PTtext}{T1}{ppl}{b}{it}{11pt}
+%\DeclareFixedFont{\Logo}{T1}{pbk}{m}{n}{0.3in}
+
+\psset{unit=1in}
+\begin{pspicture}(8.625in,11.25in)
+\psframe[fillstyle=solid,fillcolor=CoverColor](-0.40,0.0)(8.65,11.5)
+
+% background image
+\rput[lb](-0.40,0.0){\usebox\IBackBox}
+
+% place JOD logo
+\rput[lb](0.42,6.0){\usebox\IBox}
+
+% major title text
+\rput[lb](0.52,5.0){\PT \color{TitleColor}{J Object Dictionary}}
+\psline[linewidth=2mm,linecolor=TitleColor](0.5,4.75)(7.45,4.75)
+
+% author version text
+\rput[lb](5,2.0){\PTsmall \color{TitleColor}{John D. Baker}}
+\rput[lb](5,1.5){\PTsmall \color{TitleColor}{Version 0.8.0}}
+\psline[linewidth=2mm,linecolor=TitleColor](5.0,1.25)(7.5,1.25)
+
+\end{pspicture}
+
+\end{document}

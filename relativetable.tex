@@ -1,0 +1,204 @@
+% Test document that shrinks a large jfiles table description onto
+% a few Kindle sized pages.  All hard coded table size numbers have
+% been replaced by \newcommand's that relate to variables like \textwidth
+
+
+\documentclass[12pt]{article}
+
+%\usepackage{fontspec}      % font selection
+%\setmainfont{Cambria}
+\usepackage{breqn}          % automatic equation breaking
+\usepackage{microtype}      % microtypography, reduces hyphenation
+%\usepackage{polyglossia}   % language selection
+%\setmainlanguage{english}
+
+\usepackage{longtable}
+\usepackage{colortbl}
+\usepackage[table]{xcolor}
+
+\usepackage[papersize={3.6in,4.8in},hmargin=0.1in,vmargin={0.1in,0.1in}]{geometry}  % kindle page geometry
+%\usepackage[paper=letterpaper,landscape]{geometry} 
+%\usepackage[paper=letterpaper]{geometry} 
+%\usepackage[paper=a4paper]{geometry}  
+
+\usepackage{graphicx}       % graphics support
+\graphicspath{{./docimages/}}
+
+\usepackage[font=small,labelformat=simple,]{caption}   % customizing captions
+
+% The hyperref package generates \special commands that
+% map LaTeX cross references into PDF cross references
+\usepackage[
+            %dvips,
+            colorlinks,
+            linkcolor=blue,
+            citecolor=blue,
+            pdfauthor={John D. Baker},
+            pdftitle={JOD},
+            pdfsubject={JOD documentation},
+            pdfcreator={MikTeX+LaTeXe with hyperref package},
+            pdfkeywords={j,JOD,jsoftware,database,dictionary,utilities,programming},
+            ]{hyperref}
+
+\usepackage{fancyhdr}       % headers and footers
+\pagestyle{fancy}
+\fancyhead{}                % clear page header
+\fancyfoot{}                % clear page footer
+
+\usepackage{titlesec}       % customizing section titles
+\titleformat{\section}{\itshape\large}{}{0em}{}
+\titlespacing{\section}{0pt}{8pt}{4pt}
+\titleformat{\subsection}{\itshape}{}{0em}{}
+\titlespacing{\subsection}{0pt}{4pt}{2pt}
+\titleformat{\subsubsection}[runin]{\bf\scshape}{}{0em}{}
+\titlespacing{\subsubsection}{0pt}{5pt}{5pt}
+
+
+\setlength{\abovecaptionskip}{2pt} % space above captions 
+\setlength{\belowcaptionskip}{0pt} % space below captions
+\setlength{\textfloatsep}{2pt}     % space between last top float or first bottom float and the text
+\setlength{\floatsep}{2pt}         % space left between floats
+\setlength{\intextsep}{2pt}        % space left on top and bottom of an in-text float
+
+% table spacing invisible struts
+\newcommand\T{\rule{0pt}{2.6ex}}
+\newcommand\B{\rule[-1.2ex]{0pt}{0pt}}
+
+\newcommand{\rr}{\raggedright}
+\newcommand{\tn}{\tabularnewline}
+
+\newcommand{\argsep}{$\vee$ }
+
+% define last column paragraph page fractions in jfiles tables
+\newcommand{\TPW}{0.6}
+\newcommand{\TPS}{0.58}
+\newcommand{\HSP}{0.25in}
+
+% cell and rowshading 
+\newcommand{\CSHADE}{\cellcolor[gray]{.95}}
+\newcommand{\RSHADE}{\rowcolor[gray]{.95}}
+
+\begin{document}
+
+%\begin{table}[htbp]
+{
+\renewcommand{\arraystretch}{1.2}
+  \centering
+   \scriptsize   
+   \begin{longtable}{|l|l|p{\TPW\textwidth}|} \hline 
+      \multicolumn{3}{|c|}{\CSHADE\large\textbf{\texttt{jwords.ijf}}\T\B}\\ \hline
+      \multicolumn{1}{|l|}{\CSHADE\textbf{$C_{i}$}\T} &
+      \multicolumn{1}{|c|}{\CSHADE\textbf{$H_{t}$}}   &
+      \multicolumn{1}{|c|}{\CSHADE\textbf{Description}\B} \\ \hline
+ $c_{0}$ &  \texttt{blnl}  & 
+  \begin{tabular}{p{\TPS\textwidth}}
+	\rr Length and last directory change.
+  \end{tabular} \\ \hline
+$c_{1}$  & \texttt{il} & 
+  \begin{tabular}{p{\TPS\textwidth}}
+   \rr Pack and backup count. Used to prefix backup and dump files.
+  \end{tabular} \\ \hline 
+$c_{2}$  &  \texttt{blcl}   &  
+   \begin{tabular}{p{\TPS\textwidth}}
+    \rr Dictionary documentation \hyperlink{il:newd}{\texttt{newd}}, \hyperlink{il:regd}{\texttt{regd}}. 
+   \end{tabular} \\ \hline 
+$c_{3}$  &  \texttt{bluu}   &  
+   \begin{tabular}{p{\TPS\textwidth}}
+   Dictionary parameters. \\
+   \\
+\rr \verb|0  { - cl| ; dictionary name\\
+\rr \verb|1  { - Xa| ; \hyperlink{il:DIDNUM}{\texttt{DIDNUM}}\\
+\verb|2  { - il| ; dictionary creation date\\
+\verb|3  { - il| ; last dump date\\
+\verb|4  { - cl| ; script directory\\
+\verb|5  { - cl| ; suite directory\\
+\verb|6  { - cl| ; macro directory\\
+\verb|7  { - cl| ; document directory\\
+\verb|8  { - cl| ; dump directory\\
+\verb|9  { - cl| ; alien directory \\
+\verb|10 { - cl| ; J creator version\\
+\rr \verb|11 { - ia| ; J creator system\\
+\verb|12 { - uu| ; unused - reserved \\
+\verb|13 { - bt| ; parameters see: \hyperlink{il:jmaster}{\texttt{jmaster.ijf}}\\
+\hspace{\HSP}  \verb|0 { cl| ; parameter \\
+\hspace{\HSP}  \verb|1 { uu| ; value
+   \end{tabular} \\ \hline 
+\RSHADE  & &
+   \begin{tabular}{p{\TPS\textwidth}}
+   \rr Main inverted items, $c_{4}\rightarrow c_{11}$ have the same length.
+   \end{tabular} \\ \hline
+$c_{4}$ & \texttt{blcl} &     
+   \begin{tabular}{p{\TPS\textwidth}}
+   Word list (main index 1).\\
+   \end{tabular} \\ \hline 
+$c_{5}$  &  \texttt{il}   &   
+   \begin{tabular}{p{\TPS\textwidth}}
+   Word components (main index 2).\\
+   \end{tabular} \\ \hline 
+$c_{6}$  &  \texttt{il}   & 
+    \begin{tabular}{p{\TPS\textwidth}}
+    Name class list.\\
+    \end{tabular} \\ \hline 
+$c_{7}$  &  \texttt{fl}   & 
+    \begin{tabular}{p{\TPS\textwidth}}
+    \rr Last put date list \texttt{yyyymmdd.fd} (fractional day). 
+    \end{tabular} \\ \hline 
+$c_{8}$  &  \texttt{fl}   & 
+    \begin{tabular}{p{\TPS\textwidth}}
+    \rr Creation put list \texttt{yyyymmdd.fd} (fractional day).
+    \end{tabular} \\ \hline 
+$c_{9}$  &  \texttt{il}   & 
+    \begin{tabular}{p{\TPS\textwidth}}
+    Word size in bytes.\\
+    \end{tabular} \\ \hline 
+$c_{10}$  &     & 
+    \begin{tabular}{p{\TPS\textwidth}}
+    Reserved.\\
+    \end{tabular} \\ \hline 
+$c_{11}$  &  \texttt{blcl}   & 
+    \begin{tabular}{p{\TPS\textwidth}}
+    Short word explanations.\\
+    \end{tabular} \\ \hline 
+$c_{12}\rightarrow c_{38}$ &  &     
+   \begin{tabular}{p{\TPS\textwidth}}
+   Reserved. \\
+\end{tabular} \\ \hline 
+\RSHADE  & &
+   \begin{tabular}{p{\TPS\textwidth}}
+    \rr The remaining component pairs contain word data.
+    The word names match the entries in the word index list.
+   \end{tabular} \\ \hline
+$c_{39}$  &  \texttt{bluu}   & 
+    \begin{tabular}{p{\TPS\textwidth}}
+    \rr Word definition.\\
+    \verb|0 { - cl| ; word name \\
+    \verb|1 { - ia| ; name class \\
+    \rr \verb|2 { - cl| \argsep \texttt{uu} ; word value, nouns are stored in binary 
+    all other words are character lists
+    \end{tabular} \\ \hline 
+$c_{40}$  &  \texttt{bluu}   & 
+    \begin{tabular}{p{\TPS\textwidth}}
+    \rr Word documentation and other.\\
+    \verb|0 { - cl| ; word name \\
+    \verb|1 { - uu| ; unused - reserved \\
+    \verb|2 { - uu| ; unused - reserved \\
+    \verb|3 { - cl| ; text documentation 
+    \end{tabular} \\ \hline 
+$c_{41}$  &  \texttt{bluu}   & 
+    \begin{tabular}{p{\TPS\textwidth}}
+    Like $c_{39}$ \\
+    \end{tabular} \\ \hline 
+$c_{42}$  &  \texttt{bluu}   & 
+    \begin{tabular}{p{\TPS\textwidth}}
+    Like $c_{40}$ \\
+    \end{tabular} \\ \hline   
+  \ldots & \ldots & \ldots \\ \hline
+$c_{n}$  &  \ldots   & 
+    \begin{tabular}{p{\TPS\textwidth}}
+    Like $c_{n-2}$ \\
+    \end{tabular} \\ \hline   
+\end{longtable}
+}
+%\end{table}
+
+\end{document}

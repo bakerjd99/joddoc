@@ -1,0 +1,61 @@
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%% -*- Mode: Latex -*- %%%%%%%%%%%%%%%%%%%%%%%%%%%%
+%% Letters-Tiling.tex --- Tiling of letters with various tiles
+%% 
+%% Author          : Denis GIROU (CNRS/IDRIS - France) <Denis.Girou@idris.fr>
+%% Created the     : Tue Dec 10 18:44:34 1996
+%% Last mod. by    : (hv) <hv@pstricks.de>
+%% Last mod. the   : Thu Mar 15 2007
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+\documentclass{article}
+
+% starburst decorative font
+%\input Starburst.fd
+%\DeclareFixedFont{\starburst}{U}{Starburst}{xl}{n}{45pt}
+
+\usepackage{pstricks}
+\usepackage{pst-text}
+\usepackage[tiling]{pst-fill}
+
+\oddsidemargin=0cm
+\textwidth=19cm   % 19
+
+\newcommand{\TileA}{%
+\psset{unit=0.2}
+\begin{pspicture}(2,2)
+  \psframe*[linecolor=cyan](0,0)(1,1)
+  \psframe*[linecolor=blue](1,0)(2,1)
+  \psframe*[linecolor=yellow](0,1)(1,2)
+  \psframe*[linecolor=green](1,1)(2,2)
+\end{pspicture}}
+
+\newcommand{\Hexagon}[1]{%
+\pspolygon*[linecolor=#1](0.5;0)(0.5;60)(0.5;120)(0.5;180)(0.5;240)(0.5;300)}
+
+\newcommand{\TileB}{%
+\psset{unit=0.5}
+\SpecialCoor
+\begin{pspicture}(1.5,1.732)
+  \rput(0,0){\Hexagon{green}}\rput(.75,0.433){\Hexagon{yellow}}  % red
+  \rput(0,0.866){\Hexagon{cyan}}\rput(.75,1.3){\Hexagon{green}}
+\end{pspicture}}
+
+\pagestyle{empty}
+
+\begin{document}
+
+\DeclareFixedFont{\bigrm}{T1}{ptm}{m}{n}{9cm} %6
+
+%\centerline{%
+%\begin{pspicture}(17.5,4)
+%  \psboxfill{\TileA}
+%  \pscharpath[fillstyle=boxfill,fillloopadd=3]{\rput[b](7.5,0){\bigrm Donald}}
+%\end{pspicture}}
+
+\centerline{%
+\begin{pspicture}(17.5,6)
+  \psboxfill{\TileB}
+  \pscharpath[fillstyle=boxfill,fillloopadd=1]{\rput[b](7.5,0){\bigrm JOD}}
+\end{pspicture}}
+
+\end{document}

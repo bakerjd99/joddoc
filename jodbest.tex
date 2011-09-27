@@ -1,0 +1,198 @@
+\section{Best Practices}
+
+Here are some JOD practices I have found useful.  A JOD lab\index{labs}, \emph{JOD (3) Best Practices}, elaborates and reiterates this material.  After reading these notes I recommend you run this lab.  JOD labs are 
+found in the \texttt{General} lab category.
+
+
+\begin{description}
+\item[JOD does not belong in the J tree.] Never store your JOD dictionaries in J install directories!  Create a JOD master dictionary directory root that is  independent of J: see \hyperlink{il:newd}{\texttt{newd}} on page~\pageref{ss:newd}.  It's also a good idea to define a subdirectory structure that mirrors J's versions. 
+
+\begin{lstlisting}[frame=single,framerule=0pt]
+NB. create a master JOD directory root outside of J's directories.
+newd 'bptest';'c:\jodlabs\602\bptest';'best practices dictionary'
+\end{lstlisting}
+
+\item[Backup backup and then backup.]  It's easy to backup with JOD so backup often: see 
+\hyperlink{il:packd}{\texttt{packd}} and \hyperlink{il:restd}{\texttt{restd}} on pages~\pageref{ss:packd} and ~\pageref{ss:restd}.
+
+\begin{lstlisting}[frame=single,framerule=0pt]
+NB. open the best practice dictionary
+od 'bptest' [ 3 od ''
+
+NB. back it up
+packd 'bptest'
+\end{lstlisting}
+ 
+
+\item[Take a script dump.]  It's a good idea to ``dump'' your dictionaries as plain text.  JOD can dump all open dictionaries as a single J script: see \hyperlink{il:make}{\texttt{make}} on page~\pageref{ss:make}. Script dumps are the most stable way to store J dictionaries.  The 
+\href{http://www.jsoftware.com/jwiki/Addons/general/jodsource}{\texttt{jodsource}} addon 
+distributes all JOD source code in this form.
+
+\begin{lstlisting}[frame=single,framerule=0pt]
+NB. (make) creates a dictionary dump in the dump subdirectory
+make ''
+\end{lstlisting}
+ 
+\item[Make a master re-register script.]   JOD only sees dictionaries registered in the \verb|jmaster.ijf| file:
+see Table~\ref{tab:jmaster} on page~\pageref{tab:jmaster}.
+Maintaining a list of registered dictionaries is recommended.  JOD can generate a re-register script: see \hyperlink{il:od}{\texttt{od}} on page~\pageref{ss:od}.  Generate a re-register script and put it in your main JOD dictionary directory root.
+
+\begin{lstlisting}[frame=single,framerule=0pt]
+NB. generate re-register script
+rereg=:  ;{: 5 od ''
+\end{lstlisting}
+ 
+
+\item[Set library dictionaries to \texttt{READONLY}.]  Open JOD dictionaries define a search path.  The first dictionary on the path is the only dictionary that can be changed.  
+It is called\index{put dictionary} the \emph{put dictionary.}  Even though nonput 
+dictionaries cannot be changed by JOD it's a good idea to set them \texttt{READONLY} because:
+\begin{enumerate}
+\item \texttt{READONLY} dictionaries can be accessed by any number of JOD tasks. \texttt{READWRITE} dictionaries can only be accessed by one task.  
+\item Keeping libraries \texttt{READONLY} prevents accidental \texttt{put}'s as you open and close dictionaries.
+\end{enumerate}
+
+\begin{lstlisting}[frame=single,framerule=0pt]
+NB. make bptest READONLY
+od 'bptest' [ 3 od ''
+dpset 'READONLY'
+\end{lstlisting}
+ 
+ 
+\item[Keep references updated.]  JOD stores word references: see \hyperlink{il:globs}{\texttt{globs}} on page~\pageref{ss:globs}.  References enable many useful operations. References allow \hyperlink{il:getrx}{\texttt{getrx}}, see page~\pageref{ss:getrx}, to load words that call other words in new contexts.
+
+\begin{lstlisting}[frame=single,framerule=0pt]
+NB. only put dictionary references need updating
+0 globs&> }. revo ''
+\end{lstlisting}
+ 
+ 
+\item[Document dictionary objects.]  Documentation is a long standing sore point for programmers.  
+Most of them hate it. Some claim it's unnecessary and distracting.  Many put in half-assed efforts. 
+In my opinion this is ``not even wrong!''  Good documentation elevates code. In 
+\href{http://www-cs-faculty.stanford.edu/~knuth/}{Knuth's} \cite{knuth:web} opinion it separates
+``literate programming'' from the odious alternative.   JOD provides a number of easy ways to document code: see \hyperlink{il:doc}{\texttt{doc}} on page~\pageref{ss:doc}, 
+\hyperlink{il:put}{\texttt{put}} on page~\pageref{ss:put} and \hyperlink{il:nw}{\texttt{nw}} on page~\pageref{ss:nw}.
+
+
+\item[Define your own JOD shortcuts.]  JOD words can be used within arbitrary J programs.  If you don't find a JOD primitive that meets your needs do a little programming.
+
+\begin{lstlisting}[frame=single,framerule=0pt]
+NB. describe a JOD group
+hg_z_=: [: hlpnl [: }. grp
+   
+NB. re-reference put dictionary show any errors
+reref_z_=: 3 : '(n,.s) #~ -.;0{"1 s=.0 globs&>n=.}.revo'''' [ y'
+   
+NB. words referenced by group words that are not in the group
+JODGRP_z_=: 'agroup'
+nx_z_=: 3 : '(allrefs  }. gn) -. gn=. grp JODGRP'
+   
+NB. missing from (agroup)
+nx ''
+\end{lstlisting}
+ 
+
+\item[Customize JOD edit facilities.]  The main JOD edit words \hyperlink{il:nw}{\texttt{nw}} on page~\pageref{ss:nw} and
+ \hyperlink{il:ed}{\texttt{ed}} on page~\pageref{ss:ed} can be customized by defining a \texttt{DOCUMENTCOMMAND} script.
+
+\begin{lstlisting}[frame=single,framerule=0pt]
+NB. define document command script - {~N~} is word name placeholder
+DOCUMENTCOMMAND_z_ =: 0 : 0
+smoutput pr '{~N~}'
+) 
+   
+NB. edit a new word - opens edit window
+nw 'bpword'
+\end{lstlisting}
+ 
+
+\item[Define JOD project macros.]  When programming with JOD you typically open dictionaries, load system scripts and define nouns. This can be done in a project macro script: see \hyperlink{il:rm}{\texttt{rm}} on page~\pageref{ss:rm}.
+
+\begin{lstlisting}[frame=single,framerule=0pt]
+NB. define a project macro - I use the prefix prj for such scripts
+prjsunmoon=: 0 : 0
+
+NB. standard j scripts
+require 'debug task'
+
+NB. local script nouns 
+JODGRP_z_=: 'sunmoon'
+JODSUI_z_=: 'sunmoontests'
+
+NB. put/xref
+DOCUMENTCOMMAND_z_ =: 'smoutput pr ''{~N~}'''
+)
+   
+NB. store macro
+4 put 'prjsunmoon';JSCRIPT_ajod_;prjsunmoon
+
+NB. setup project
+rm 'prjsunmoon'  [ od ;:'bpcopy bptest' [ 3 od ''
+\end{lstlisting}
+ 
+ 
+\item[Maintain a make load scripts macro or test.] To simplify the maintenance of JOD generated load scripts
+create a macro or test script that rebuilds load scripts when executed with \hyperlink{il:rm}{\texttt{rm}} on 
+page~\pageref{ss:rm} or \hyperlink{il:rtt}{\texttt{rtt}} on page~\pageref{ss:rtt} . 
+
+\begin{lstlisting}[frame=single,framerule=0pt]
+NB.*make_load_scripts s-- generates load scripts.
+NB.
+NB. Can run as a tautology test see: rtt 
+NB.
+NB. created: 2008jan25
+
+require 'general/jod'
+coclass 'AAAmake999'
+
+>0{OPENDIC=: did 0
+>0{od 'utils' [ 3 od ''  
+
+NB. utils scripts
+>0{mls 'bstats'
+>0{mls 'remdots'
+>0{mls 'wordformation'
+>0{mls 'xmlutils'
+>0{3 od ''
+
+NB. jod scripts
+>0{od ;:'joddev jod utils'
+>0{mls 'jodtester'
+>0{3 od ''
+
+NB. flickr utils 
+>0{od ;:'flickrutdev flickrut utils'
+1 rtt 'make_flickrXthumbs'
+>0{3 od ''
+
+cocurrent 'AAAmake999'
+>0{od }. OPENDIC
+
+cocurrent 'base'
+coerase <'AAAmake999'
+\end{lstlisting}
+
+ 
+\item[Edit your \texttt{jodprofile.ijs}.]  When JOD loads the profile script
+\begin{verbatim}
+ ~addons\general\jod\jodprofile.ijs
+\end{verbatim}
+is run: see appendix~\ref{ap:jodprofile} on page~\pageref{ap:jodprofile}.  Use this script to customize JOD. Note how you can execute project macros when JOD loads with sentences like:
+
+\begin{lstlisting}[frame=single,framerule=0pt]
+NB. open required dictionaries and run project macro
+rm 'prjsunmoon' [ od ;:'bpcopy bptest'
+\end{lstlisting}
+ 
+
+\item[Use JOD help and documentation.]  JOD documentation is available in two forms.  A PDF document \verb|jod.pdf|  is installed with the addon. For online help use  \hyperlink{il:jodhelp}{\texttt{jodhelp}}: see page~\pageref{ss:jodhelp}.
+
+\begin{lstlisting}[frame=single,framerule=0pt]
+NB. open JOD online help - requires internet connection
+jodhelp 'AContents'
+
+NB. open JOD PDF documentation - requires PDF reader 
+jodhelp~ 'PDF'
+\end{lstlisting}
+
+\end{description}

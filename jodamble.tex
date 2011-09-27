@@ -1,0 +1,132 @@
+% Preamble for jod.pdf 
+%
+% started: July 8, 2011
+
+\documentclass[12pt]{article}  % book
+
+%\usepackage[paper=a4paper]{geometry}
+%\usepackage[letterpaper]{geometry}
+%\usepackage[papersize={3.6in,4.8in},hmargin=0.1in,vmargin={0.1in,0.1in}]{geometry}  % KINDLE page geometry
+
+% smaller margins in document - put before fancyhdr
+\usepackage[headings]{fullpage}
+
+% national use characters 
+\usepackage{inputenc}
+
+% build document index
+\usepackage{makeidx}
+
+% add index and bibliographies to table of contents
+\usepackage[nottoc]{tocbibind}
+
+% postscript courier and times in place of cm fonts
+\usepackage{courier}
+\usepackage{times}
+
+\usepackage{colortbl}
+\usepackage[table]{xcolor}
+
+% KINDLE sizing
+%\usepackage{breqn}          % automatic equation breaking
+%\usepackage{microtype}      % microtypography, reduces hyphenation
+%\usepackage{titlesec}       % customizing section titles
+%\titleformat{\section}{\itshape\large}{}{0em}{}
+%\titlespacing{\section}{0pt}{8pt}{4pt}
+%\titleformat{\subsection}{\itshape}{}{0em}{}
+%\titlespacing{\subsection}{0pt}{4pt}{2pt}
+%\titleformat{\subsubsection}[runin]{\bf\scshape}{}{0em}{}
+%\titlespacing{\subsubsection}{0pt}{5pt}{5pt}
+%\setlength{\abovecaptionskip}{2pt} % space above captions 
+%\setlength{\belowcaptionskip}{0pt} % space below captions
+%\setlength{\textfloatsep}{2pt}     % space between last top float or first bottom float and the text
+%\setlength{\floatsep}{2pt}         % space left between floats
+%\setlength{\intextsep}{2pt}        % space left on top and bottom of an in-text float
+% END KINDLE sizing
+
+% starburst decorative font
+\input Starburst.fd
+\DeclareFixedFont{\starburst}{U}{Starburst}{xl}{n}{16pt}
+
+% fun outline symbol font
+% \usepackage{marvosym}
+
+% include new commands and environments
+\input{jodcommon.tex}
+
+% smaller margins in document - put before fancyhdr
+%\usepackage[headings]{fullpage}
+
+% headers and footers
+\usepackage{fancyhdr}
+\pagestyle{fancy}
+
+% color command can be forward referenced in preamble
+\lfoot{\textcolor{CodeComment}{\starburst{JOD}} \emph{\jodrelease}}
+\rfoot{\emph{\today}}
+
+% KINDLE footer/header
+%\fancyhead{}                % clear page header
+%\fancyfoot{}                % clear page footer
+% END KINDLE
+
+% graphicx is the standard eps oriented LaTeX2e graphics bundle
+% subfigure handles figures that contain subfigures
+% floatflt provides for text wrapping around small figures and tables
+\usepackage{color,graphicx,subfigure}
+\graphicspath{{./jodgraphics/}}
+
+% include source code listings
+\usepackage{listings}
+
+% The hyperref package generates \special commands that
+% map LaTeX cross references into PDF cross references
+\usepackage[
+            dvips,
+            colorlinks,
+            linkcolor=blue,
+            citecolor=blue,
+            pdfauthor={John D. Baker},
+            pdftitle={JOD},
+            pdfsubject={JOD documentation},
+            pdfcreator={MikTeX+LaTeXe with hyperref package},
+            pdfkeywords={j,JOD,jsoftware,database,dictionary,utilities,programming},
+            ]{hyperref}
+            
+% custom colors
+\definecolor{CodeBackGround}{cmyk}{0.0,0.0,0,0.05}    % light gray
+%\definecolor{CodeComment}{cmyk}{0.0,0.0,0,0.07}      % light gray
+%\definecolor{CodeComment}{rgb}{1,0.5,0}              % orange {1,0.5,0} 
+%\definecolor{CodeComment}{rgb}{0,0.08,0.45}           % dark blue {0,0.08,0.45}
+\definecolor{CodeComment}{rgb}{0,0.50,0.00}           % dark green {0,0.45,0.08}
+
+\lstdefinelanguage{jdoc}
+{morekeywords={Monad,Dyad},
+sensitive=True,
+morecomment=[l]{NB.}
+}
+  
+% listings package settings  
+\lstset{%
+  language=jdoc,                          % j document settings
+  basicstyle=\ttfamily\small,             % print whole listing scriptsize
+  keywordstyle=\bfseries\small,  %keywordstyle=\color{red}\bfseries\small,  %  colored Monad and Dyad
+  identifierstyle=,                       % nothing happens
+  commentstyle=\slshape\color{CodeComment}, % colored slanted comments
+  stringstyle=\ttfamily,                  % typewriter type for strings
+  showstringspaces=false,                 % no special string spaces
+  %backgroundcolor=\color{CodeBackGround} % listing box background 
+}
+
+% postscript draft in background
+%\special{!userdict begin /bop-hook{
+%gsave 225 100 translate 65 rotate
+%/Times-Roman findfont 200 scalefont setfont 0 0 moveto 0.85 setgray (draft) show
+%%/Times-Roman findfont 100 scalefont setfont 100 -100 moveto 0.85 setgray (draft) show
+%grestore}def end}
+  
+% document debugging - list subsets to reduce build times
+%\includeonly{jodintro,jodbest,jodwords,jodscripts,jodfiles,jodappendices}
+\makeindex
+
+\begin{document}

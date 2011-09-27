@@ -1,0 +1,6 @@
+I discovered J in 1991 and have used the language ever since. J's rare combination of theoretical coherence, productivity, array processing power and elegant expressiveness is a daily delight.
+
+JOD is a J programming tool that reflects my word oriented approach to J coding. The first versions of JOD were inspired by Ken Iverson's Dictionary of J: a seminal document that correctly highlighted the power of the J word. 
+
+John D. Baker
+Irvine, California 

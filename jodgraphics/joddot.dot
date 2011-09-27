@@ -1,0 +1,32 @@
+digraph JOD {
+       
+// jod system class relationship arrows
+node [ style=filled, weight=1, peripheries=2, fillcolor=white];
+
+// core jod
+subgraph cluster_c2 {
+   style=filled;
+   color=lightgrey;
+   jod jodstore jodmake jodutil joddob
+   label = "Core JOD classes";
+   fontsize=24;
+   labeljust=r;
+}
+
+z -> jod [dir=back, style=dotted, ] ;
+jod -> jodstore [dir=back];
+jod -> jodmake [dir=back];
+jod -> jodutil [dir=back];
+jodstore -> joddob [dir=back] ;
+jodutil -> jodtools [dir=back] ;
+jodtools [fillcolor=white];
+z [fillcolor=lightblue];
+  
+z [ shape=diamond, label="z\njod z interface"];
+jod [label="ajod\nmain class"];
+jodstore [label="ajodstore\nstorage class"];
+jodtools [label="ajodtools\nextension tools"];
+joddob [label="ajoddob\ndirectory objects"];
+jodmake [label="ajodmake\nscript and dump\ngeneration"];
+jodutil [label="ajodutil\nedit objects\nand other utilities"];
+}

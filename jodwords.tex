@@ -1,0 +1,1754 @@
+\section{JOD Interface Words}\label{ss:jodwords}
+
+This section describes all JOD user interface words in alphabetical
+order.  Each  word description consists of a short explanation followed
+by examples.  Examples show J inputs; outputs
+are omitted.  Word arguments are summarized with a form of Hungarian
+notation: see appendix~\ref{ap:jodhung} on
+page~\pageref{ap:jodhung}.
+
+When JOD loads it creates a number of locale classes,  (see appendix~\ref{ap:classes}
+on page~\pageref{ap:classes}), and defines a \texttt{\textbf{z}} 
+locale\index{z interface} user interface.
+JOD's \texttt{\textbf{z}} user interface consists of definitions like:  
+\begin{lstlisting}[frame=single,framerule=0pt]
+   get     NB. display get interface
+get_1_ ::jodsf
+    
+   mls     NB. display mls interface
+mls_8_ ::jodsf
+
+   jodsf   NB. display error trap
+0"_ ; 'JOD SYSTEM FAILURE: last J error -> '"_ , [: 13!:12 ''"_ [ ]   
+\end{lstlisting}
+Each interface word calls a corresponding object instance word.  The
+default interface is an \emph{error trapping} interface.\footnote{Provisions
+for defining a \emph{non-error-trapping} interface exist in JOD source code.}  If any JOD
+word fails \texttt{jodsf} will catch the error and return JOD's standard \verb|(paRc;clMessage)|
+result.
+
+\subsection{\texttt{addgrp} --- add words/tests to group/suite}
+
+\texttt{addgrp} adds words to a group\index{group!\texttt{addgrp}} and tests to a suite. 
+
+\begin{wordhead}
+\dyad & clGroup addgrp clName \argsep blclNames \\
+      & (clSuite;iaObject) addgrp clName \argsep blclNames \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt]
+  NB. add a word to a group
+  'group' addgrp 'word' 
+
+  NB. add many words to a group 
+  'groupname' addgrp ;:'word names to group'
+
+  NB. boxed (x) is used for suites - 3 denotes suite
+  ('suitename';3) addgrp ;:'tests added to suite'
+\end{lstlisting}
+
+\subsection{\texttt{compj} --- compress J code}
+
+  \texttt{compj} compresses\index{compression} J code by
+  removing comments, white space and shortening safe local identifiers to single
+  characters.\footnote{If more than one character is required to rename all
+  local identifiers \texttt{compj} uses a letter prefixed high base numbering scheme. }
+  Code compression is useful when preparing production scripts. The
+  JOD system script:
+  
+\begin{verbatim}
+  ~addons\general\jod\jod.ijs
+\end{verbatim}
+
+  is an example of a compressed J script. In it�s fully commented
+  form this script is about 203 kilobytes when squeezed with
+  \texttt{compj} it shrinks to about 69 kilobytes.
+  \texttt{compj} does not compress words in JOD
+  dictionaries it returns a compressed script result.
+  
+\begin{quotation}
+ \noindent\textcolor{red}{Warning: to safely use
+	  \texttt{compj} you must understand how to mark
+	  ambiguous names. If you do not correctly mark ambiguous names
+	  \texttt{compj} compression will break your
+	  code!}
+\end{quotation}
+  
+  Prior to compressing a word apply \hyperlink{il:globs}{\texttt{globs}}, 
+  see page~\pageref{ss:globs}, to expose any name problems.
+
+  Ambiguous names in J are words created in object instances,
+  temporary locale globals, names masked by indirect assignments\index{assignments!indirect} and objects
+  created with execute. When you use ambiguous names augment your code with
+  sufficient information to clearly resolve and cross reference
+  \index{cross references!names} all names. 
+  
+  JOD provides two comment\index{scope tags} scope tags
+   \textcolor{CodeComment}{\texttt{\textsl{(*)=.}}} and
+  \textcolor{CodeComment}{\texttt{\textsl{(*)=:}}} to clarify ambiguous names.  Comment
+  scope tags override J scope.  
+
+\begin{enumerate}
+	\item local tag \textcolor{CodeComment}{\texttt{\textsl{ NB. (*)=. local names declared after tag}}}
+	\item global tag \textcolor{CodeComment}{\texttt{\textsl{ NB. (*)=: global names also declared}}}
+\end{enumerate}
+  
+   The following examples show how to use these tags:
+
+\begin{lstlisting}[frame=single,framerule=0pt]  
+indirectassignments=: 4 : 0
+
+NB. Indirect assignments ()=: create objects 
+NB. that elude static cross referencing. 
+NB. Declaring the names global and local
+NB. makes it possible to cross reference 
+NB. this verb with (globs)
+globref=.  ;:'one two three'
+
+NB. declared global (*)=: one two three
+(globref)=: y     
+
+NB. declared local (*)=. we are hidden locals
+locref=.   ;:'we are hidden locals'
+(locref)=. i. 4  
+
+NB. without tags these names appear to
+NB. be used out of nowhere 
+one * two * three
+we + are + hidden + locals
+)
+\end{lstlisting}
+
+     
+\begin{lstlisting}[frame=single,framerule=0pt]    
+createobject=: 3 : 0
+
+NB. Object initialization often creates
+NB. global nouns that are not really globals.
+NB. They only exist within the the scope of
+NB. the object. Tags can over ride J's 
+NB. global scope for cross referencing.
+
+NB. create "globals" in an object instance
+THIS=: STUFF=: IS=: INSIDE=: AN=: OBJECT=: 1
+
+NB. over ride J's scope by declaring names local.
+NB. !(*)=. THIS STUFF IS INSIDE AN OBJECT
+1
+)
+\end{lstlisting}
+
+    More examples of the use of comment scope tags can be found in 
+      JOD source code.  JOD source code is not 
+     distributed with JOD.  You can get JOD source code by installing
+     the  \href{http://www.jsoftware.com/jwiki/Addons/general/jodsource}{\texttt{jodsource}}
+     addon or by downloading \jodsource  from 
+     \href{http://bakerjd99.googlepages.com/home}{\emph{The JOD Pages}}.  
+     JOD source is distributed as JOD dictionary dump scripts.
+
+\begin{wordhead}
+\monad & compj clName \argsep blclNames \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt]
+  NB. compress a single word
+  compj 'squeezeme'  
+  
+  NB. compress words beginning with fat
+  compj }. dnl 'fat' 
+
+  NB. compress all words in a group 
+  'rc script'=. compj }. grp 'group'
+\end{lstlisting}
+
+\subsection{\texttt{del} --- delete objects}
+
+\hypertarget{il:del}{\texttt{del}} deletes dictionary objects. 
+If objects are on the search path but not
+ in the put dictionary\index{put dictionary} nothing will be deleted and 
+ the \emph{nonput dictionary} objects will be identified in an error message. 
+
+Warning: \texttt{del} will remove objects that are in use without warning.
+ This can lead to broken groups and suites.\footnote{In database
+ terms \texttt{del} can violate \emph{referential integrity}. Early versions
+ of JOD maintained referential integrity but this proved cumbersome and
+ was dropped.} Deleting a word that belongs
+ to a group breaks the group:  similarly for suites.
+ An attempt to \hyperlink{il:get}{\texttt{get}} or \hyperlink{il:make}{\texttt{make}}
+  a broken group or suite will result in an error.  You can recover from this
+  error by deleting references, (see below), and regrouping.
+  
+\begin{wordhead}
+\monad &  del clName \argsep blclNames \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt]
+  NB. delete one word
+  del 'word'  
+  
+  NB. delete many words                   
+  del 'go';'ahead';'delete';'us' 
+\end{lstlisting}
+
+\begin{wordhead}
+\dyad & iaObject del clName \argsep blclNames \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt]
+  NB. delete a test
+  1 del 'test'  
+  
+  NB. delete a group - words in the
+  NB. group are not not deleted 
+  2 del 'group' 
+
+  NB. delete many groups
+  2 del ;:'we are toast' 
+  
+  NB. delete suites and macros 
+  3 del 'suite'           
+  4 del 'macro'
+  
+  NB. delete many macros
+  4 del 'macro';'byebye'  
+  
+  NB. delete word references  
+  11 del ;:'remove our references'  
+\end{lstlisting}
+
+\subsection{\texttt{delgrp} ---  remove words/tests from group/suite}
+
+\texttt{delgrp} removes words from a group\index{group!\texttt{delgrp}} and tests from a suite.  
+
+Removing objects from groups and suites does delete them. To delete objects use 
+\hyperlink{il:del}{\texttt{del}}.
+
+\begin{wordhead}
+\dyad & clGroup delgrp clName \argsep blclNames \\
+      & (clSuite;iaObject) delgrp clName \argsep blclNames \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt]
+  NB. remove a word from a group
+  'group' delgrp 'word' 
+
+  NB. remove many words from a group 
+  'groupname' delgrp ;:'word names to remove'
+
+  NB. boxed (x) is used for suites - 3 denotes suite
+  ('suitename';3) delgrp ;:'tests removed from suite'
+\end{lstlisting}
+
+ 
+\subsection{\texttt{did} --- dictionary identification}\label{ss:did}
+
+\hypertarget{il:did}{\texttt{did}} identifies open dictionaries. 
+
+\begin{wordhead}
+\monad & did uuIgnore \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt]
+  NB. lists open dictionaries in path order 
+  did 0 
+\end{lstlisting}
+
+\begin{wordhead}
+\dyad & uuIgnore did uuIgnore \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt]
+  NB. open dictionaries and basic statistics 
+  0 did 0  
+
+  NB. handy idiom 
+  did~ 0    
+\end{lstlisting}
+
+\subsection{\texttt{disp} --- display dictionary objects}\label{ss:disp} 
+
+\hypertarget{il:disp}{\texttt{disp}} displays dictionary objects. \texttt{disp} returns a character 
+list when successful and the standard boxed \verb|(paRc;clMessage)| when reporting errors. 
+
+\begin{wordhead}
+\monad & disp clName \argsep blclNames \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt]
+  NB. display a word 
+  disp 'word'     
+
+  NB. display many words 
+  disp ;:'go ahead show us' 
+\end{lstlisting}
+
+\begin{wordhead}
+\dyad & iaObject disp clName \argsep blclNames \\
+      & (iaObject,iaOption) disp clName \argsep blclNames \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt]
+  NB. show a test 
+  1 disp 'test'  
+  
+  NB. generate and display a group 
+  2 disp 'group' 
+
+  NB. display the group text or header 
+  2 1 disp 'groupheader'     
+
+  NB. generate and display a suite 
+  3 disp 'suite' 
+
+  NB. display the suite text or header 
+  3 1 disp 'suiteheader'     
+
+  NB. display one macro
+  4 disp 'macro' 
+  
+  NB. display many macros           
+  4 disp 'macro';'byebye'    
+\end{lstlisting}
+  
+\subsection{\texttt{dnl} --- dictionary name lists}\label{ss:dnl}
+
+\hypertarget{il:dnl}{\texttt{dnl}} searches and returns dictionary name lists. 
+The entire path is searched for names and duplicates are removed. 
+A negative option code requests a \emph{path order list.}\index{path order list} A path order list returns
+ the objects in each directory in path order. 
+ Raising, removing duplicates and sorting a path order list gives a 
+ standard \texttt{dnl} list. \texttt{dnl} arguments follow the pattern: 
+
+\begin{description}
+\item $(n, \left\langle p, \left\langle d \right\rangle \right\rangle)$ \texttt{dnl 'str'}
+%\item (n, $\left\langle$ p, $\left\langle$ d $\right\rangle$ $\right\rangle$) dnl 'str'
+\item \emph{ where:}
+\begin{description}
+\item $n$ is one of \verb|0 1 2 3 4 |
+\item optional $p$ is one of \verb|1 2 3 _1 _2 _3 |
+\item optional $d$ is word name class or macro type
+\end{description}
+\end{description}
+
+\begin{wordhead}
+\monad & dnl zl \argsep clPstr \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt]
+  NB. list all words on current dictionary path
+  dnl '' 
+  
+  NB. list all words that begin with prefix 
+  dnl 'prefix'
+\end{lstlisting}
+
+\begin{wordhead}
+\dyad & iaObject dnl zl \argsep clPstr \\
+      & (iaObject,iaOption) dnl zl \argsep clPstr \\
+      & (iaObject,iaOption,iaQualifier) dnl zl  \\
+      & (iaObject,iaOption,iaQualifier) dnl clPstr \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt]
+  0 dnl ''  NB. all words (monad)
+  1 dnl ''  NB. list all tests
+  2 dnl ''  NB. list all groups
+  3 dnl ''  NB. list all suites
+  4 dnl ''  NB. list all macros
+\end{lstlisting}
+
+A word can appear in two dictionaries. 
+When getting such a word the first 
+path occurrence is the value returned. 
+The second value is \emph{shadowed} by the first
+as only one value can be retrieved.
+
+\begin{lstlisting}[frame=single,framerule=0pt]  
+  NB. match word names beginning with str
+  0 1 dnl 'str'  
+  
+  NB. match word names containing the string str
+  0 2 dnl 'str'  
+  
+  NB. match word names ending with string str 
+  0 3 dnl 'str'  
+
+  NB. words and macros have an optional third
+  NB. item that denotes name class or type
+  
+  NB. adverb names beginning with str
+  0 1 1 dnl 'str'  
+  
+  NB. verb names containing str
+  0 2 3 dnl 'str'  
+  
+  NB. nouns ending with str
+  0 3 0 dnl 'str'  
+
+  NB. J macro names beginning with jscript
+  4 1 21 dnl 'jscript' 
+
+  NB. LaTeX macro names containing latex
+  4 2 22 dnl 'latex'   
+  
+  NB. HTML macro names ending with html 
+  4 3 23 dnl 'html' 
+ \end{lstlisting}  
+
+  A negative second item option code returns a path order list.\index{path order list}
+
+\begin{lstlisting}[frame=single,framerule=0pt] 
+  NB. words containing str (result is a list of lists)
+  0 _2 3 dnl 'str' 
+  
+  NB. group names beginning with so
+  2 _1 dnl 'so'   
+  
+  NB. suite names ending with str 
+  3 _3 dnl 'str'   
+\end{lstlisting}
+
+\subsection{\texttt{doc} --- format comments}\label{ss:doc}
+
+\hypertarget{il:doc}{\texttt{doc}} formats the leading comment block 
+of explicit words, tests, group/suite headers and macros.  The comment block must follow J
+\href{http://www.jsoftware.com/help/user/scriptdoc.htm}{\texttt{scriptdoc}}\index{scriptdoc}
+ \cite{scriptdoc} compatible conventions.  The comment style processed by \texttt{doc} is 
+illustrated in the following example. More examples of \texttt{doc} 
+formatting can be examined by displaying 
+words in the distributed JOD dictionaries.\index{documentation!\texttt{doc}} 
+Install the \href{http://www.jsoftware.com/jwiki/Addons/general/jodsource}{\texttt{jodsource}} 
+addon to get the distributed JOD dictionaries.
+
+\begin{lstlisting}[frame=single,framerule=0pt]
+docexample0=: 3 : 0
+NB.*docexample0 v-- the leading block of comments
+NB. can be a scriptdoc compatible mess as far
+NB. as formatting goes.
+NB.
+NB. However, if you run doc over
+NB. a word in a JOD dictionary your 
+NB.     mess is cleaned up. See below.
+NB. monad: docexample uuHungarian
+NB.
+NB.   text below monad: and dyad: is left unformatted
+NB.   this region is used to display example calls
+J code from now on
+) 
+\end{lstlisting}
+
+\begin{lstlisting}[frame=single,framerule=0pt]
+docexample0=:3 : 0
+NB.*docexample0 v-- the leading block of comments can be a
+NB. scriptdoc compatible mess as far as formatting goes.
+NB.
+NB. However, if you run doc over a word in a JOD dictionary
+NB. your mess is cleaned up. See below.
+NB.
+NB. monad: docexample uuHungarian
+NB.
+NB.   text below monad: and dyad: is left unformatted
+NB.   this region is used to display example calls
+j code from now on
+) 
+\end{lstlisting}
+
+\begin{wordhead}
+\monad & doc clName \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt]
+  NB. format leading comment block 
+  doc 'formatme' 
+\end{lstlisting}
+
+\begin{wordhead}
+\dyad & iaObject doc clName  \\
+      & (iaObject,iaOption) doc clName \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt]
+  NB. format leading test script comments
+  1 doc 'tidytest'
+  
+  NB. format J script macros - only J scripts formatted
+  4 doc 'macroname'
+  
+  NB. group and suite headers
+  2 1 doc 'thisgroup'
+  3 1 doc 'thissuite'
+\end{lstlisting} 
+  
+\texttt{doc} also formats the long document text of all dictionary objects.
+Long document text differs from J script
+text in that it is not prefixed with leading \verb|NB.|'s.
+  
+\begin{lstlisting}[frame=single,framerule=0pt]
+  NB. format long documents
+  0 9 doc 'word'
+  1 9 doc 'test'
+  2 9 doc 'group'
+  3 9 doc 'suite'
+  4 9 doc 'macro'
+\end{lstlisting}  
+
+
+\subsection{\texttt{dpset} --- set and change parameters}\label{ss:dpset}
+
+\hypertarget{il:dpset}{\texttt{dpset}} modifies dictionary parameters. JOD uses a 
+variety of values that control putting, getting and generating objects. 
+Parameters\index{dictionary!parameters} are stored in individual dictionaries and 
+the master file. Master file parameters\index{parameters|see{dictionary}} are initially 
+set from the \verb|jodparms.ijs| file, see appendix~\ref{ap:jodparms}, on
+page~\pageref{ap:jodparms}, and cannot be reset without 
+editing \verb|jodparms.ijs| and recreating the master file. Individual 
+dictionary parameters can be changed at any time with \texttt{dpset}. \texttt{dpset} is permissive; 
+it will allow parameters to be set to any value. \emph{Invalid values will 
+crash JOD!} Before setting any values examine the \verb|jodparms.ijs| file. 
+This file is used to set the default values of dictionary parameters. 
+
+\emph{Note:} If you set an invalid parameter
+ value you can recover using \texttt{dpset}'s \texttt{DEFAULTS} option. 
+
+Not all dictionary parameters can be set by \texttt{dpset}. 
+The parameters \texttt{dpset} can change are dictionary specific 
+user parameters. There are a number of system wide parameters 
+that are set in code and require script edits to change. 
+
+If JOD, or the host OS crashes, the master file could be
+ left in a state that makes it impossible to reopen dictionaries.
+  \verb|dpset 'RESETME'| and \verb|dpset 'RESETALL'| clear read status codes in the master file.
+   \texttt{RESETME} resets all dictionaries recently opened from the current machine. 
+   \texttt{RESETALL} resets all dictionaries in the master file.  
+   In the worst case you can rebuild the master file by:
+\begin{quotation}
+	\noindent\begin{enumerate}
+	  \item Exiting J.
+	  \item Deleting the files:
+	\begin{description}
+		\item \verb|~addons\general\jod\jmaster.ijf| 
+		\item \verb|~addons\general\jod\jod.ijn| 
+	\end{description}	
+	  \item Restarting J.
+	  \item Reloading JOD with: \verb|load 'general/jod'|
+	\end{enumerate}  
+\end{quotation}
+
+\begin{wordhead}
+\monad & dpset zl \argsep clName \argsep (clName;uuParm) \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt]
+  NB. list all parameters and current values
+  dpset ''  
+  
+  NB. restore default settings in put dictionary          
+  dpset 'DEFAULTS'    
+
+  NB. option names are case sensitive 
+  NB. resets current machine dictionaries
+  dpset 'RESETME'  
+  
+  NB. resets all dictionaries    
+  dpset 'RESETALL'
+\end{lstlisting}  
+
+Note: if a JOD dictionary is being used 
+by more than one task never use \texttt{RESETALL} unless 
+you are absolutely sure you will not reset other tasks! 
+
+\begin{lstlisting}[frame=single,framerule=0pt]
+  NB. clears the put dictionary reference path
+  dpset 'CLEARPATH'  
+  
+  NB. makes the current put dictionary read-only 
+  dpset 'READONLY'    
+  
+  NB. makes the current put dictionary read-write
+  dpset 'READWRITE'   
+  
+  NB. use ascii85 in dump scripts 
+  dpset 'ASCII85';1    
+\end{lstlisting}
+
+
+\subsection{\texttt{ed} --- edit dictionary objects}\label{ss:ed}
+
+\hypertarget{il:ed}{\texttt{ed}} fetches or generates dictionary objects and puts 
+them in an edit\index{edit!\texttt{ed}} window for editing.\index{test suite}
+
+\begin{wordhead}
+\monad & ed clName \argsep blclNames \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt]
+  NB. retrieve word and place in edit window
+  ed 'word'
+  
+  NB. put many words in edit window 
+  ed ;:'many words edited' 
+\end{lstlisting} 
+
+\begin{wordhead}
+\dyad & iaObject ed clName \argsep blclNames \\
+      & (iaObject,iaOption) ed clPstr \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt]      
+  NB. edit test
+  1 ed 'test'
+  
+  NB. generate group and place in edit window    
+  2 ed 'group'  
+   
+  NB. generate test suite and place in edit window
+  3 ed 'suite'  
+  
+  NB. edit macro text 
+  4 ed 'macro'  
+   
+  NB. edit group header text
+  2 1 ed 'group' 
+  
+  NB. edit suite header text
+  3 1 ed 'suite'  
+\end{lstlisting}
+
+\subsection{\texttt{et} --- put text into edit window}\label{ss:et} 
+
+\hypertarget{il:et}{\texttt{et}} load character lists into edit\index{edit!\texttt{et}} windows.
+
+\begin{wordhead}
+\monad & et clText \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt]
+  NB. put character data into edit window
+  et 'put text in edit window' 
+
+  NB. read text and put in edit window
+  et (1!:1) <'c:\temp\text.txt' 
+\end{lstlisting}
+
+\subsection{\texttt{gdeps} --- group dependents}\label{ss:gdeps}
+
+\hypertarget{il:gdeps}{\texttt{gdeps}} returns lists of global names\index{dependent section} 
+in the dependent section of group and suite headers: see page~\pageref{ss:depsec}.
+
+\begin{wordhead}
+\monad & gdeps clGroup \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt]
+  NB. globals in the dependent section of group jod
+  gdeps 'jod'  
+  
+  NB. all dependent section globals in all groups
+  gdeps&> }. grp ''
+\end{lstlisting}
+
+\begin{wordhead}
+\dyad & iaOption gdeps clName \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt]
+  NB. globals in the dependent section of suite testenv
+  3 gdeps 'testenv'  
+\end{lstlisting}
+
+\subsection{\texttt{get} --- get objects}\label{ss:get}
+
+\hypertarget{il:get}{\texttt{get}} retrieves dictionary objects and information 
+about dictionary objects. 
+There is a close correspondence between the arguments of \texttt{get} 
+and \hyperlink{il:put}{\texttt{put}}, see page~\pageref{ss:put}. 
+A basic JOD rule is that if you can \texttt{put} it you can \texttt{get} it.
+
+\begin{wordhead}
+\monad & get clName \argsep blclNames \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt]
+  NB. get word and define in current locale
+  get 'word'  
+  
+  NB. get a group  
+  get }. grp '' 
+\end{lstlisting}
+
+\begin{wordhead}
+\dyad & ilOptions get clName \argsep blclNames \\
+      & clLocale get clName \argsep blclNames \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt]
+  NB. get word (monad)
+  0 get 'word'  
+  
+  NB. get words (monad) 
+  0 7 get ;:'words are us' 
+\end{lstlisting} 
+
+  For words a character left argument is a target locale.
+  
+\begin{lstlisting}[frame=single,framerule=0pt]  
+  NB. get into locale
+  'locale' get ;:'hi ho into locale we go'  
+  
+  NB. allow numbered locales
+  '666' get ;:'beast code'  
+    
+  NB. explain words
+  0 8 get ;:'explain us ehh'  
+  
+  NB. word documentation
+  0 9 get ;:'document or die' 
+  
+  NB. get word scripts without defining 
+  0 10 get 'define';'not' 
+\end{lstlisting} 
+    
+  Information about stored words can be retrieved with \texttt{get}.
+  
+\begin{lstlisting}[frame=single,framerule=0pt]
+  NB. J name class of words
+  0 12 get ;:'our name class' 
+  
+  NB. word creation dates
+  0 13 get ;:'our creation'   
+  
+  NB. last word put dates
+  0 14 get ;:'last change'    
+  
+  NB. word size in bytes
+  0 15 get ;:'how big are we' 
+  
+  NB. get test scripts
+  1 7 get 'i';'test';'it'  
+     
+  NB. test explanations
+  1 8 get ;:'explain tests'   
+  
+  NB. test case documentation
+  1 9 get 'radical'   
+\end{lstlisting}         
+
+  \texttt{get} fetches information about stored\index{testing!\texttt{get}} tests.
+  
+\begin{lstlisting}[frame=single,framerule=0pt]  
+  NB. test creation dates
+  1 13 get ;:'our creation'  
+  
+  NB. last test put dates 
+  1 14 get ;:'last change' 
+  
+  NB. test size in bytes   
+  1 15 get ;:'how big are we' 
+  
+  NB. get group scripts
+  2 7 get ;:'groupies cool'  
+  
+  NB. get group explaination text
+  2 8 get 'group';'explain'  
+  
+  NB. get group document text 
+  2 9 get 'document'      
+  
+  NB. suite text    
+  3 7 get ;:'this suites me'    
+  
+  NB. explain suites    
+  3 8 get ;:'suites need comments'  
+  
+  NB. document suites
+  3 9 get ;:'document your suites'  
+  
+  NB. get various macros
+  4 get 'jmacro';'html';'latex'  
+  
+  NB. explain macros
+  4 8 get ;:'macros need explaining'  
+  4 9 get ;:'and documents too'     
+\end{lstlisting}
+
+
+\subsection{\texttt{getrx} ---  get required to execute}\label{ss:getrx}
+
+\hypertarget{il:getrx}{\texttt{getrx}} gets all the words required to execute words on \texttt{(y)}.
+ 
+\emph{Warning:}  if  the words listed on  \texttt{(y)} refer to  object  or 
+locale references\index{cross references!\texttt{getrx}}  this verb  returns  
+an error because such words 
+generally cannot be run out of context.
+
+\begin{wordhead}
+\monad & getrx clName \argsep blclNames \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt] 
+  NB. load required words into base locale
+  getrx 'stuffineed'       
+
+  NB. get all words required to run many words 
+  getrx ;:'stuff we need to run' 
+\end{lstlisting}
+
+\begin{wordhead}
+\dyad & clLocale getrx clName \argsep blclNames \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt] 
+  NB. load all required words into locale
+  'locale' getrx ;:'load the stuff we need into locale' 
+\end{lstlisting}
+
+
+\subsection{\texttt{globs} --- global references}\label{ss:globs}
+
+\hypertarget{il:globs}{\texttt{globs}} analyzes 
+global\index{cross references!\texttt{globs}} references 
+in words and tests. A global reference is a 
+nonlocal J name where nonlocality is with respect to the current word's scope. 
+Names with locale references, for example: 
+
+\begin{lstlisting}[frame=single,framerule=0pt] 
+   jread_jfiles_     NB. direct locale reference
+   did__jd2          NB. indirect locale (object) reference 
+   did_3_            NB. direct numbered local reference
+   boo__hoo__too     NB. two levels of indirection 
+   
+   NB.  suffix nouns: jd2 hoo too
+\end{lstlisting}
+  
+%\begin{enumerate}
+%	\item \verb|jread_jfiles_|    \textcolor{CodeComment}{\texttt{\textsl{NB. direct locale reference}}} 
+%	\item \verb|did__jd2|         \textcolor{CodeComment}{\texttt{\textsl{NB. indirect locale (object) reference}}}
+%	\item \verb|did_3_|           \textcolor{CodeComment}{\texttt{\textsl{NB. direct numbered local reference}}}
+%	\item \verb|boo__hoo__too|    \textcolor{CodeComment}{\texttt{\textsl{NB. two levels of indirection}}}
+%\end{enumerate}
+ 
+\noindent are treated like primitives. This makes it possible to define clean locale/object 
+interfaces. In the case of indirect locale references the suffix noun(s) must exist 
+to determine the name class of the word. This makes static name analysis difficult. 
+By treating such references as ``primitives'' this problem is swept 
+under the proverbial rug. 
+
+For example the \texttt{jfiles} utility is often 
+accessed with \textbf{\texttt{z}} locale definitions like: 
+
+\begin{lstlisting}[frame=single,framerule=0pt] 
+   jread_z_ =: jread_jfiles_   NB. z interface for jread
+\end{lstlisting}
+
+Words that use \texttt{jread} can call it without locale suffixes. 
+For this case \texttt{globs} will detect the use of \texttt{jread} but will 
+cease searching the call tree when it encounters \verb|jread_jfiles_|.
+
+Globals referenced by test scripts are not stored because tests 
+often manipulate their working environments in ways that make 
+static name analysis unfeasible. \texttt{globs} is one of two verbs, 
+(\texttt{globs}, \hyperlink{il:grp}{\texttt{grp}}), that create references. 
+For \texttt{globs} to store 
+references the word must be in the put dictionary,\index{put dictionary} all 
+word references must exist on the path and the current 
+path must match the put dictionary reference path. 
+
+\begin{wordhead}
+\monad & globs clName \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt] 
+  NB. list globals in locale word 
+  globs 'word' 
+\end{lstlisting}
+
+\begin{wordhead}
+\dyad & iaObject globs clName \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt] 
+  NB. update referenced globals
+  0 globs 'word' 
+
+  NB. update all words in a group
+  0 globs&> }. grp 'group' 
+
+  NB. list global references in test text
+  1 globs 'test'           
+
+  NB. classify name references in locale word. 
+  11 globs 'word'  
+\end{lstlisting}
+
+
+\subsection{\texttt{grp} --- create and modify groups}\label{ss:grp}
+
+\hypertarget{il:grp}{\texttt{grp}} creates and modifies word groups\index{group!\texttt{grp}}
+ and test\index{testing!\texttt{grp}} suites. A group is a list of objects. Operations on groups do not change 
+ the objects that belong to groups. When a group is created the
+ put dictionary's reference path\index{reference path} is compared to the current dictionary path. 
+ If the paths do not match an error is returned and the group is not created. 
+
+\begin{wordhead}
+\monad & grp zl \argsep clName \argsep blclNames \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt] 
+  NB. list all word groups (2 dnl '')
+  grp ''    
+  
+  NB. list words in group    
+  grp 'group'  
+  
+  NB. create empty group 
+  grp 'soempty';''
+
+  NB. create/reset group first name is the group name
+  grp 'group';'list';'of';'group';'names'
+
+  NB. has effect of emptying but not deleting group 
+  grp <'group' 
+\end{lstlisting}
+
+\begin{wordhead}
+\dyad & iaObject grp zl \argsep clName \argsep blclNames \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt] 
+  NB. list all test suites (3 dnl '')
+  3 grp ''  
+  
+  NB. list tests in suite   
+  3 grp 'suite' 
+  
+  NB. (monad)
+  2 grp 'group';'list';'of';'group';'names'  
+  
+  NB. create/reset suite
+  3 grp 'suite';'list';'of';'test';'names'  
+  
+  NB. empty suite  
+  3 grp <'suite' 
+\end{lstlisting}
+
+
+\subsection{\texttt{gt} --- get edit window text} 
+
+Fetch text from edit\index{edit!\texttt{gt}} window.
+
+\begin{wordhead}
+\monad & gt zl \argsep clName \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt] 
+  NB. returns text from the word.ijs edit window
+  gt 'word'  
+
+  NB. using gt to update a test and macro.
+  1 put 'test';gt 'test' 
+
+  4 put 'macro';21;gt 'macro' 
+\end{lstlisting}
+
+
+\subsection{\texttt{hlpnl} --- display short object descriptions}
+
+\texttt{hlpnl} displays short object descriptions.\index{documentation!\texttt{hlpnl}}  
+
+Short object descriptions\index{help!\texttt{hlpnl}} are always a good idea.  
+If you cannot \emph{tersely} describe an object you probably don't 
+understand it.  Short descriptions\index{test suite} 
+are stored with \hypertarget{il:put}{\texttt{put}}.
+
+\begin{wordhead}
+\monad & hlpnl clName \argsep blclNames \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt] 
+  NB. put short word description 
+  0 8 put 'describeme';'briefly describe me' 
+
+  NB. display short word description
+  hlpnl 'describeme' 
+
+  NB. display many descriptions
+  hlpnl ;:'show our short word descriptions'
+
+  NB. describe all the words in a group
+  hlpnl }. grp 'groupname'
+
+  NB. describe all the words called by a word
+  hlpnl allrefs <'wordname'
+
+  NB. describe all dictionary words
+  hlpnl }. dnl ''
+\end{lstlisting}
+
+\begin{wordhead}
+\dyad & iaObject hlpnl clName \argsep blclNames \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt] 
+  NB. display short word description (monad)
+  0 hlpnl 'word' 
+
+  NB. display test, group, suite, macro descriptions
+  1 hlpnl 'testname'
+  2 hlpnl 'groupname'
+  3 hlpnl 'suitename'
+  4 hlpnl 'macroname'
+
+  NB. describe a test suite
+  3 hlpnl }. 3 dnl 'testsuite'
+
+  NB. describe a group
+  2 hlpnl }. 2 dnl 'groupname'
+
+  NB. describe macro scripts with prefix prj
+  4 hlpnl }. 4 dnl 'prj'
+\end{lstlisting}
+
+
+\subsection{\texttt{jodage} --- age of JOD objects}  
+
+\hypertarget{il:jodage}{\texttt{jodage}} returns the age of JOD objects.  When an object is 
+put into a dictionary the date\index{dates} is recorded. 
+
+The monad returns the age of words and the dyad returns the age of other objects.  
+JOD dates are stored in a fractional day \verb|yyyymmdd.fd| floating point format.\footnote{
+JOD times are derived from \emph{local} computer clock times. \texttt{UTC} is not used.
+}    
+
+\begin{wordhead}
+\monad & jodage clWord \argsep blclWords \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt] 
+  NB. show age of (jodage)  
+  jodage 'jodage' 
+
+  NB. age of all group words 
+  jodage }. grp 'bstats' 
+\end{lstlisting}
+
+\begin{wordhead}
+\dyad & ia jodage clWord \argsep blclNames \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt] 
+  NB. age of all test scripts  
+  1 jodage }. 1 dnl ''   
+
+  NB. age of group script  
+  2 jodage 'mygroup'     
+
+  NB. age of all macro scripts  
+  4 jodage }. 4 dnl ''   
+\end{lstlisting}
+
+
+\subsection{\texttt{jodhelp} --- return help}\label{ss:jodhelp}  
+
+\hypertarget{il:jodhelp}{\texttt{jodhelp}} displays help\index{help!\texttt{jodhelp}}
+ for JOD words.  
+The monad returns help for specific words and displays an index.  
+The dyad displays \verb|jod.pdf| and lists all words that have online help.
+
+\begin{wordhead}
+\monad & jodhelp clWord \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt] 
+  NB. show (put) help
+  jodhelp 'put'   
+
+  NB. display help index 
+  jodhelp '' 
+\end{lstlisting}  
+
+\begin{wordhead}
+\dyad & uuIgnore \argsep clPDF jodhelp uuIgnore 
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt] 
+  NB. list help topics - ignores arguments 
+  jodhelp~ 0    
+  
+  NB. open PDF documentation 
+  'PDF' jodhelp ''
+  
+  NB. handy idiom
+  jodhelp~ 'PDF'
+\end{lstlisting}
+
+
+\subsection{\texttt{lg} ---  make and load group}\label{ss:lg}
+
+\hypertarget{il:lg}{\texttt{lg}} assembles\index{scripts!generation!\texttt{lg}} 
+and loads JOD group\index{group!\texttt{lg}} scripts.  The monad loads without the postprocessor 
+script and the dyad loads with the postprocessor.
+
+The postprocessor\index{postprocessor} is a JOD macro script that is associated with a group.
+If a group\index{group!\texttt{locgrp}} is named \texttt{numtutils} the associated postprocessor 
+is named \verb|POST_numutils|. The prefix \verb|POST_| labels J macro scripts as postprocessors.\footnote{
+A macro must be coded as a J script, (code 21), to be used as a postprocessor.
+} The postprocessor is appended to generated group scripts and is often used to start systems.
+
+\begin{wordhead}
+\monad & lg clGroup \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt] 
+  NB. make and load group without postprocessor 
+  lg 'groupname'
+\end{lstlisting}
+
+\begin{wordhead}
+\dyad & iaOption lg clGroup \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt] 
+  NB. monad
+  2 lg 'groupname' 
+
+  NB. define a group postprocessor macro script
+  NB. 21 identifies macro text as an arbitrary J script
+  4 put 'POST_groupname';21;'smoutput ''hello world'''
+
+  NB. make and load appending postprocessor
+  lg~ 'groupname' 
+\end{lstlisting}
+
+
+\subsection{\texttt{locgrp} --- list groups/suites with word/test}
+
+\texttt{locgrp} lists groups and suites with word or test \texttt{(y)}.   
+A word or test can belong to many groups or suites. 
+
+\begin{wordhead}
+\monad & logrp clName \\
+\end{wordhead} 
+\begin{lstlisting}[frame=single,framerule=0pt]  
+  NB. list all groups that contain myword
+  locgrp 'myword' 
+
+  NB. list all suites that contain this test
+  locgrp 'thistest' 
+\end{lstlisting}
+
+
+\subsection{\texttt{make} --- generates dictionary scripts}\label{ss:make}
+
+\hypertarget{il:make}{\texttt{make}} generates J 
+scripts\index{scripts!generation!\texttt{make}} from objects stored
+in\index{dictionary!dump!\texttt{make}} dictionaries.
+The generated scripts can be returned as results or written to file: 
+see subsection~\ref{ss:genscripts} on page~\pageref{ss:genscripts}.
+
+Generated scripts are stored in the standard dump,\index{scripts!dump!\texttt{make}} 
+script and suite subdirectories.  Monadic \texttt{make} dumps all the objects 
+on the current path to a J script file.  The dump file is a single J script 
+that can be used to rebuild dictionaries. 
+
+\texttt{make} uses the reference path\index{reference path} to generate words, 
+tests, groups and suites.
+When generating groups and suites \texttt{make} returns an error if the current 
+path does not match the reference path. By default dyadic \texttt{make} generates 
+objects that exist in the current put dictionary. 
+This can be overridden with a negative option code. 
+
+\begin{wordhead}
+\monad & make zl \argsep clDumpfile \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt] 
+  NB. Dump objects on current path 
+  NB. to put dictionary dump directory.
+  NB. The name of the put dictionary is 
+  NB. used as the dump file name.
+  make '' 
+
+  NB. dump to specified file 
+  make 'c:\dump\on\me.ijs'
+\end{lstlisting}
+
+\begin{wordhead}
+\dyad & iaObject make zl \argsep clName \argsep blclNames \\
+      & (iaObject,iaOption) make clName \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt] 
+  0 make ;:'an arbitrary list of words into a script'
+  0 2 make ;:'generate a character list script result' 
+
+  NB. make J script that defines a group
+  2 make 'group' 
+  
+  NB. make J script that defines a suite 
+  3 make 'suite' 
+\end{lstlisting}
+
+An option code controls whether 
+results are written to file, (1 default),
+or returned, (2 return), for word lists, groups and suites.
+Default dictionary file locations are the 
+subdirectories created by \hyperlink{il:newd}{\texttt{newd}}: see page~\pageref{ss:newd}.
+
+\begin{lstlisting}[frame=single,framerule=0pt] 
+  NB. make and return group script
+  2 2 make 'group'  
+  
+  NB. make put dictionary suite script and write to file 
+  3 1 make 'suite'  
+
+  NB. make and file group script. The group does not
+  NB. have to exist in the put dictionary but can
+  NB. occur anywhere on the path. 
+  2 _1 make 'group'
+
+  NB. make suite script and write to file 
+  3 _1 make 'suite' 
+\end{lstlisting}
+
+
+\subsection{\texttt{mls} --- make load script}\label{ss:mls} 
+
+\hypertarget{il:mls}{\texttt{mls}} generates J 
+load\index{load scripts} scripts.\index{scripts!generation!\texttt{mls}}  
+The generated script is added 
+to the current user's start up script
+\begin{verbatim}
+  ~config\startup.ijs
+\end{verbatim}
+and inserted in the session's \verb|PUBLIC_j_| table.
+
+An \verb|mls| load script\index{load scripts} is independent of JOD and can be used 
+like any other J load script, for example:
+
+\begin{verbatim}
+  load 'mlsmademe'
+\end{verbatim}
+
+The generated script can be written to file or returned. 
+Generated scripts are stored in the put dictionary script subdirectory.  
+\texttt{mls} appends any postprocessor\index{postprocessor} to the generated script: 
+see subsection~\ref{ss:genscripts} Generated Script Structure, on page~\pageref{ss:genscripts}.
+
+\begin{wordhead}
+\monad & mls clGroupname \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt] 
+  NB. add a postprocessor script for (addgroup) 
+  postproc=. 'smoutput ''''this is a post processor'''''
+  4 put 'POST_appgroup';JSCRIPT_ajod_;postproc  
+
+  NB. generate group script with 
+  NB. postprocessor and add to startup.ijs
+  mls 'appgroup' 
+  
+  NB. load group - postprocessor runs
+  load 'appgroup' 
+\end{lstlisting}
+
+\begin{wordhead}
+\dyad & iaOption mls clGroupname \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt] 
+  NB. make J script file but do 
+  NB. not add to startup.ijs
+  0 mls 'bstats' 
+
+  NB. monad 
+  1 mls 'bstats' 
+
+  NB. return generated script as result 
+  NB. does not add to startup.ijs  
+  2 mls 'bstats' 
+\end{lstlisting}
+
+
+\subsection{\texttt{newd} --- create a new dictionary}\label{ss:newd} 
+
+ \hypertarget{il:newd}{\texttt{newd}} creates\index{dictionary!create!\texttt{newd}} 
+ a new dictionary. 
+ Dictionary creation generates
+ a set of files in a standard dictionary directory structure:
+ see Figure~\ref{eps:joddirs} on page~\pageref{eps:joddirs}.
+  The root directory, dictionary name, and optional dictionary 
+ documentation can be specified. All other dictionary 
+ creation parameters are taken from the master file.
+ 
+\begin{wordhead}
+\monad & newd clDictionary \\
+       & newd (clDictionary;clPath) \\
+       & newd (clDictionary;clPath;clDocumentation) \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt] 
+  NB. if no location is specified the dictionary
+  NB. is created in the default directory
+  newd 'makemydictionary'
+  
+  NB. create with name in location 
+  newd 'new';'c:\location\' 
+  newd 'deep';'d:\we\can\root\dictionaries\down\deep'
+
+  NB. optional third item is dictionary documentation
+  newd 'new';'c:\location\';'Dictionary documentation ...' 
+\end{lstlisting}
+
+\subsection{\texttt{notgrp} --- not grouped}
+
+\texttt{notgrp} list words or tests from \texttt{(y)} that are not in groups or
+suites. Useful for finding loose ends and dead code.
+
+\begin{wordhead}
+\monad & notgrp clName \argsep blclNames \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt] 
+  NB. recent ungrouped words
+  notgrp }. revo ''  
+  
+  NB. all ungrouped words
+  notgrp }. dnl ''  
+\end{lstlisting}
+
+\begin{wordhead}
+\dyad & iaOption notgrp clName \argsep blclNames \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt]
+  NB. ungrouped words (monad)
+  2 notgrp }. dnl ''    
+
+  NB. tests that are not in suites
+  3 notgrp }. 1 dnl ''
+\end{lstlisting}
+
+\subsection{\texttt{nw} --- edit a new explicit word}\label{ss:nw} 
+
+\hypertarget{il:nw}{\texttt{nw}} edits\index{edit!\texttt{nw}} a new explicit word in an edit window using JOD format conventions.  \texttt{nw} will append the character list \texttt{DOCUMENTCOMMAND} to the text placed in an edit window.  This allows the user to define an arbitrary script that is run when a word is defined with \texttt{CTRL-W}.
+
+\begin{wordhead}
+\monad & nw clName \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt] 
+  NB. open an edit window with an explicit newword
+  nw 'newword'  
+
+  NB. define a script that is run when the J edit
+  NB. window is run with CTRL-W.  {~N~} placeholders
+  NB. are replaced with the name of the new word
+
+  DOCUMENTCOMMAND_z_=: 0 : 0
+  smoutput pr '{~N~}'
+  )
+
+  NB. edit a word with DOCUMENTCOMMAND
+  nw 'placeholdername'
+\end{lstlisting}
+
+\begin{wordhead}
+\dyad & iaNameclass nw clName \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt]
+  NB. edit an explict adverb
+  1 nw 'adverb'   
+
+  NB. edit an explict conjunction
+  2 nw 'conjunction'  
+
+  NB. edit an explicit text noun
+  0 nw 'text'  
+
+  NB. edit an explicit word (monad)
+  3 nw 'word'  
+
+  NB. edit dyadic word
+  4 nw 'dyad'  
+\end{lstlisting}
+
+\subsection{\texttt{nt} --- edit a new test}\label{ss:nt}
+
+\hypertarget{il:nt}{\texttt{nt}} edits\index{edit!\texttt{nt}} a new test script in an edit window. 
+
+\texttt{nt} looks for the test script \texttt{TESTSTUB} on the path and inserts \texttt{TESTSTUB} text in the edit window.   \texttt{TESTSTUB} allows users to define dictionary specific
+custom script formats.
+
+\begin{wordhead}
+\monad & nt clTestName \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt] 
+  NB. open an edit window
+  nt 'newtest'  
+
+  NB. define a custom test script
+  testheader=: 0 : 0
+  NB.*{~T~} t-- test script header
+  NB. 
+  NB. This is my custom test script header.
+  NB. The {~T~} strings are replaced with test
+  NB. name and creation time
+  NB.
+  NB. created: {~created~}
+  ) 
+
+  NB. save custom header in put dictionary
+  1 put 'TESTSTUB';testheader
+
+  NB. edit a new test using the custom header
+  nt 'customtest'
+\end{lstlisting}
+
+
+\subsection{\texttt{od} --- open dictionaries}\label{ss:od}
+
+ \hypertarget{il:od}{\texttt{od}} opens\index{dictionary!open!\texttt{od}}
+ dictionaries. Open dictionaries are appended to the
+ path in the order they are opened. Dictionaries can be opened \texttt{READWRITE}
+ (default) or \texttt{READONLY}. Only one J task can open 
+ a dictionary \texttt{READWRITE}.  
+ Any number of tasks can open a dictionary \texttt{READONLY}. 
+ If any task has a dictionary open \texttt{READONLY} it can only 
+ be opened \texttt{READONLY} by other tasks. If a 
+ dictionary is opened \texttt{READWRITE} by a task it 
+ cannot be opened by other dictionary tasks. This harsh protocol
+  insures that only one task can update a dictionary. 
+
+The first dictionary on the search path is special!  
+It is the only dictionary that can be updated by JOD verbs. 
+Because most updates are put�s the first dictionary is called the \emph{put dictionary}.
+
+\begin{wordhead}
+\monad & od zl \argsep clDictionary \argsep blclDictionaries \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt] 
+  NB. list registered dictionaries 
+  od '' 
+
+  NB. open read/write
+  od 'dictionary'   
+  
+  NB. opens d(i) read/write 
+  od 'd1';'d2';'d3'  
+\end{lstlisting}
+
+\begin{wordhead}
+\dyad & iaOption od zl \argsep clDictionary \argsep blclDictionaries \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt] 
+  NB. list registered dictionaries (monad)
+  1 od '' 
+  
+  NB. close all open dictionaries (related to did 4) 
+  3 od '' 
+
+  NB. open read/write (monad)
+  1 od 'dictionary' 
+  
+  NB. open read only and append to any path 
+  2 od 'dictionary'   
+
+  NB. open d(i) read only and append to any path
+  2 od 'd1';'d2';'d3' 
+  
+  NB. close dictionaries and remove from path
+  3 od ;:'d0 d1 d2'  
+  
+  NB. all dictionary root directories
+  4 od ''  
+              
+  NB. list all dictionaries as regd script
+  5 od ''             
+\end{lstlisting}
+
+
+\subsection{\texttt{packd} --- backup and pack dictionaries}\label{ss:packd}
+
+\hypertarget{il:packd}{\texttt{packd}}\index{backup!\texttt{packd}} removes all unused space 
+from dictionary files by copying active components to new files.
+ After the \texttt{packd} operation is complete the new dictionary files 
+ are renamed to match the original files. During the copy operation directories 
+ are checked against the items in dictionary files. If 
+ a directory data discrepancy is detected
+ the pack operation ends with an error. Old files are renamed 
+ with an increasing sequential backup number prefix, e.g.: \verb|13jwords.ijf| and 
+ retained in the backup subdirectory. If a \texttt{packd} operation succeeds 
+ the backup dictionary has no directory data inconsistencies. 
+
+A \texttt{packd} operation can be reversed with \hyperlink{il:restd}{\texttt{restd}}. There is 
+no JOD facility for deleting  backup files. To erase backup files use OS facilities. 
+
+The read/write status of a dictionary is recorded in 
+the master file. JOD assumes all tasks point to the same master file. 
+
+\begin{wordhead}
+\monad & packd clDictionary \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt] 
+  NB. packd requires an open READWRITE dictionary
+  od 'dictionary'   
+   
+  NB. reclaim unused file space in dictionary
+  NB. and retain original files as a backup 
+  packd 'dictionary' 
+\end{lstlisting}                  
+
+
+\subsection{\texttt{put} --- store objects in dictionary}\label{ss:put}
+
+The \hypertarget{il:put}{\texttt{put}}
+ verb stores objects in the put dictionary\index{put dictionary}.
+ It can store words, tests\index{testing!\texttt{put}}, groups, suites and macros. 
+ As a general rule: if something can be stored with \texttt{put} 
+ it can be retrieved by \hyperlink{il:get}{\texttt{get}}: see page~\pageref{ss:get}.
+
+\begin{wordhead}
+\monad & put clName \argsep blclNames \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt] 
+  NB. default is put words from base locale 
+  put 'word' 
+  
+  NB. store all base locale verbs in dictionary
+  put nl 3
+\end{lstlisting} 
+  
+\begin{wordhead}
+\dyad & iaObject put clName \argsep blclNames \argsep btNvalues \\
+      & clLocale put clName \argsep blclNames \argsep btNvalues \\
+      & (iaObject,iaQualifier) put clName \argsep blclNames  \\
+      & (iaObject,iaQualifier) put clName btNvalues \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt] 
+  NB. put words (monad)
+  0 put ;:'w0 w1 w2 w3 w4'    
+  
+  NB. put words from specified locale
+  'locale' put 'w0';'w2';'w3' 
+  
+  NB. numbered locales 
+  '99' put 'word'             
+
+  NB. put explain/document text
+  NB. words must exist in dictionary
+  0 8 put (;:'w0 w1'),.('text ...';'text ...')
+  0 9 put (;:'w0 w1'),.('text ...';'text ...') 
+
+  NB. put words from name class value table
+  0 10 put ('w0'; 'w1'),.(3;3),.'code0..';'code1.. 
+
+  NB. put tests from name value table
+  1 put (;:'t0 t1'),.('text ...';'text ...') 
+
+  NB. put test explain/document text
+  1 8 put (;:'t0 t1'),.('text ...';'text ...')
+  1 9 put (;:'t0 t1'),.('text ...';'text ...') 
+\end{lstlisting}
+
+A group or suite header\index{scripts!headers!\texttt{put}} script is an arbitrary J script 
+that preceeds the code generated by \hyperlink{il:make}{\texttt{make}} on page~\pageref{ss:make}.
+
+\begin{lstlisting}[frame=single,framerule=0pt] 
+  NB. put group header scripts from name,value table
+  2 put (;:'g0 g1'),.('text ...';'text ...') 
+  
+  NB. group header scripts can be put 
+  NB. with 2 1 as well - maintains put/get symmetry 
+  2 1 put (;:'g0 g1'),.('text ...';'text ...') 
+
+  NB. put group explain/document text
+  2 8 put (;:'g0 g1'),.('text ...';'text ...')
+  2 9 put (;:'g0 g1'),.('text ...';'text ...') 
+
+  NB. put suite header scripts from name value table
+  3 put (;:'s0 s1'),.('text ...';'text ...') 
+  3 1 put (;:'s0 s1'),.('text ...';'text ...') 
+
+  NB. put suite explain/document text
+  3 8 put (;:'s0 s1'),.('text ...';'text ...')
+  3 9 put (;:'s0 s1'),.('text ...';'text ...') 
+
+  NB. put macro scripts from name, type, value table
+  
+  NB. J scripts - can be run with (rm)
+  4 put (;:'m0 m1'),.(21;21),.('text ...';'...') 
+  
+  NB. LaTeX 
+  4 put (;:'m0 m1'),.(22;22),.('text ...';'...') 
+  
+  NB. HTML 
+  4 put (;:'m0 m1'),.(23;23),.('text ...';'...') 
+
+  NB. XML 
+  4 put (;:'m0 m1'),.(24;24),.('text ...';'...') 
+  
+  NB. plain ASCII text 
+  4 put (;:'m0 m1'),.(25;25),.('text ...';'...') 
+  
+  NB. UTF-8 unicode text 
+  4 put (;:'m0 m1'),.(26;26),.('text ...';'...') 
+
+  NB. put macro explain/document text
+  4 8 put (;:'m0 m1'),.('text ...';'text ...')
+  4 9 put (;:'m0 m1'),.('text ...';'text ...') 
+\end{lstlisting}                  
+
+
+\subsection{\texttt{regd} --- register dictionaries}
+
+\hypertarget{il:restd}{\texttt{restd}} registers\index{registration!\texttt{regd}} and unregisters 
+ dictionaries in the master file.
+ 
+ A dictionary is a set of files in a standard directory structure: see page~\pageref{ss:joddirs}. 
+ The \hyperlink{il:newd}{\texttt{newd}} verb creates JOD directories and files.
+  There is no JOD verb that destroys dictionaries; actual 
+  deletion of dictionary files and directories must be done using 
+  other means. However, you can unregister a dictionary. 
+  When a dictionary is unregistered it is removed from the main 
+  dictionary directory in the master file. It will no longer appear 
+  on \hyperlink{il:od}{\texttt{od}} lists and will no longer be accessible with JOD interface verbs. 
+  Conversely, you can also register dictionaries with \texttt{regd}. 
+
+\begin{wordhead}
+\monad & regd (clDictionary;clPath;clDocumentation) \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt] 
+  NB. register dictionary with name 
+  NB. directory and dictionary must exist
+  regd 'name';'c:\location\' 
+
+  NB. register dictionary with optional documentation
+  regd 'name';'c:\location\';'Documentation text' 
+\end{lstlisting} 
+
+\begin{wordhead}
+\dyad & iaOption regd clDictionary \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt] 
+  NB. unregistering a dictionary does not delete files 
+  3 regd 'name' 
+
+  NB. regd can be used to rename dictionaries 
+  NB. and update dictionary documentation
+  
+  NB. unregister
+  'name path' =. _2 {. 3 regd 'badname'  
+  
+  NB. re-register with new name and documentation 
+  doc =. 'brand spanking new documenation' 
+  regd 'goodname';path;doc 
+\end{lstlisting}                  
+
+
+\subsection{\texttt{restd} --- restore backup dictionaries}\label{ss:restd} 
+
+\hypertarget{il:restd}{\texttt{restd}}  restores the last backup\index{backup!\texttt{restd}} created by
+ \hyperlink{il:packd}{\texttt{packd}}. 
+
+\begin{wordhead}
+\monad & restd clDictionary \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt] 
+  NB. open dictionary READWRITE 
+  NB. must be first dictionary on the path
+  od 'lastbackup' [ 3 od '' 
+
+  NB. restore last dictionary backup
+  restd 'lastbackup' 
+\end{lstlisting}                   
+
+
+\subsection{\texttt{revo} --- list recently revised objects} 
+
+\hypertarget{il:revo}{\texttt{revo}} lists recently recently revised objects. 
+Only put dictionary objects can be revised and only 
+\hyperlink{il:put}{\texttt{put}} operations are considered revisions. 
+
+\begin{wordhead}
+\monad & revo zl \argsep clName \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt] 
+  NB. all put dictionary words in last put order
+  revo ''   
+    
+  NB. revised words with names beginning with boo  
+  revo 'boo'  
+\end{lstlisting}  
+
+\begin{wordhead}
+\dyad & iaObject revo zl \argsep clName \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt] 
+  NB. list all revised tests
+  1 revo ''  
+  
+  NB. revised suites with names prefixed by boo 
+  3 revo 'boo'  
+\end{lstlisting}                  
+
+
+\subsection{\texttt{rm} --- run macros}\label{ss:rm}
+ 
+A JOD macro\index{macros!\texttt{rm}} is an arbitrary J script.  \hypertarget{il:rm}{\texttt{rm}} 
+fetches J macro scripts and runs them. \texttt{rm} will only run J, code 21, macros; other types return errors.  
+
+\texttt{rm} sets the current locale\index{locale!base} to \texttt{base} and starts 
+executing macro scripts in \texttt{base}. 
+
+\begin{wordhead}
+\monad & rm cl \argsep blclNames \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt] 
+  NB. run J macro 
+  rm 'macro' 
+
+  NB. run macros with names starting with DoUs
+  rm }. dnl 'DoUs' 
+\end{lstlisting}   
+
+\begin{wordhead}
+\dyad & iaOption rm zl \argsep clName \argsep blclNames \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt] 
+  NB. run J script and suppress output 
+  1 rm 'quiet' 
+
+  NB. note the repeat 
+  1 rm ;:'run silent run deep' 
+\end{lstlisting}                  
+
+
+\subsection{\texttt{rtt} --- run tautology tests}\label{ss:rtt}
+
+\hypertarget{il:rtt}{\texttt{rtt}} runs tautology\index{tautology} 
+test\index{testing!\texttt{rtt}} scripts stored in JOD dictionaries. 
+
+J has a built in test facility see: \verb|(0!:2)| and \verb|(0!:3)|.  
+These foreigns run scripts and stop if the result deviates 
+from arrays of \texttt{1}'s.  This facility is used by J's developers 
+and \texttt{rtt} applies it to dictionary test scripts.\index{test suite}  
+  
+\texttt{rtt} starts scripts in the \texttt{base} locale.\index{locale!base} 
+
+\begin{wordhead}
+\monad & rtt clName \argsep blclNames \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt] 
+  NB. run test script as a tautology
+  rtt 'tautologytest'    
+  
+  NB. run all tautology tests in a suite 
+  rtt }. 3 grp 'testsuite'  
+\end{lstlisting}  
+
+\begin{wordhead}
+\dyad & iaOption rtt clName \argsep blclNames \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt] 
+  NB. same as monad
+  0 rtt 'tautologytest'    
+  
+  NB. run tautology test and suppress output 
+  1 rtt 'silenttautology'  
+  
+  NB. run test as plain script
+  2 rtt 'plaintest'        
+  
+  NB. generate test suite and run as tautology 
+  3 rtt 'suitename'  
+   
+  NB. generate test suite and run as silent tautology      
+  4 rtt 'silentsuite'      
+\end{lstlisting}                  
+
+
+\subsection{\texttt{uses} --- return word uses} 
+
+\hypertarget{il:uses}{\texttt{uses}} lists words used by other words. The lists 
+are derived from the cross references\index{cross references!\texttt{uses}} stored 
+by \hyperlink{il:globs}{\texttt{globs}}. The typical result
+ of \texttt{uses} is a boxed table. Column 0 is a list of names and column 1 is list 
+ of pairs of boxed lists. Each boxed list pair contains nonlocale 
+ and locale\index{locale!references} global references. 
+
+When computing the \emph{uses union}\index{uses union!\texttt{uses}}, (option 31), only nonlocale references\index{uses!references} are searched for further references. In general it is not possible to search locale references as they typically refer to objects created at runtime. In this system such references are treated as black boxes. It is important to know an object is being referenced even if you cannot peer inside the object.
+
+\begin{wordhead}
+\monad & uses blclName \argsep clName \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt] 
+  NB. list all words used by words (0 globs) 
+  uses ;:'word globals' 
+\end{lstlisting}    
+
+\begin{wordhead}
+\dyad & iaObject uses blclName \argsep clname \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt] 
+  NB. same as monad
+  0 uses 'word'  
+  
+  NB. uses union of word 
+  31 uses ;:'all known words we call'   
+\end{lstlisting}  

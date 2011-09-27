@@ -1,0 +1,62 @@
+%\listfiles
+% JOD system documentation (Latex2e document)
+%
+% started - January 16 2008
+% revised - July 2011
+%
+% This document is the root for JOD system documentation.  All JOD
+% documentation will be derived from the LaTeX files referenced 
+% by this file.
+%
+% To compile this document execute the following commands
+% in the documents root directory
+%
+%   latex jod
+%   bibtex jod
+%   makeindex jod
+%   latex jod
+%   latex jod
+%   dvips jod
+%   ps2pdf jod.ps
+
+\input{jodamble}
+
+%\pagecolor[HTML]{FFDEAD}  % entire document here
+
+%\maketitle
+\input{jodtitlepage}
+
+\newpage
+
+\tableofcontents
+
+\newpage
+
+%\include{}  % starts inclusion on newpage
+\input{jodintro}
+\input{jodtutor}
+\input{jodbest}
+\input{jodwords}
+\input{jodscripts}
+\input{jodfiles}
+
+% some appendix sources \include 
+\include{jodappendices}
+
+% bibliography
+\bibliographystyle{plain}
+\bibliography{jodbib} 
+
+\newpage 
+
+\listoftables
+\listoffigures
+
+% insert following in jod.ind and run with the no makeindex 
+% option for the final build - so far haven't been able
+% to figure out how to get fancy headers on the index
+%\addcontentsline{toc}{section}{Index}
+
+%\input{jodfinalidx.tex} 
+\printindex
+\end{document}

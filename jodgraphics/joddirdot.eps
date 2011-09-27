@@ -1,0 +1,706 @@
+%!PS-Adobe-3.0 EPSF-3.0
+%!PS-Adobe-2.0
+%%Creator: dot version 2.8 (Fri Feb  3 22:38:53 UTC 2006)
+%%For: Bill Gates
+%%Title: joddir
+%%Pages: (atend)
+%%BoundingBox: 36 36 912 422
+%%EndComments
+save
+%%BeginProlog
+/DotDict 200 dict def
+DotDict begin
+
+/setupLatin1 {
+mark
+/EncodingVector 256 array def
+ EncodingVector 0
+
+ISOLatin1Encoding 0 255 getinterval putinterval
+EncodingVector 45 /hyphen put
+
+% Set up ISO Latin 1 character encoding
+/starnetISO {
+        dup dup findfont dup length dict begin
+        { 1 index /FID ne { def }{ pop pop } ifelse
+        } forall
+        /Encoding EncodingVector def
+        currentdict end definefont
+} def
+/Times-Roman starnetISO def
+/Times-Italic starnetISO def
+/Times-Bold starnetISO def
+/Times-BoldItalic starnetISO def
+/Helvetica starnetISO def
+/Helvetica-Oblique starnetISO def
+/Helvetica-Bold starnetISO def
+/Helvetica-BoldOblique starnetISO def
+/Courier starnetISO def
+/Courier-Oblique starnetISO def
+/Courier-Bold starnetISO def
+/Courier-BoldOblique starnetISO def
+cleartomark
+} bind def
+
+%%BeginResource: procset graphviz 0 0
+/coord-font-family /Times-Roman def
+/default-font-family /Times-Roman def
+/coordfont coord-font-family findfont 8 scalefont def
+
+/InvScaleFactor 1.0 def
+/set_scale {
+	dup 1 exch div /InvScaleFactor exch def
+	dup scale
+} bind def
+
+% styles
+/solid { [] 0 setdash } bind def
+/dashed { [9 InvScaleFactor mul dup ] 0 setdash } bind def
+/dotted { [1 InvScaleFactor mul 6 InvScaleFactor mul] 0 setdash } bind def
+/invis {/fill {newpath} def /stroke {newpath} def /show {pop newpath} def} bind def
+/bold { 2 setlinewidth } bind def
+/filled { } bind def
+/unfilled { } bind def
+/rounded { } bind def
+/diagonals { } bind def
+
+% hooks for setting color 
+/nodecolor { sethsbcolor } bind def
+/edgecolor { sethsbcolor } bind def
+/graphcolor { sethsbcolor } bind def
+/nopcolor {pop pop pop} bind def
+
+/beginpage {	% i j npages
+	/npages exch def
+	/j exch def
+	/i exch def
+	/str 10 string def
+	npages 1 gt {
+		gsave
+			coordfont setfont
+			0 0 moveto
+			(\() show i str cvs show (,) show j str cvs show (\)) show
+		grestore
+	} if
+} bind def
+
+/set_font {
+	findfont exch
+	scalefont setfont
+} def
+
+% draw aligned label in bounding box aligned to current point
+/alignedtext {			% width adj text
+	/text exch def
+	/adj exch def
+	/width exch def
+	gsave
+		width 0 gt {
+			text stringwidth pop adj mul 0 rmoveto
+		} if
+		[] 0 setdash
+		text show
+	grestore
+} def
+
+/boxprim {				% xcorner ycorner xsize ysize
+		4 2 roll
+		moveto
+		2 copy
+		exch 0 rlineto
+		0 exch rlineto
+		pop neg 0 rlineto
+		closepath
+} bind def
+
+/ellipse_path {
+	/ry exch def
+	/rx exch def
+	/y exch def
+	/x exch def
+	matrix currentmatrix
+	newpath
+	x y translate
+	rx ry scale
+	0 0 1 0 360 arc
+	setmatrix
+} bind def
+
+/endpage { showpage } bind def
+/showpage { } def
+
+/layercolorseq
+	[	% layer color sequence - darkest to lightest
+		[0 0 0]
+		[.2 .8 .8]
+		[.4 .8 .8]
+		[.6 .8 .8]
+		[.8 .8 .8]
+	]
+def
+
+/layerlen layercolorseq length def
+
+/setlayer {/maxlayer exch def /curlayer exch def
+	layercolorseq curlayer 1 sub layerlen mod get
+	aload pop sethsbcolor
+	/nodecolor {nopcolor} def
+	/edgecolor {nopcolor} def
+	/graphcolor {nopcolor} def
+} bind def
+
+/onlayer { curlayer ne {invis} if } def
+
+/onlayers {
+	/myupper exch def
+	/mylower exch def
+	curlayer mylower lt
+	curlayer myupper gt
+	or
+	{invis} if
+} def
+
+/curlayer 0 def
+
+%%EndResource
+%%EndProlog
+%%BeginSetup
+14 default-font-family set_font
+1 setmiterlimit
+% /arrowlength 10 def
+% /arrowwidth 5 def
+
+% make sure pdfmark is harmless for PS-interpreters other than Distiller
+/pdfmark where {pop} {userdict /pdfmark /cleartomark load put} ifelse
+% make '<<' and '>>' safe on PS Level 1 devices
+/languagelevel where {pop languagelevel}{1} ifelse
+2 lt {
+    userdict (<<) cvn ([) cvn load put
+    userdict (>>) cvn ([) cvn load put
+} if
+
+%%EndSetup
+%%Page: 1 1
+%%PageBoundingBox: 36 36 912 422
+%%PageOrientation: Portrait
+gsave
+36 36 876 386 boxprim clip newpath
+36 36 translate
+0 0 1 beginpage
+1.0000 set_scale
+4 4 translate 0 rotate
+0.000 0.000 1.000 graphcolor
+0.000 0.000 1.000 graphcolor
+newpath -6 -6 moveto
+-6 384 lineto
+874 384 lineto
+874 -6 lineto
+closepath
+fill
+0.000 0.000 1.000 graphcolor
+newpath -6 -6 moveto
+-6 384 lineto
+874 384 lineto
+874 -6 lineto
+closepath
+stroke
+0.000 0.000 0.000 graphcolor
+14.00 /Times-Roman set_font
+% cluster0
+gsave 10 dict begin
+0.000 0.000 1.000 sethsbcolor
+newpath 8 16 moveto
+860 16 lineto
+860 370 lineto
+8 370 lineto
+closepath
+stroke
+gsave 10 dict begin
+0.000 0.000 0.000 sethsbcolor
+20.00 /courier set_font
+199 347 moveto
+(JOD Directory Structure created by newd)
+[12 12 12 12 12 12 12 12 12 12 12 12 12 12 12 12 12 12 12 12 12 12 12 12 12 12 12 12 12 12 12 12 12 12 12 12 12 12 12]
+xshow
+end grestore
+end grestore
+% root
+gsave 10 dict begin
+newpath 192 269 moveto
+16 269 lineto
+16 85 lineto
+192 85 lineto
+closepath
+stroke
+gsave 10 dict begin
+14.00 /courier set_font
+91 252 moveto
+(..\\)
+[8.4 8.4 8.4]
+xshow
+48 220 moveto
+(  jwords.ijf )
+[8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4]
+xshow
+48 204 moveto
+(  jtests.ijf )
+[8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4]
+xshow
+48 188 moveto
+(  jgroups.ijf)
+[8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4]
+xshow
+48 172 moveto
+(  jsuites.ijf)
+[8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4]
+xshow
+48 156 moveto
+(  jmacros.ijf)
+[8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4]
+xshow
+48 140 moveto
+(  juses.ijf  )
+[8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4]
+xshow
+24 108 moveto
+(root directory     )
+[8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4]
+xshow
+24 92 moveto
+(holds binary jfiles)
+[8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4]
+xshow
+end grestore
+end grestore
+% alien
+gsave 10 dict begin
+newpath 312 60 moveto
+228 60 lineto
+228 24 lineto
+312 24 lineto
+closepath
+stroke
+gsave 10 dict begin
+0.333 1.000 0.392 nodecolor
+14.00 /courier set_font
+236 37 moveto
+(alien   )
+[8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4]
+xshow
+end grestore
+end grestore
+% root->alien
+newpath 192 98 moveto
+204 88 216 78 228 69 curveto
+229 68 231 67 233 66 curveto
+stroke
+gsave 10 dict begin
+solid
+1 setlinewidth
+0.000 0.000 0.000 edgecolor
+newpath 235 69 moveto
+241 60 lineto
+231 63 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+newpath 235 69 moveto
+241 60 lineto
+231 63 lineto
+closepath
+stroke
+end grestore
+% backup
+gsave 10 dict begin
+newpath 312 114 moveto
+228 114 lineto
+228 78 lineto
+312 78 lineto
+closepath
+stroke
+gsave 10 dict begin
+0.333 1.000 0.392 nodecolor
+14.00 /courier set_font
+236 91 moveto
+(backup  )
+[8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4]
+xshow
+end grestore
+end grestore
+% root->backup
+newpath 192 134 moveto
+203 129 214 123 224 119 curveto
+stroke
+gsave 10 dict begin
+solid
+1 setlinewidth
+0.000 0.000 0.000 edgecolor
+newpath 226 122 moveto
+233 114 lineto
+223 116 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+newpath 226 122 moveto
+233 114 lineto
+223 116 lineto
+closepath
+stroke
+end grestore
+% document
+gsave 10 dict begin
+newpath 312 168 moveto
+228 168 lineto
+228 132 lineto
+312 132 lineto
+closepath
+stroke
+gsave 10 dict begin
+0.333 1.000 0.392 nodecolor
+14.00 /courier set_font
+236 145 moveto
+(document)
+[8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4]
+xshow
+end grestore
+end grestore
+% root->document
+newpath 192 163 moveto
+201 162 210 160 218 159 curveto
+stroke
+gsave 10 dict begin
+solid
+1 setlinewidth
+0.000 0.000 0.000 edgecolor
+newpath 219 162 moveto
+228 157 lineto
+218 156 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+newpath 219 162 moveto
+228 157 lineto
+218 156 lineto
+closepath
+stroke
+end grestore
+% dump
+gsave 10 dict begin
+newpath 312 222 moveto
+228 222 lineto
+228 186 lineto
+312 186 lineto
+closepath
+stroke
+gsave 10 dict begin
+0.333 1.000 0.392 nodecolor
+14.00 /courier set_font
+236 199 moveto
+(dump    )
+[8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4]
+xshow
+end grestore
+end grestore
+% root->dump
+newpath 192 191 moveto
+201 192 210 194 218 195 curveto
+stroke
+gsave 10 dict begin
+solid
+1 setlinewidth
+0.000 0.000 0.000 edgecolor
+newpath 218 198 moveto
+228 197 lineto
+219 192 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+newpath 218 198 moveto
+228 197 lineto
+219 192 lineto
+closepath
+stroke
+end grestore
+% script
+gsave 10 dict begin
+newpath 312 276 moveto
+228 276 lineto
+228 240 lineto
+312 240 lineto
+closepath
+stroke
+gsave 10 dict begin
+0.333 1.000 0.392 nodecolor
+14.00 /courier set_font
+236 253 moveto
+(script  )
+[8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4]
+xshow
+end grestore
+end grestore
+% root->script
+newpath 192 220 moveto
+203 225 214 231 224 235 curveto
+stroke
+gsave 10 dict begin
+solid
+1 setlinewidth
+0.000 0.000 0.000 edgecolor
+newpath 223 238 moveto
+233 240 lineto
+226 232 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+newpath 223 238 moveto
+233 240 lineto
+226 232 lineto
+closepath
+stroke
+end grestore
+% suite
+gsave 10 dict begin
+newpath 312 330 moveto
+228 330 lineto
+228 294 lineto
+312 294 lineto
+closepath
+stroke
+gsave 10 dict begin
+0.333 1.000 0.392 nodecolor
+14.00 /courier set_font
+236 307 moveto
+(suite   )
+[8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4]
+xshow
+end grestore
+end grestore
+% root->suite
+newpath 192 257 moveto
+204 267 216 276 228 285 curveto
+229 286 230 287 232 288 curveto
+stroke
+gsave 10 dict begin
+solid
+1 setlinewidth
+0.000 0.000 0.000 edgecolor
+newpath 230 291 moveto
+240 294 lineto
+234 285 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+newpath 230 291 moveto
+240 294 lineto
+234 285 lineto
+closepath
+stroke
+end grestore
+% ac
+gsave 10 dict begin
+gsave 10 dict begin
+14.00 /courier set_font
+356 37 moveto
+(unused - reserved for files related to this dictionary    )
+[8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4]
+xshow
+end grestore
+end grestore
+% alien->ac
+gsave 10 dict begin
+0.000 0.000 1.000 edgecolor
+newpath 312 42 moveto
+320 42 329 42 338 42 curveto
+stroke
+gsave 10 dict begin
+solid
+1 setlinewidth
+0.000 0.000 1.000 edgecolor
+newpath 338 46 moveto
+348 42 lineto
+338 39 lineto
+closepath
+fill
+0.000 0.000 1.000 edgecolor
+newpath 338 46 moveto
+348 42 lineto
+338 39 lineto
+closepath
+stroke
+end grestore
+end grestore
+% bc
+gsave 10 dict begin
+gsave 10 dict begin
+14.00 /courier set_font
+356 91 moveto
+(binary backups created by packd                           )
+[8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4]
+xshow
+end grestore
+end grestore
+% backup->bc
+gsave 10 dict begin
+0.000 0.000 1.000 edgecolor
+newpath 312 96 moveto
+320 96 329 96 338 96 curveto
+stroke
+gsave 10 dict begin
+solid
+1 setlinewidth
+0.000 0.000 1.000 edgecolor
+newpath 338 100 moveto
+348 96 lineto
+338 93 lineto
+closepath
+fill
+0.000 0.000 1.000 edgecolor
+newpath 338 100 moveto
+348 96 lineto
+338 93 lineto
+closepath
+stroke
+end grestore
+end grestore
+% docc
+gsave 10 dict begin
+gsave 10 dict begin
+14.00 /courier set_font
+356 145 moveto
+(unused - reserved for documents related to this dictionary)
+[8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4]
+xshow
+end grestore
+end grestore
+% document->docc
+gsave 10 dict begin
+0.000 0.000 1.000 edgecolor
+newpath 312 150 moveto
+320 150 329 150 338 150 curveto
+stroke
+gsave 10 dict begin
+solid
+1 setlinewidth
+0.000 0.000 1.000 edgecolor
+newpath 338 154 moveto
+348 150 lineto
+338 147 lineto
+closepath
+fill
+0.000 0.000 1.000 edgecolor
+newpath 338 154 moveto
+348 150 lineto
+338 147 lineto
+closepath
+stroke
+end grestore
+end grestore
+% dmpc
+gsave 10 dict begin
+gsave 10 dict begin
+14.00 /courier set_font
+356 199 moveto
+(J dump scripts generated by make                          )
+[8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4]
+xshow
+end grestore
+end grestore
+% dump->dmpc
+gsave 10 dict begin
+0.000 0.000 1.000 edgecolor
+newpath 312 204 moveto
+320 204 329 204 338 204 curveto
+stroke
+gsave 10 dict begin
+solid
+1 setlinewidth
+0.000 0.000 1.000 edgecolor
+newpath 338 208 moveto
+348 204 lineto
+338 201 lineto
+closepath
+fill
+0.000 0.000 1.000 edgecolor
+newpath 338 208 moveto
+348 204 lineto
+338 201 lineto
+closepath
+stroke
+end grestore
+end grestore
+% scrc
+gsave 10 dict begin
+gsave 10 dict begin
+14.00 /courier set_font
+356 253 moveto
+(J script files generated by lg, make and mls              )
+[8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4]
+xshow
+end grestore
+end grestore
+% script->scrc
+gsave 10 dict begin
+0.000 0.000 1.000 edgecolor
+newpath 312 258 moveto
+320 258 329 258 338 258 curveto
+stroke
+gsave 10 dict begin
+solid
+1 setlinewidth
+0.000 0.000 1.000 edgecolor
+newpath 338 262 moveto
+348 258 lineto
+338 255 lineto
+closepath
+fill
+0.000 0.000 1.000 edgecolor
+newpath 338 262 moveto
+348 258 lineto
+338 255 lineto
+closepath
+stroke
+end grestore
+end grestore
+% suic
+gsave 10 dict begin
+gsave 10 dict begin
+14.00 /courier set_font
+356 307 moveto
+(J test scripts generated by make                          )
+[8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4 8.4]
+xshow
+end grestore
+end grestore
+% suite->suic
+gsave 10 dict begin
+0.000 0.000 1.000 edgecolor
+newpath 312 312 moveto
+320 312 329 312 338 312 curveto
+stroke
+gsave 10 dict begin
+solid
+1 setlinewidth
+0.000 0.000 1.000 edgecolor
+newpath 338 316 moveto
+348 312 lineto
+338 309 lineto
+closepath
+fill
+0.000 0.000 1.000 edgecolor
+newpath 338 316 moveto
+348 312 lineto
+338 309 lineto
+closepath
+stroke
+end grestore
+end grestore
+endpage
+showpage
+grestore
+%%PageTrailer
+%%EndPage: 1
+%%Trailer
+%%Pages: 1
+end
+restore
+%%EOF

@@ -1,0 +1,70 @@
+% JOD dev log (Latex2e document)
+%
+% start - January 16 2008
+%
+% This document is the root for JOD system documentation.  All JOD
+% documentation will be derived from the LaTeX files referenced 
+% by this file.
+%
+% To compile this document you need to:
+%
+% 1) Set your texinput directories to scan for the (jodgraphics)
+%    subdirectory.  In MikTeX this can be done by setting 
+%    the TEXINPUTS environment variable.
+
+\documentclass[12pt]{article}
+
+% graphicx is the standard eps oriented LaTeX2e graphics bundle
+% subfigure handles figures that contain subfigures
+% floatflt provides for text wrapping around small figures and tables
+\usepackage{color,graphicx,subfigure}
+
+% The hyperref package generates \special commands that
+% map LaTeX cross references into PDF cross references
+ \usepackage[
+            dvips,
+            colorlinks,
+            linkcolor=blue,
+            pdfauthor={John D. Baker},
+            pdftitle={JOD DEV LOG},
+            pdfsubject={JOD programming J diary},
+            pdfcreator={MikTeX+LaTeX with hyperref package},
+            pdfkeywords={j,jsoftware,database,dictionary,utilities,programming},
+            ]{hyperref}
+
+\title{JOD Development Log \thanks{Last document generation: \today}}
+\author{John D. Baker \\
+        \small \texttt{bakerjd99@gmail.com} \normalsize}
+
+
+\date{Document Started: January 16, 2008}
+
+\makeindex
+
+\begin{document}
+
+\maketitle
+
+\begin{figure}[htbp]
+  \centering
+  \includegraphics[width=2in]{joddev}
+  \caption[JOD Development]{Development diary for JOD}
+  \label{eps:joddev}
+\end{figure}
+
+%\begin{abstract}
+%\end{abstract}
+
+\newpage
+
+\tableofcontents
+
+\maketitle
+
+\input jodlog1.tex
+
+\newpage 
+
+\listoffigures
+
+\end{document}
