@@ -15,6 +15,7 @@ if "%dbpath%" == "" goto Exception01
 rem copy source files 
 copy /y *.tex %dbpath%
 copy /y *.bat %dbpath%
+copy /y *.sh %dbpath%
 copy /y .gitignore %dbpath%
 copy /y *.bib %dbpath%
 copy /y *.pdf %dbpath%
