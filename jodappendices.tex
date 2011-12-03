@@ -16,7 +16,7 @@
    \begin{enumerate}
 	\item  \href{http://www.jsoftware.com/jwiki/Addons/general/jod}{\texttt{jod}} 
 	\cite{baker:jod}:  This is the only package that must be installed to run JOD.  
-	It contains  JOD system code, documentation and other supporting files.
+	It contains  JOD system code and supporting files.
 	\item  \href{http://www.jsoftware.com/jwiki/Addons/general/jodsource}{\texttt{jodsource}}
 	 \cite{baker:jodsource}: This addon is single \texttt{zip} file containing 
 	  three JOD dictionary dumps.  JOD dictionary dumps\index{dictionary!source!\texttt{jodsource}}
@@ -49,7 +49,11 @@
    JOD groups and suites, (see \hyperlink{il:grp}{\texttt{grp}} on page~\pageref{ss:grp}), are defined with respect to a particular path.  This path is called the \emph{reference path}.  The reference path\index{reference path} is stored when the first put dictionary group or 
 suite is defined.   Group and suite generation with \hyperlink{il:make}{\texttt{make}}, \hyperlink{il:mls}{\texttt{mls}} and  \hyperlink{il:lg}{\texttt{lg}}, (see pages~\pageref{ss:make}, \pageref{ss:mls}, \pageref{ss:lg}), check the current path against the reference path.  If the paths do not match an error is returned.
 
-Reference paths display current dictionary names but the path is stored as a unique list of extended dictionary identification numbers: \texttt{DIDNUM}s.  On Windows systems the \texttt{DIDNUM}\index{DIDNUM} is based on \texttt{GUID}s.  \texttt{DIDNUM}s insure reference paths are unique.
+Reference paths display current dictionary names but the path is 
+stored as a unique list of extended dictionary 
+identification numbers: \texttt{DIDNUM}s.  On Windows and Linux 
+systems the \texttt{DIDNUM}\index{DIDNUM} is based 
+on \texttt{GUID}s.  \texttt{DIDNUM}s insure reference paths are unique.
 
 
 A reference path can only be reset by clearing the put dictionary\index{put dictionary}
@@ -68,15 +72,15 @@ A reference path can only be reset by clearing the put dictionary\index{put dict
 |1|+--------+--+-----+-----+-------+-------+------+---------------------+|
 | ||        |--|Words|Tests|Groups*|Suites*|Macros|*Path                ||
 | |+--------+--+-----+-----+-------+-------+------+---------------------+|
-| ||budget  |rw|14   |0    |2      |0      |0     |\budget              ||
+| ||budget  |rw|14   |0    |2      |0      |0     |/budget              ||
 | |+--------+--+-----+-----+-------+-------+------+---------------------+|
-| ||cbh     |rw|145  |0    |6      |0      |6     |\cbh\utils           ||
+| ||cbh     |rw|145  |0    |6      |0      |6     |/cbh/utils           ||
 | |+--------+--+-----+-----+-------+-------+------+---------------------+|
-| ||flick   |ro|296  |3    |9      |0      |9     |\flick\utils         ||
+| ||flick   |ro|296  |3    |9      |0      |9     |/flick/utils         ||
 | |+--------+--+-----+-----+-------+-------+------+---------------------+|
-| ||flickdev|rw|96   |2    |2      |0      |2     |\flickdev\flick\utils||
+| ||flickdev|rw|96   |2    |2      |0      |2     |/flickdev/flick/utils||
 | |+--------+--+-----+-----+-------+-------+------+---------------------+|
-| ||gps     |rw|11   |0    |0      |0      |0     |\gps\utils           ||
+| ||gps     |rw|11   |0    |0      |0      |0     |/gps/utils           ||
 | |+--------+--+-----+-----+-------+-------+------+---------------------+|
 +-+----------------------------------------------------------------------+
 \end{lstlisting}
@@ -245,12 +249,12 @@ objects of all dictionaries but will only be \hyperlink{il:dpset}{\texttt{dpset}
 	  \item Exit J
 		\item Delete the files
 	  \begin{description}
-		  \item \verb|~addons\general\jod\jmaster.ijf|
-		  \item \verb|~addons\general\jod\jod.ijn|
+		  \item \verb|~addons/general/jod/jmaster.ijf|
+		  \item \verb|~addons/general/jod/jod.ijn|
   	\end{description}
 		\item Edit 
   	\begin{description}
-	 	  \item \verb|~addons\general\jod\jodparms.ijs|
+	 	  \item \verb|~addons/general/jod/jodparms.ijs|
   	\end{description}
 		\item Restart J and reload JOD with 
 		\begin{description}
@@ -322,7 +326,7 @@ NB.*jodprofile s-- JOD dictionary profile.
 NB.
 NB. An example JOD profile script. Save this script in
 NB.
-NB. ~addons\general\jod\
+NB. ~addons/general/jod
 NB.
 NB. with the name jodprofile.ijs
 NB.
@@ -343,17 +347,17 @@ dpset 'RESETME'
 
 NB. project shortcuts - use explicit 
 NB. defintions so it's easy to reset the group/suite
-ag_z_=: 3 : 'JODGRP addgrp y'
-dg_z_=: 3 : 'JODGRP delgrp y'
+ag_ijod_=: 3 : 'jodg addgrp y'
+dg_ijod_=: 3 : 'jodg delgrp y'
    
 NB. referenced group words not in group
-nx_z_=: 3 : '(allrefs  }. gn) -. gn=. grp JODGRP'
+nx_ijod_=: 3 : '(allrefs  }. gn) -. gn=. grp jodg'
    
 NB. short help for group words
-hg_z_=: [: hlpnl [: }. grp
+hg_ijod_=: [: hlpnl [: }. grp
 
 NB. regenerate put dictionary word cross references
-reref_z_=: 3 : '(n,.s) #~ -.;0{"1 s=.0 globs&>n=.}.revo'''' [ y'
+reref_ijod_=: 3 : '(n,.s) #~ -.;0{"1 s=.0 globs&>n=.}.revo'''' [ y'
 
 NB. open working dictionaries and run project macros
 NB. set up current project (1 suppress IO, 0 or elided display)
@@ -367,7 +371,7 @@ NB. 1 rm 'prjjod' [ smoutput od ;:'joddev jod utils'
 \verb|joduserconfigbak.ijs| is an optional configuration\index{configuration!\texttt{joduserconfigbak.ijs}} 
 script. \verb|joduserconfigbak.ijs| is in the directory.
 \begin{verbatim}
-  ~addons\general\jod\jodbak
+  ~addons/general/jod/jodbak
 \end{verbatim}
 \verb|joduserconfigbak.ijs| can be used to redefine class words before
 any JOD objects are created. 
@@ -380,7 +384,7 @@ NB. can be used to redefine and customize various class nouns. To
 NB. make  this script  active  rename it to joduserconfig.ijs and
 NB. copy it, with your edits, to the main jod directory:
 NB.
-NB. ~addons\general\jod
+NB. ~addons/general/jod
 NB.
 NB. The nouns listed below are good candidates for redefinition.
 
@@ -419,16 +423,22 @@ to store load scripts generated by \hyperlink{il:mls}{\texttt{mls}}: see page~\p
 NB. WARNING: JOD managed section do not edit!
 NB.<JOD_Load_Scripts>
 buildpublic_j_ 0 : 0
-jodtester  c:\joddictionaries\602\joddev\script\jodtester
-bstats  c:\joddictionaries\602\utils\script\bstats
-remdots  c:\joddictionaries\602\utils\script\remdots
-wordformation  c:\joddictionaries\602\utils\script\wordformation
-xmlutils  c:\joddictionaries\602\utils\script\xmlutils
-analystgraphs  c:\joddictionaries\602\cbh\script\analystgraphs
-flickrAPI  c:\joddictionaries\602\flickrutdev\script\flickrAPI
+bstats  c:/jod/j701/utils/script/bstats
+xmlutils  c:/jod/j701/utils/script/xmlutils
+analystgraphs  c:/jod/j701/franklin/script/analystgraphs
+exif  c:/jod/j701/smugdev/script/exif
+jodtester  c:/jod/j701/joddev/script/jodtester
+waypoints  c:/jod/j701/gps/script/waypoints
+Weeks  c:/jod/j701/docs/script/Weeks
+MweccTeXPreprocess  c:/jod/j701/docs/script/MweccTeXPreprocess
+DudTeXPreprocess  c:/jod/j701/docs/script/DudTeXPreprocess
+BiblioHelper  c:/jod/j701/docs/script/BiblioHelper
+RecodeSchedZ  c:/jod/j701/mwecc/script/RecodeSchedZ
 )
-NB.</JOD_Load_Scripts>
 \end{lstlisting}
+
+\newpage
+\input{jodvcsys}
   
 \newpage
 \input{jodhung}

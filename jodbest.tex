@@ -9,7 +9,7 @@ found in the \texttt{General} lab category.
 
 \begin{lstlisting}[frame=single,framerule=0pt]
 NB. create a master JOD directory root outside of J's directories.
-newd 'bptest';'c:\jodlabs\602\bptest';'best practices dictionary'
+newd 'bptest';'c:/jodlabs/j701/bptest';'best practices dictionary'
 \end{lstlisting}
 
 \item[Backup backup and then backup.]  It's easy to backup with JOD so backup often: see 
@@ -74,18 +74,20 @@ In my opinion this is ``not even wrong!''  Good documentation elevates code. In
 \hyperlink{il:put}{\texttt{put}} on page~\pageref{ss:put} and \hyperlink{il:nw}{\texttt{nw}} on page~\pageref{ss:nw}.
 
 
-\item[Define your own JOD shortcuts.]  JOD words can be used within arbitrary J programs.  If you don't find a JOD primitive that meets your needs do a little programming.
+\item[Define your own JOD shortcuts.]  JOD words can be used 
+within arbitrary J programs.  If you don't find a JOD primitive that meets 
+your needs do a little programming.
 
 \begin{lstlisting}[frame=single,framerule=0pt]
 NB. describe a JOD group
-hg_z_=: [: hlpnl [: }. grp
+hg_ijod_=: [: hlpnl [: }. grp
    
 NB. re-reference put dictionary show any errors
-reref_z_=: 3 : '(n,.s) #~ -.;0{"1 s=.0 globs&>n=.}.revo'''' [ y'
+reref_ijod_=: 3 : '(n,.s) #~ -.;0{"1 s=.0 globs&>n=.}.revo'''' [ y'
    
 NB. words referenced by group words that are not in the group
-JODGRP_z_=: 'agroup'
-nx_z_=: 3 : '(allrefs  }. gn) -. gn=. grp JODGRP'
+jodg_ijod_=: 'agroup'
+nx_ijod_=: 3 : '(allrefs  }. gn) -. gn=. grp jodg'
    
 NB. missing from (agroup)
 nx ''
@@ -97,7 +99,7 @@ nx ''
 
 \begin{lstlisting}[frame=single,framerule=0pt]
 NB. define document command script - {~N~} is word name placeholder
-DOCUMENTCOMMAND_z_ =: 0 : 0
+DOCUMENTCOMMAND_ijod_ =: 0 : 0
 smoutput pr '{~N~}'
 ) 
    
@@ -106,7 +108,9 @@ nw 'bpword'
 \end{lstlisting}
  
 
-\item[Define JOD project macros.]  When programming with JOD you typically open dictionaries, load system scripts and define nouns. This can be done in a project macro script: see \hyperlink{il:rm}{\texttt{rm}} on page~\pageref{ss:rm}.
+\item[Define JOD project macros.]  When programming with JOD you typically 
+open dictionaries, load system scripts and define nouns. This can be done in 
+a project macro script: see \hyperlink{il:rm}{\texttt{rm}} on page~\pageref{ss:rm}.
 
 \begin{lstlisting}[frame=single,framerule=0pt]
 NB. define a project macro - I use the prefix prj for such scripts
@@ -116,11 +120,11 @@ NB. standard j scripts
 require 'debug task'
 
 NB. local script nouns 
-JODGRP_z_=: 'sunmoon'
-JODSUI_z_=: 'sunmoontests'
+jodg_ijod_=: 'sunmoon'
+jods_ijod_=: 'sunmoontests'
 
 NB. put/xref
-DOCUMENTCOMMAND_z_ =: 'smoutput pr ''{~N~}'''
+DOCUMENTCOMMAND_ijod_ =: 'smoutput pr ''{~N~}'''
 )
    
 NB. store macro
@@ -139,30 +143,27 @@ page~\pageref{ss:rm} or \hyperlink{il:rtt}{\texttt{rtt}} on page~\pageref{ss:rtt
 NB.*make_load_scripts s-- generates load scripts.
 NB.
 NB. Can run as a tautology test see: rtt 
-NB.
-NB. created: 2008jan25
 
+cocurrent 'base'
 require 'general/jod'
-coclass 'AAAmake999'
+coclass 'AAAmake999' [ coerase <'AAAmake999'
 
 >0{OPENDIC=: did 0
 >0{od 'utils' [ 3 od ''  
 
 NB. utils scripts
 >0{mls 'bstats'
->0{mls 'remdots'
->0{mls 'wordformation'
 >0{mls 'xmlutils'
 >0{3 od ''
 
-NB. jod scripts
+NB. jod tester 
 >0{od ;:'joddev jod utils'
 >0{mls 'jodtester'
 >0{3 od ''
 
-NB. flickr utils 
->0{od ;:'flickrutdev flickrut utils'
-1 rtt 'make_flickrXthumbs'
+NB. exif image utils 
+>0{od ;:'smugdev smug image utils'
+>0{mls 'exif'
 >0{3 od ''
 
 cocurrent 'AAAmake999'
@@ -175,9 +176,10 @@ coerase <'AAAmake999'
  
 \item[Edit your \texttt{jodprofile.ijs}.]  When JOD loads the profile script
 \begin{verbatim}
- ~addons\general\jod\jodprofile.ijs
+ ~addons/general/jod/jodprofile.ijs
 \end{verbatim}
-is run: see appendix~\ref{ap:jodprofile} on page~\pageref{ap:jodprofile}.  Use this script to customize JOD. Note how you can execute project macros when JOD loads with sentences like:
+is run: see appendix~\ref{ap:jodprofile} on page~\pageref{ap:jodprofile}.  Use this 
+script to customize JOD. Note how you can execute project macros when JOD loads with sentences like:
 
 \begin{lstlisting}[frame=single,framerule=0pt]
 NB. open required dictionaries and run project macro
@@ -185,7 +187,9 @@ rm 'prjsunmoon' [ od ;:'bpcopy bptest'
 \end{lstlisting}
  
 
-\item[Use JOD help and documentation.]  JOD documentation is available in two forms.  A PDF document \verb|jod.pdf|  is installed with the addon. For online help use  \hyperlink{il:jodhelp}{\texttt{jodhelp}}: see page~\pageref{ss:jodhelp}.
+\item[Use JOD help and documentation.]  JOD documentation is available in two forms:  
+a single PDF document \verb|jod.pdf| and online Google Documents pages. 
+Both forms can be read with \hyperlink{il:jodhelp}{\texttt{jodhelp}}: see page~\pageref{ss:jodhelp}.
 
 \begin{lstlisting}[frame=single,framerule=0pt]
 NB. open JOD online help - requires internet connection

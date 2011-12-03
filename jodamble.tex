@@ -25,7 +25,7 @@
 \usepackage{times}
 
 \usepackage{colortbl}
-\usepackage[table]{xcolor}
+\usepackage[table,dvipsnames]{xcolor}
 
 % KINDLE sizing
 %\usepackage{breqn}          % automatic equation breaking
@@ -62,7 +62,8 @@
 \pagestyle{fancy}
 
 % color command can be forward referenced in preamble
-\lfoot{\textcolor{CodeComment}{\starburst{JOD}} \emph{\jodrelease}}
+%\lfoot{\textcolor{CodeComment}{\starburst{\textcolor{red}{J}O\textcolor{blue}{D}}} \emph{\jodrelease}}
+\lfoot{\includegraphics[width=0.8cm]{jodcubelogo00} \emph{\jodrelease}}
 \rfoot{\emph{\today}}
 
 % KINDLE footer/header
@@ -99,6 +100,7 @@
 %\definecolor{CodeComment}{rgb}{1,0.5,0}              % orange {1,0.5,0} 
 %\definecolor{CodeComment}{rgb}{0,0.08,0.45}           % dark blue {0,0.08,0.45}
 \definecolor{CodeComment}{rgb}{0,0.50,0.00}           % dark green {0,0.45,0.08}
+\definecolor{TableStripes}{gray}{0.9}                 % odd/even background in tables
 
 \lstdefinelanguage{jdoc}
 {morekeywords={Monad,Dyad},

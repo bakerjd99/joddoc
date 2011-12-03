@@ -54,8 +54,10 @@
 
 \section{Installing and Configuring JOD}
 
-Before using JOD you need to install the current Windows version of J.\footnote{Currently there are no Linux or Mac versions of JOD.  Porting JOD to these systems would be a simple task
-and if you are interested in helping me create such a port please contact me at:  
+Before using JOD you need to install the current Windows or Linux version of J.\footnote{JOD runs on 
+ J \texttt{6.0x} and  J \texttt{7.0x} Windows systems. The Linux version of JOD requires J
+\texttt{7.0x}. Currently there no are Mac versions of JOD. Porting JOD to the Mac is a simple task.
+If you are interested in helping me create such a port please contact me at:  
 \texttt{bakerjd99@gmail.com}
 } J can be downloaded from \href{http://www.jsoftware.com}{\texttt{www.jsoftware.com}}.
 
@@ -63,7 +65,7 @@ JOD can be installed in two ways.
 \begin{enumerate}
 	\item Use \href{http://202.67.223.49/jwiki/Addons/general/jod}{\texttt{JAL}}\index{installation!JAL}, J's package manager 
 	\cite{jwiki:jal}, to download JOD. \emph{Using JAL is the easiest way to install and maintain JOD.}
-	\item Download the current JOD distribution from \href{http://bakerjd99.googlepages.com/home}{\emph{The JOD Pages}}\index{installation!\emph{The JOD Pages}} \cite{baker:jodpages} and unzip, preserving directories, to the relative directory\footnote{Paths that begin with the \textbf{\texttt{\~}} character are relative directories. The full path can be obtained with \texttt{jpath} verb. } \verb|~addons\general\jod|
+	\item Download the current JOD distribution from \href{http://bakerjd99.wordpress.com/the-jod-page/}{\emph{The JOD Page}}\index{installation!\emph{The JOD Page}} \cite{baker:jodpages} and unzip, preserving directories, to the relative directory\footnote{Paths that begin with the \textbf{\texttt{\~}} character are relative directories. The full path can be obtained with \texttt{jpath} verb. } \verb|~addons/general/jod|
 \end{enumerate}
 
 After installation JOD can be loaded with:
@@ -73,20 +75,20 @@ After installation JOD can be loaded with:
 
 To configure and maintain JOD you must be aware of the following:
 \begin{enumerate}
-	\item JOD uses the J startup file \verb|~config\startup.ijs| to store load scripts: see 
+	\item JOD uses the J startup file \verb|~config/startup.ijs| to store load scripts: see 
 	\hyperlink{il:mls}{\texttt{mls}} on page~\pageref{ss:mls}.  Exercise caution when manually
 	editing JOD's load script section.
-	\item To run all JOD labs\index{labs} you must download and install the\index{Addon}
+	\item To run JOD labs\index{labs} you must download and install the\index{Addon}
 	 \href{http://www.jsoftware.com/jwiki/Addons/general/jodsource}{\texttt{jodsource}} addon \cite{baker:jodsource}. 
 	 \texttt{jodsource} can be installed with \texttt{JAL}.
 	\item JOD labs and test scripts assume some J folders have been configured.  Open J's
 	configuration dialog,\index{dialog} see Figure~\ref{eps:jodfolders} on page~\pageref{eps:jodfolders}, and
 	define folders like:
 	\begin{lstlisting}[frame=single,framerule=0pt] 
-   JOD               c:\joddictionaries\602 
-   JODSOURCE         c:\jodtest\labtesting
-   JODPROJECT        c:\joddictionaries\602\joddev   
-   JODTEST           c:\jodtest\test
+   JOD               c:/jod/701
+   JODSOURCE         c:/jodtest/labtesting
+   JODPROJECT        c:/jod/701/joddev   
+   JODTEST           c:/jodtest/test
   \end{lstlisting}
   \emph{Use fully qualified directory paths that are not in the J install tree.}
 \end{enumerate} 

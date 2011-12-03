@@ -8,9 +8,10 @@ notation: see appendix~\ref{ap:jodhung} on
 page~\pageref{ap:jodhung}.
 
 When JOD loads it creates a number of locale classes,  (see appendix~\ref{ap:classes}
-on page~\pageref{ap:classes}), and defines a \texttt{\textbf{z}} 
-locale\index{z interface} user interface.
-JOD's \texttt{\textbf{z}} user interface consists of definitions like:  
+on page~\pageref{ap:classes}), and defines an \texttt{\textbf{ijod}}\index{ijod interface} user 
+interface locale: \texttt{\textbf{ijod}} 
+is placed on the \texttt{\textbf{base}} locale's path.
+JOD's \texttt{\textbf{ijod}} user interface consists of definitions like:  
 \begin{lstlisting}[frame=single,framerule=0pt]
    get     NB. display get interface
 get_1_ ::jodsf
@@ -56,12 +57,12 @@ result.
   JOD system script:
   
 \begin{verbatim}
-  ~addons\general\jod\jod.ijs
+  ~addons/general/jod/jod.ijs
 \end{verbatim}
 
-  is an example of a compressed J script. In it�s fully commented
-  form this script is about 203 kilobytes when squeezed with
-  \texttt{compj} it shrinks to about 69 kilobytes.
+  is an example of a compressed J script. In its fully commented
+  form this script is about 216 kilobytes when squeezed with
+  \texttt{compj} it shrinks to about 72 kilobytes.
   \texttt{compj} does not compress words in JOD
   dictionaries it returns a compressed script result.
   
@@ -141,8 +142,8 @@ NB. !(*)=. THIS STUFF IS INSIDE AN OBJECT
       JOD source code.  JOD source code is not 
      distributed with JOD.  You can get JOD source code by installing
      the  \href{http://www.jsoftware.com/jwiki/Addons/general/jodsource}{\texttt{jodsource}}
-     addon or by downloading \jodsource  from 
-     \href{http://bakerjd99.googlepages.com/home}{\emph{The JOD Pages}}.  
+     addon or by downloading \verb|jodsource.zip| from 
+     \href{http://bakerjd99.wordpress.com/the-jod-page/}{\emph{The JOD Page}} \cite{baker:jodpages}.  
      JOD source is distributed as JOD dictionary dump scripts.
 
 \begin{wordhead}
@@ -513,8 +514,8 @@ If JOD, or the host OS crashes, the master file could be
 	  \item Exiting J.
 	  \item Deleting the files:
 	\begin{description}
-		\item \verb|~addons\general\jod\jmaster.ijf| 
-		\item \verb|~addons\general\jod\jod.ijn| 
+		\item \verb|~addons/general/jod/jmaster.ijf| 
+		\item \verb|~addons/general/jod/jod.ijn| 
 	\end{description}	
 	  \item Restarting J.
 	  \item Reloading JOD with: \verb|load 'general/jod'|
@@ -727,7 +728,7 @@ A basic JOD rule is that if you can \texttt{put} it you can \texttt{get} it.
   NB. get group scripts
   2 7 get ;:'groupies cool'  
   
-  NB. get group explaination text
+  NB. get group explanation text
   2 8 get 'group';'explain'  
   
   NB. get group document text 
@@ -1022,6 +1023,16 @@ JOD times are derived from \emph{local} computer clock times. \texttt{UTC} is no
 The monad returns help for specific words and displays an index.  
 The dyad displays \verb|jod.pdf| and lists all words that have online help.
 
+\verb|jod.pdf| is omitted from the JOD addon \texttt{JAL} package to
+reduce download size. \texttt{jodhelp} will browse an online 
+version of \verb|jod.pdf| if it doesn't find it in the directory.
+\begin{lstlisting}[frame=single,framerule=0pt]
+  NB. JOD addon PDF document directory
+  ~addons/general/jod/joddoc/pdfdoc
+\end{lstlisting}
+If you download \verb|jod.pdf| and place it in this directory
+\texttt{jodhelp} will use the local copy.
+
 \begin{wordhead}
 \monad & jodhelp clWord \\
 \end{wordhead}
@@ -1084,7 +1095,7 @@ A macro must be coded as a J script, (code 21), to be used as a postprocessor.
 \end{lstlisting}
 
 
-\subsection{\texttt{locgrp} --- list groups/suites with word/test}
+\subsection{\texttt{locgrp} --- list groups/suites with word/test}\label{ss:locgrp}
 
 \texttt{locgrp} lists groups and suites with word or test \texttt{(y)}.   
 A word or test can belong to many groups or suites. 
@@ -1131,8 +1142,11 @@ This can be overridden with a negative option code.
   NB. used as the dump file name.
   make '' 
 
-  NB. dump to specified file 
-  make 'c:\dump\on\me.ijs'
+  NB. dump to specified Windows file
+  make 'c:/dump/on/me.ijs'
+  
+  NB. Linux paths must begin with /
+  make '/home/john/temp/joddumps/metoo.ijs'
 \end{lstlisting}
 
 \begin{wordhead}
@@ -1180,9 +1194,10 @@ load\index{load scripts} scripts.\index{scripts!generation!\texttt{mls}}
 The generated script is added 
 to the current user's start up script
 \begin{verbatim}
-  ~config\startup.ijs
+  ~config/startup.ijs
 \end{verbatim}
-and inserted in the session's \verb|PUBLIC_j_| table.
+and inserted in the session's \verb|Public_j_| table.\footnote{
+On J \texttt{6.0x} systems the public script noun is named \texttt{PUBLIC\_J\_}.}
 
 An \verb|mls| load script\index{load scripts} is independent of JOD and can be used 
 like any other J load script, for example:
@@ -1251,11 +1266,14 @@ see subsection~\ref{ss:genscripts} Generated Script Structure, on page~\pageref{
   newd 'makemydictionary'
   
   NB. create with name in location 
-  newd 'new';'c:\location\' 
-  newd 'deep';'d:\we\can\root\dictionaries\down\deep'
+  newd 'new';'c:/location/' 
+  newd 'deep';'d:/we/can/root/dictionaries/down/deep'
+  
+  NB. On Linux create dictionaries in your $HOME directory
+  newd 'homeboy';'/home/john/where/the/dictionaries/are'
 
   NB. optional third item is dictionary documentation
-  newd 'new';'c:\location\';'Dictionary documentation ...' 
+  newd 'new';'c:/location/';'Dictionary documentation ...' 
 \end{lstlisting}
 
 \subsection{\texttt{notgrp} --- not grouped}
@@ -1287,7 +1305,12 @@ suites. Useful for finding loose ends and dead code.
 
 \subsection{\texttt{nw} --- edit a new explicit word}\label{ss:nw} 
 
-\hypertarget{il:nw}{\texttt{nw}} edits\index{edit!\texttt{nw}} a new explicit word in an edit window using JOD format conventions.  \texttt{nw} will append the character list \texttt{DOCUMENTCOMMAND} to the text placed in an edit window.  This allows the user to define an arbitrary script that is run when a word is defined with \texttt{CTRL-W}.
+\hypertarget{il:nw}{\texttt{nw}} edits\index{edit!\texttt{nw}} a new explicit word in 
+an edit window using JOD format conventions.  \texttt{nw} will append the 
+character list \texttt{DOCUMENTCOMMAND} to the text placed in an edit window.  
+This allows the user to define an arbitrary script that is run when a word is defined.\footnote{
+Key combinations like \texttt{CTRL-W} that run editor scripts depend on the J platform.
+}
 
 \begin{wordhead}
 \monad & nw clName \\
@@ -1296,11 +1319,11 @@ suites. Useful for finding loose ends and dead code.
   NB. open an edit window with an explicit newword
   nw 'newword'  
 
-  NB. define a script that is run when the J edit
-  NB. window is run with CTRL-W.  {~N~} placeholders
-  NB. are replaced with the name of the new word
+  NB. define a script that is run when the J editor
+  NB. window is run. {~N~} placeholders are replaced
+  NB. with the name of the new word
 
-  DOCUMENTCOMMAND_z_=: 0 : 0
+  DOCUMENTCOMMAND_ijod_=: 0 : 0
   smoutput pr '{~N~}'
   )
 
@@ -1332,7 +1355,8 @@ suites. Useful for finding loose ends and dead code.
 
 \hypertarget{il:nt}{\texttt{nt}} edits\index{edit!\texttt{nt}} a new test script in an edit window. 
 
-\texttt{nt} looks for the test script \texttt{TESTSTUB} on the path and inserts \texttt{TESTSTUB} text in the edit window.   \texttt{TESTSTUB} allows users to define dictionary specific
+\texttt{nt} looks for the test script \texttt{teststub} on the path and inserts 
+\texttt{teststub} text in the edit window. \texttt{teststub} allows users to define dictionary specific
 custom script formats.
 
 \begin{wordhead}
@@ -1354,7 +1378,7 @@ custom script formats.
   ) 
 
   NB. save custom header in put dictionary
-  1 put 'TESTSTUB';testheader
+  1 put 'teststub';testheader
 
   NB. edit a new test using the custom header
   nt 'customtest'
@@ -1377,7 +1401,7 @@ custom script formats.
 
 The first dictionary on the search path is special!  
 It is the only dictionary that can be updated by JOD verbs. 
-Because most updates are put�s the first dictionary is called the \emph{put dictionary}.
+Because most updates are puts the first dictionary is called the \emph{put dictionary}.
 
 \begin{wordhead}
 \monad & od zl \argsep clDictionary \argsep blclDictionaries \\
@@ -1533,7 +1557,12 @@ that preceeds the code generated by \hyperlink{il:make}{\texttt{make}} on page~\
   
   NB. J scripts - can be run with (rm)
   4 put (;:'m0 m1'),.(21;21),.('text ...';'...') 
-  
+\end{lstlisting}
+ 
+The text types \texttt{LaTeX, HTML, XML, ASCII,  BYTE, UTF8}
+are stored as J character lists. 
+
+\begin{lstlisting}[frame=single,framerule=0pt]   
   NB. LaTeX 
   4 put (;:'m0 m1'),.(22;22),.('text ...';'...') 
   
@@ -1546,8 +1575,11 @@ that preceeds the code generated by \hyperlink{il:make}{\texttt{make}} on page~\
   NB. plain ASCII text 
   4 put (;:'m0 m1'),.(25;25),.('text ...';'...') 
   
+  NB. list of arbitrary bytes
+  4 put (;:'m0 m1'),.(26;26),.('bytes ...';'...') 
+  
   NB. UTF-8 unicode text 
-  4 put (;:'m0 m1'),.(26;26),.('text ...';'...') 
+  4 put (;:'m0 m1'),.(28;28),.('utf8 text ...';'...') 
 
   NB. put macro explain/document text
   4 8 put (;:'m0 m1'),.('text ...';'text ...')
@@ -1555,7 +1587,7 @@ that preceeds the code generated by \hyperlink{il:make}{\texttt{make}} on page~\
 \end{lstlisting}                  
 
 
-\subsection{\texttt{regd} --- register dictionaries}
+\subsection{\texttt{regd} --- register dictionaries}\label{ss:regd}
 
 \hypertarget{il:restd}{\texttt{restd}} registers\index{registration!\texttt{regd}} and unregisters 
  dictionaries in the master file.
@@ -1576,10 +1608,10 @@ that preceeds the code generated by \hyperlink{il:make}{\texttt{make}} on page~\
 \begin{lstlisting}[frame=single,framerule=0pt] 
   NB. register dictionary with name 
   NB. directory and dictionary must exist
-  regd 'name';'c:\location\' 
+  regd 'name';'c:/location/' 
 
-  NB. register dictionary with optional documentation
-  regd 'name';'c:\location\';'Documentation text' 
+  NB. register Linux dictionary with optional documentation
+  regd 'name';'/home/john/location/';'Documentation text' 
 \end{lstlisting} 
 
 \begin{wordhead}

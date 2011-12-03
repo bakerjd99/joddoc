@@ -38,14 +38,14 @@ with \hyperlink{il:newd}{\texttt{newd}}: see page~\pageref{ss:newd}.
 JOD words, with a few exceptions, return boxed list results.  The first
 item is a return code where \texttt{1} indicates success and \texttt{0} means failure.
 \begin{lstlisting}[frame=single,framerule=0pt]
-   newd 'lab';'c:\jodtut\lab'   NB. create (lab)
+   newd 'lab';'c:/jodtut/lab'   NB. create (lab)
 +-+---------------------+---+--------------+
-|1|dictionary created ->|lab|c:\jodtut\lab\|
+|1|dictionary created ->|lab|c:/jodtut/lab/|
 +-+---------------------+---+--------------+
 
-   newd 'labdev';'c:\jodtut\labdev'  NB. create (labdev)
+   newd 'labdev';'c:/jodtut/labdev'  NB. create (labdev)
 +-+---------------------+------+-----------------+
-|1|dictionary created ->|labdev|c:\jodtut\labdev\|
+|1|dictionary created ->|labdev|c:/jodtut/labdev/|
 +-+---------------------+------+-----------------+
 \end{lstlisting}
 
@@ -134,7 +134,7 @@ see appendix~\ref{ap:startup} on page~\pageref{ap:startup}.
 \begin{lstlisting}[frame=single,framerule=0pt]
    mls 'tutgroup'
 +-+--------------------+------------------------------------+
-|1|load script saved ->|c:\jodtut\labdev\script\tutgroup.ijs|
+|1|load script saved ->|c:/jodtut/labdev/script/tutgroup.ijs|
 +-+--------------------+------------------------------------+
 
    NB. load with standard utility
@@ -156,7 +156,7 @@ can dump all open dictionaries as a single \emph{dump script.}
 \begin{lstlisting}[frame=single,framerule=0pt]
    make ''
 +-+---------------------------+--------------------------------+
-|1|object(s) on path dumped ->|c:\jodtut\labdev\dump\labdev.ijs|
+|1|object(s) on path dumped ->|c:/jodtut/labdev/dump/labdev.ijs|
 +-+---------------------------+--------------------------------+
 
    3 od '' 	NB. close all dictionaries
@@ -167,4 +167,4 @@ can dump all open dictionaries as a single \emph{dump script.}
 
 \end{description}
 
-This brief tutorial has just tickled JOD's surface.  Work through the JOD labs to learn more.
+This brief tutorial has just touched JOD's surface.  Work through the JOD labs to learn more.

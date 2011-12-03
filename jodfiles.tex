@@ -23,7 +23,7 @@
    
    \subsection{Master File --- \texttt{jmaster.ijf}}
    
-   \texttt{jmaster.ijs} is a binary component \texttt{jfile}.  To use
+   \texttt{jmaster.ijf} is a binary component \texttt{jfile}.  To use
    \texttt{jfiles} you load or require the standard \texttt{jfiles} script.
     
    \texttt{jmaster.ijf} is an index of currently registered dictionaries and standard dictionary metadata. 
@@ -54,7 +54,8 @@ $c_{2}$  &  \texttt{bt}   &
    \begin{tabular}{p{\JFILESTPS\textwidth}}
    Dictionary names, numbers, directories and read-write status. \\
    \\
-When a dictionary is opened for update (\texttt{READWRITE} default) by \hyperlink{il:od}{\texttt{od}} the status is set and stays on
+When a dictionary is opened for update (\texttt{READWRITE} default) 
+by \hyperlink{il:od}{\texttt{od}} (pp.~\pageref{ss:od}) the status is set and stays on
 until closed by \texttt{od}. This blocks all other dictionary tasks from using the dictionary. This
 harsh treatment prevents garbled files. Dictionaries can also be opened read only. This allows
 multiple readers but no writers. \\
@@ -102,7 +103,7 @@ I don't expect  this list to be very large. Hundreds, maybe thousands, over the 
       
    \subsection{Words File --- \texttt{jwords.ijf}}
 
- \texttt{jwords.ijs} is a binary component \texttt{jfile}. 
+ \texttt{jwords.ijF} is a binary component \texttt{jfile}. 
   
  \texttt{jwords.ijf} contains word definitions and metadata. The component layout 
  of \texttt{jwords.ijf} is given in Table~\ref{tab:jwords} on page~\pageref{tab:jwords}.
@@ -127,7 +128,7 @@ $c_{1}$  & \texttt{il} &
   \end{tabular} \\ \hline 
 $c_{2}$  &  \texttt{blcl}   &  
    \begin{tabular}{p{\JFILESTPS\textwidth}}
-    Dictionary documentation \hyperlink{il:newd}{\texttt{newd}}, \hyperlink{il:regd}{\texttt{regd}}.\\ 
+    Dictionary documentation \hyperlink{il:newd}{\texttt{newd}}, \hyperlink{il:regd}{\texttt{regd}}. (pp.~\pageref{ss:newd},\pageref{ss:regd})\\ 
    \end{tabular} \\ \hline 
 $c_{3}$  &  \texttt{bluu}   &  
    \begin{tabular}{p{\JFILESTPS\textwidth}}
@@ -145,7 +146,7 @@ $c_{3}$  &  \texttt{bluu}   &
 \verb|10 { - cl| ; J version that created dictionary \\
 \verb|11 { - ia| ; J system code that created dictionary \\
 \verb|12 { - uu| ; unused - reserved \\
-\verb|13 { - bt| ; user dictionary parameters see: \hyperlink{il:jmaster}{\texttt{jmaster.ijf}}. \\
+\verb|13 { - bt| ; user dictionary parameters see: \hyperlink{il:jmaster}{\texttt{jmaster.ijf}} (pp.~\pageref{tab:jmaster}). \\
 \hspace{\JFILESHSP}  \verb|0 { cl| ; parameter \\
 \hspace{\JFILESHSP}  \verb|1 { uu| ; value \\
    \end{tabular} \\ \hline 
@@ -231,7 +232,7 @@ $c_{n}$  &  \ldots   &
    
    \subsection{Tests File --- \texttt{jtests.ijf}}
 
-\texttt{jtests.ijs} is a binary component \texttt{jfile}.  
+\texttt{jtests.ijf} is a binary component \texttt{jfile}.  
 
 \texttt{jtests.ijf} contains test definitions and metadata. The component layout 
 of \texttt{jtests.ijf} is given in Table~\ref{tab:jtests} on page~\pageref{tab:jtests}.
@@ -337,7 +338,7 @@ $c_{n}$  &  \ldots   &
  
    \subsection{Groups File --- \texttt{jgroups.ijf}}
    
-\texttt{jgroups.ijs} is a binary component \texttt{jfile}.  
+\texttt{jgroups.ijf} is a binary component \texttt{jfile}.  
 
 \texttt{jgroups.ijf} contains group definitions and group metadata. The component layout 
 of \texttt{jgroups.ijf} is given in Table~\ref{tab:jgroups} on page~\pageref{tab:jgroups}.
@@ -440,7 +441,7 @@ $c_{n}$  &  \ldots   &
    
    \subsection{Suites File --- \texttt{jsuites.ijf}}
    
-\texttt{jsuites.ijs} is a binary component \texttt{jfile}.  
+\texttt{jsuites.ijf} is a binary component \texttt{jfile}.  
 
 \texttt{jsuites.ijf} contains test suite definitions and test suite metadata. 
 The component layout of \texttt{jsuites.ijf} is given in Table~\ref{tab:jsuites} on page~\pageref{tab:jsuites}.
@@ -543,7 +544,7 @@ $c_{n}$  &  \ldots   &
    
    \subsection{Macros File --- \texttt{jmacros.ijf}}
    
-\texttt{jmacros.ijs} is a binary component \texttt{jfile}.  
+\texttt{jmacros.ijf} is a binary component \texttt{jfile}.  
 
 \texttt{jmacros.ijf} contains macro script definitions and macro script metadata. 
 The component layout of \texttt{jmacros.ijf} is given in Table~\ref{tab:jmacros} on page~\pageref{tab:jmacros}.
@@ -650,7 +651,7 @@ $c_{n}$  &  \ldots   &
    
    \subsection{Uses File --- \texttt{juses.ijf}}
    
-\texttt{juses.ijs} is a binary component \texttt{jfile}.  
+\texttt{juses.ijf} is a binary component \texttt{jfile}.  
 
 \texttt{juses.ijf} contains word references: see \hyperlink{il:globs}{\texttt{globs}}
 subsection~\ref{ss:globs}, on page~\pageref{ss:globs}.
@@ -680,7 +681,7 @@ $c_{1}\rightarrow c_{4}$ &  &
    \begin{tabular}{p{\JFILESTPS\textwidth}}
    Uses (reference) directory layout differs from 
 \texttt{jwords.ijf} but occupies the same component range 
-for \hyperlink{il:packd}{\texttt{packd}}. Only non-empty reference lists are stored. \\
+for \hyperlink{il:packd}{\texttt{packd}} (pp.~\pageref{ss:packd}). Only non-empty reference lists are stored. \\
    \end{tabular} \\ \hline
 $c_{5}$  &  \texttt{blcl}   &   
    \begin{tabular}{p{\JFILESTPS\textwidth}}
