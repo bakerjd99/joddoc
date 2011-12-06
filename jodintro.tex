@@ -83,11 +83,10 @@ To configure and maintain JOD you must be aware of the following:
 	 \texttt{jodsource} can be installed with \texttt{JAL}.
 	\item JOD labs and test scripts assume some J folders have been configured.  Open J's
 	configuration dialog,\index{dialog} see Figure~\ref{eps:jodfolders} on page~\pageref{eps:jodfolders}, and
-	define folders like:
-	\begin{lstlisting}[frame=single,framerule=0pt] 
+	define folders like:\index{configuration!J folders}
+	\begin{lstlisting}[frame=single,framerule=0pt,label=lst:foldercfg]
    JOD               c:/jod/701
    JODSOURCE         c:/jodtest/labtesting
-   JODPROJECT        c:/jod/701/joddev   
    JODTEST           c:/jodtest/test
   \end{lstlisting}
   \emph{Use fully qualified directory paths that are not in the J install tree.}
@@ -97,9 +96,25 @@ To configure and maintain JOD you must be aware of the following:
  % following figure is from bit map screen capture - I'm not thrilled at how it scales here
  % bit map inclusions have to be carefully matched to the output resolution of
  % of the display to give the best results.
- \begin{figure}[htbp]
+% \begin{figure}[htbp]
+%  \centering
+%  \includegraphics[width=\textwidth]{j7folders}
+%  %\includegraphics[width=\textwidth]{jodfolderconfig}
+%  \caption[JOD Folders]{The following folder configuration\index{configuration!J folders} is recommended for running JOD labs and test scripts.  When defining JOD folders the full path, including the drive letter on Windows and a
+%leading / for Linux, must be used.  The J configure utility does not reliably handle relative paths for directories outside of J's install tree. }
+%   \label{eps:jodfolders}
+%   \end{figure}
+
+\begin{figure}[htbp]
   \centering
-  \includegraphics[width=\textwidth]{jodfolderconfig}
-  \caption[JOD Folders]{The following folder configuration\index{configuration!J folders} is recommended for running all JOD labs and test scripts.  When defining JOD folders the full path, including the drive letter, must be used.  The J configure utility does not reliably handle relative paths for directories outside of J's install tree. }
-   \label{eps:jodfolders}
-   \end{figure}
+  \subfigure[J \texttt{6.0x} Windows]{
+    \label{eps:j6folders}
+    \includegraphics[width=0.8\textwidth]{j6folders}}
+  \hfill
+  \subfigure[J \texttt{7.0x} Linux]{
+    \label{epsj7folders}
+    \includegraphics[width=0.7\textwidth]{j7folders}}
+\caption[JOD Folders]{The following folder configuration\index{configuration!J folders} is recommended for running all JOD labs and test scripts.  When defining JOD folders the full path, including the drive letter on Windows and a
+leading / for Linux, must be used: see page~\pageref{lst:foldercfg}} 
+  \label{eps:jodfolders}
+\end{figure}

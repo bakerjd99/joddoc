@@ -4,7 +4,7 @@
 %%For: Bill Gates
 %%Title: JOD
 %%Pages: (atend)
-%%BoundingBox: 36 36 628 502
+%%BoundingBox: 36 36 628 628
 %%EndComments
 save
 %%BeginProlog
@@ -181,10 +181,10 @@ def
 
 %%EndSetup
 %%Page: 1 1
-%%PageBoundingBox: 36 36 628 502
+%%PageBoundingBox: 36 36 628 628
 %%PageOrientation: Portrait
 gsave
-36 36 592 466 boxprim clip newpath
+36 36 592 592 boxprim clip newpath
 36 36 translate
 0 0 1 beginpage
 1.0000 set_scale
@@ -192,15 +192,15 @@ gsave
 0.000 0.000 1.000 graphcolor
 0.000 0.000 1.000 graphcolor
 newpath -6 -6 moveto
--6 464 lineto
-590 464 lineto
+-6 590 lineto
+590 590 lineto
 590 -6 lineto
 closepath
 fill
 0.000 0.000 1.000 graphcolor
 newpath -6 -6 moveto
--6 464 lineto
-590 464 lineto
+-6 590 lineto
+590 590 lineto
 590 -6 lineto
 closepath
 stroke
@@ -477,34 +477,91 @@ end grestore
 gsave 10 dict begin
 filled
 0.537 0.247 0.902 nodecolor
+newpath 214 579 moveto
+142 539 lineto
+214 499 lineto
+286 539 lineto
+closepath
+fill
+0.000 0.000 0.000 nodecolor
+newpath 214 579 moveto
+142 539 lineto
+214 499 lineto
+286 539 lineto
+closepath
+stroke
+newpath 214 583 moveto
+133 539 lineto
+214 495 lineto
+295 539 lineto
+closepath
+stroke
+gsave 10 dict begin
+214 542 moveto 7.0 -0.5 (z) alignedtext
+178 526 moveto
+(jodon jodoff)
+[3.84 6.96 6.96 6.96 6.72 3.6 3.84 6.96 6.96 6.96 4.08 4.32]
+xshow
+end grestore
+end grestore
+% ijod
+gsave 10 dict begin
+filled
+0.537 0.247 0.902 nodecolor
 newpath 214 453 moveto
-133 413 lineto
+132 413 lineto
 214 373 lineto
-295 413 lineto
+296 413 lineto
 closepath
 fill
 0.000 0.000 0.000 nodecolor
 newpath 214 453 moveto
-133 413 lineto
+132 413 lineto
 214 373 lineto
-295 413 lineto
+296 413 lineto
 closepath
 stroke
 newpath 214 457 moveto
-124 413 lineto
+123 413 lineto
 214 369 lineto
-304 413 lineto
+305 413 lineto
 closepath
 stroke
 gsave 10 dict begin
-214 416 moveto 7.0 -0.5 (z) alignedtext
-173 400 moveto
-(jod z interface)
-[3.84 6.96 6.96 3.6 6.24 3.6 3.6 6.72 3.84 6.24 4.56 4.32 6.24 6.24 6.24]
+203 416 moveto
+(ijod)
+[3.6 3.84 6.96 6.96]
+xshow
+171 400 moveto
+(interface locale)
+[3.6 6.72 3.84 6.24 4.56 4.32 6.24 6.24 6.24 3.6 3.6 6.96 6.24 6.24 3.6 6.24]
 xshow
 end grestore
 end grestore
-% z->jod
+% z->ijod
+gsave 10 dict begin
+dotted
+newpath 214 484 moveto
+214 475 214 466 214 458 curveto
+stroke
+gsave 10 dict begin
+solid
+1 setlinewidth
+0.000 0.000 0.000 edgecolor
+newpath 211 484 moveto
+214 494 lineto
+218 484 lineto
+closepath
+fill
+0.000 0.000 0.000 edgecolor
+newpath 211 484 moveto
+214 494 lineto
+218 484 lineto
+closepath
+stroke
+end grestore
+end grestore
+% ijod->jod
 gsave 10 dict begin
 dotted
 newpath 214 358 moveto

@@ -8,16 +8,16 @@
 % fontspec needs XeLaTeXe
 \usepackage{fontspec}
 %\setmainfont{STIX-Regular}
-%\setmainfont{STIX-Bold}
-%\setmainfont{Rockwell}
+%\setmainfont[Color=000000,Scale=4.3]{STIX-Bold}
+%\setmainfont[Color=000000,Scale=4.3]{Rockwell}
 %\setmainfont{Rough Draft}
-\setmainfont[Color=000000,Scale=1.4]{Eras Bold ITC}
+%\setmainfont[Color=000000,Scale=4.5]{Eras Bold ITC}
 %\setmathrm{STIXMath-Regular} %use this font for math
-%\setmathrm{Adobe Garamond Pro} %use this font for math
-%\setmainfont{Arial}
-%\setmainfont{Lucida Bright}
-%\setmainfont{Latin Modern Math}
-%\setmonofont{APL385}  
+%\setmathrm[Color=000000,Scale=4.3]{Adobe Garamond Pro} %use this font for math
+\setmainfont[Color=000000,Scale=5]{Arial}
+%\setmainfont[Color=000000,Scale=4.3]{Lucida Bright}
+%\setmainfont[Color=000000,Scale=4.3]{Latin Modern Math}
+%\setmainfont[Color=000000,Scale=5]{APL385}  
 
 %\newfontinstance\bigeras[Color=000000,Scale=10.0]{Eras Bold ITC}
 %\setmainfont
@@ -56,44 +56,44 @@ at TeXblog_.
 \begin{tikzpicture}[scale=1.2,every node/.style={minimum size=0in},on grid]
 \begin{scope}[every node/.append style={yslant=-0.5},yslant=-0.5]
   \shade[right color=gray!10, left color=red!60] (0,0) rectangle +(3,3);
-  \node at (0.5,2.5) {\includegraphics[height=1.0cm]{jred.png}};
-  \node at (1.5,2.5) {};
-  \node at (2.5,2.5) {};
-  \node at (0.5,1.5) {};
-  \node at (1.5,1.5) {O};%{\textcolor{red}{O}};
-  \node at (2.5,1.5) {};
-  \node at (0.5,0.5) {};
-  \node at (1.5,0.5) {};
-  \node at (2.5,0.5) {D};%{\textcolor{red}{D}};
-  \draw (0,0) grid (3,3);
+  \node at (1.5,1.5) {\textcolor{red}{J}};%{\includegraphics[height=1.0cm]{jred.png}};
+%  \node at (1.5,2.5) {};
+%  \node at (2.5,2.5) {};
+%  \node at (0.5,1.5) {};
+%  \node at (1.5,1.5) {O};%{\textcolor{red}{O}};
+%  \node at (2.5,1.5) {};
+%  \node at (0.5,0.5) {};
+%  \node at (1.5,0.5) {};
+%  \node at (2.5,0.5) {D};%{\textcolor{red}{D}};
+%  \draw (0,0) grid (3,3);
 \end{scope}
 \begin{scope}[every node/.append style={yslant=0.5},yslant=0.5]
   \shade[right color=gray!70,left color=blue!10] (3,-3) rectangle +(3,3);
-  \node at (3.5,-0.5) {};
-  \node at (4.5,-0.5) {};
-  \node at (5.5,-0.5) {};
-  \node at (3.5,-1.5) {\includegraphics[height=1.0cm]{jblue.png}};
-  \node at (4.5,-1.5) {O}; %{\textcolor{cyan}{O}}
-  \node at (5.5,-1.5) {D}; %{\textcolor{cyan}{D}}
-  \node at (3.5,-2.5) {};
-  \node at (4.5,-2.5) {};
-  \node at (5.5,-2.5) {};
-  \draw (3,-3) grid (6,0);
+%  \node at (3.5,-0.5) {};
+%  \node at (4.5,-0.5) {};
+%  \node at (5.5,-0.5) {};
+%  \node at (3.5,-1.5) {\includegraphics[height=1.0cm]{jblue.png}};
+  \node at  (4.5,-1.5) {\textcolor{RoyalBlue}{D}}; %{\textcolor{cyan}{O}}
+%  \node at (5.5,-1.5) {D}; %{\textcolor{cyan}{D}}
+%  \node at (3.5,-2.5) {};
+%  \node at (4.5,-2.5) {};
+%  \node at (5.5,-2.5) {};
+%  \draw (3,-3) grid (6,0);
 \end{scope}
 \begin{scope}[every node/.append style={
     yslant=0.5,xslant=-1},yslant=0.5,xslant=-1
   ]
   \shade[bottom color=gray!10, top color=green!80] (6,3) rectangle +(-3,-3);
-  \node at (3.5,2.5) {};
-  \node at (3.5,1.5) {\includegraphics[height=1.0cm]{jgreen.png}}; 
-  \node at (3.5,0.5) {};
-  \node at (4.5,2.5) {};
-  \node at (4.5,1.5) {O};%{\textcolor{ForestGreen}{O}}
-  \node at (4.5,0.5) {};
-  \node at (5.5,2.5) {};
-  \node at (5.5,1.5) {D};%{\textcolor{ForestGreen}{D}}
-  \node at (5.5,0.5) {};
-  \draw (3,0) grid (6,3);
+%  \node at (3.5,2.5) {};
+%  \node at (3.5,1.5) {\includegraphics[height=1.0cm]{jgreen.png}}; 
+%  \node at (3.5,0.5) {};
+%  \node at (4.5,2.5) {};
+ \node at (4.5,1.5) {\textcolor{PineGreen}{O}};%{\textcolor{ForestGreen}{O}}
+%  \node at (4.5,0.5) {};
+%  \node at (5.5,2.5) {};
+%  \node at (5.5,1.5) {D};%{\textcolor{ForestGreen}{D}}
+%  \node at (5.5,0.5) {};
+%  \draw (3,0) grid (6,3);
 \end{scope}
 \end{tikzpicture}
 \end{document}

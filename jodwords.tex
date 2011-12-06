@@ -47,6 +47,10 @@ result.
   ('suitename';3) addgrp ;:'tests added to suite'
 \end{lstlisting}
 
+\subsection{\texttt{bget} --- backup get NIMP}\label{ss:bget}   
+
+\subsection{\texttt{bnl} --- backup name lists NIMP}\label{ss:bnl}   
+
 \subsection{\texttt{compj} --- compress J code}
 
   \texttt{compj} compresses\index{compression} J code by
@@ -1197,7 +1201,7 @@ to the current user's start up script
   ~config/startup.ijs
 \end{verbatim}
 and inserted in the session's \verb|Public_j_| table.\footnote{
-On J \texttt{6.0x} systems the public script noun is named \texttt{PUBLIC\_J\_}.}
+On J \texttt{6.0x} systems the public script noun is named \texttt{PUBLIC\_j\_}.}
 
 An \verb|mls| load script\index{load scripts} is independent of JOD and can be used 
 like any other J load script, for example:
@@ -1243,6 +1247,7 @@ see subsection~\ref{ss:genscripts} Generated Script Structure, on page~\pageref{
   2 mls 'bstats' 
 \end{lstlisting}
 
+\subsection{\texttt{mnl} --- master name lists NIMP}\label{ss:mnl}
 
 \subsection{\texttt{newd} --- create a new dictionary}\label{ss:newd} 
 
@@ -1752,8 +1757,9 @@ and \texttt{rtt} applies it to dictionary test scripts.\index{test suite}
    
   NB. generate test suite and run as silent tautology      
   4 rtt 'silentsuite'      
-\end{lstlisting}                  
+\end{lstlisting}   
 
+\subsection{\texttt{rxs} --- regular expression search NIMP}\label{ss:rxs}               
 
 \subsection{\texttt{uses} --- return word uses} 
 

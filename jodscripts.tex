@@ -88,9 +88,9 @@ group or suite header, (see
 A dependent section is delimited with \textcolor{CodeComment}{\texttt{\textsl{NB.*dependents}}} and  \textcolor{CodeComment}{\texttt{\textsl{NB.*enddependents}}} and only one dependent section per group header is allowed. The following is the dependent section in the \texttt{jod} class group header.  Globals in a dependent section are returned by \hyperlink{il:gdeps}{\texttt{gdeps}}, see page~\pageref{ss:gdeps}.
 
 \begin{lstlisting}[frame=single,framerule=0pt,basicstyle=\ttfamily\footnotesize]
-NB.*dependents 
-NB. Words defined in this section have related definitions.
-NB. line feed, carriage return, tab and line ends
+NB.*dependents x-- words defined in this section have related definitions
+NB. host specific z locale nouns set during J profile loading
+NB. (*)=: IFWIN UNAME
 LF=:10{a.
 CR=:13{a.
 TAB=:9{a.
@@ -117,7 +117,7 @@ OBJECTNC=:WORD,TEST,GROUP,SUITE,MACRO
 NB. bad object code, depends on: OBJECTNC
 badobj=:[: -. [: *./ [: , ] e. OBJECTNC"_
 NB. path delimiter character & path punctuation characters
-PATHDEL=:'\'
+PATHDEL=: IFWIN { '/\'
 PATHCHRS=:' :.-',PATHDEL
 NB. default master profile user locations
 JMASTER=:jodsystempath 'jmaster'
