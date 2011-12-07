@@ -192,7 +192,12 @@ pages~\pageref{tab:objcodes}, \pageref{tab:qualcodes} and \pageref{tab:objneg}.
 \verb|4 3 25 dnl 'EPS'  | \textcolor{CodeComment}{\ttfamily\textsl{NB. texts ending with EPS}} \\
 \end{tabular} 
 \end{minipage} \\ \hline
-\texttt{UTF8\T\B} & 26 & Unicode UTF8 text & \begin{minipage}{3.9in}
+\texttt{BYTE\T\B} & 26 & BYTE characters & \begin{minipage}{3.9in}
+\begin{tabular}{l}
+\verb|4 put 'BYTEME';a.|  \\
+\end{tabular} 
+\end{minipage} \\ \hline
+\texttt{UTF8\T\B} & 28 & Unicode UTF8 text & \begin{minipage}{3.9in}
 \begin{tabular}{l}
 \verb|4 put 'UTF8TEXT';UTF8_ajod_;(8 u: 4 u: 56788 4578,65+i.5)  |  \\
 \end{tabular} 
