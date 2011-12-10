@@ -25,11 +25,11 @@
 \thispagestyle{empty}
 
 \newsavebox\IBackBox
-\sbox\IBackBox{\includegraphics[height=11.5in]{jod_clouds.eps}}
-%\sbox\IBackBox{\includegraphics[height=11.5in]{jod_85x11_back_2.eps}}
+%\sbox\IBackBox{\includegraphics[height=11.5in]{jod_clouds.eps}}
+\sbox\IBackBox{\includegraphics[height=11.5in]{jod_85x11_back_2.eps}}
 
 \newsavebox\IBox
-\sbox\IBox{\includegraphics[height=3.5in, width=7.0in]{jodlogo01.eps}}
+\sbox\IBox{\includegraphics[width=0.5\textwidth]{jodcubelogo01.eps}}
 
 \DeclareFixedFont{\PT}{T1}{ppl}{b}{n}{0.78in}
 \DeclareFixedFont{\PTsmall}{T1}{ppl}{b}{it}{0.4in}
@@ -45,7 +45,7 @@
 \rput[lb](-0.40,0.0){\usebox\IBackBox}
 
 % place JOD logo
-\rput[lb](0.42,6.0){\usebox\IBox}
+%\rput[lb](0.42,6.0){\usebox\IBox}
 
 % major title text
 \rput[lb](0.52,5.0){\PT \color{TitleColor}{J Object Dictionary}}
@@ -53,7 +53,7 @@
 
 % author version text
 \rput[lb](5,2.0){\PTsmall \color{TitleColor}{John D. Baker}}
-\rput[lb](5,1.5){\PTsmall \color{TitleColor}{Version 0.8.0}}
+\rput[lb](5,1.5){\PTsmall \color{TitleColor}{Version 0.9.6}}
 \psline[linewidth=2mm,linecolor=TitleColor](5.0,1.25)(7.5,1.25)
 
 \end{pspicture}
