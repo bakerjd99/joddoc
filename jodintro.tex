@@ -68,7 +68,9 @@ JOD can be installed in two ways.
 	\item Download the current JOD distribution from \href{http://bakerjd99.wordpress.com/the-jod-page/}{\emph{The JOD Page}}\index{installation!\emph{The JOD Page}} \cite{baker:jodpages} and unzip, preserving directories, to the relative directory\footnote{Paths that begin with the \textbf{\texttt{\~}} character are relative directories. The full path can be obtained with \texttt{jpath} verb. } \verb|~addons/general/jod|
 \end{enumerate}
 
-After installation JOD can be loaded with:
+After installation JOD can be loaded with:\footnote{
+\textcolor{red}{The \texttt{'} character is a single quote: in J notation it is: \texttt{39 \{ a.}}
+}
 \begin{verbatim}
   load 'general/jod'
 \end{verbatim}
@@ -82,10 +84,12 @@ To configure and maintain JOD you must be aware of the following:
 	 \href{http://www.jsoftware.com/jwiki/Addons/general/jodsource}{\texttt{jodsource}} addon \cite{baker:jodsource}. 
 	 \texttt{jodsource} can be installed with \texttt{JAL}.
 	\item JOD labs and test scripts assume some J folders have been configured.  Open J's
-	configuration dialog,\index{dialog} see Figure~\ref{eps:jodfolders} on page~\pageref{eps:jodfolders}, and
+	configuration tool\index{configuration!tool}, see Figure~\ref{eps:jodfolders} on 
+   page~\pageref{eps:jodfolders}, and
 	define folders like:\index{configuration!J folders}
 	\begin{lstlisting}[frame=single,framerule=0pt,label=lst:foldercfg]
-   JOD               c:/jod/701
+   JOD               c:/jod/j701
+   JODDUMPS          c:/jod/j701/joddumps
    JODSOURCE         c:/jodtest/labtesting
    JODTEST           c:/jodtest/test
   \end{lstlisting}
@@ -107,14 +111,14 @@ To configure and maintain JOD you must be aware of the following:
 
 \begin{figure}[htbp]
   \centering
-  \subfigure[J \texttt{6.0x} Windows]{
+  \subfigure[J \texttt{6.0x} Windows configuration dialog]{
     \label{eps:j6folders}
     \includegraphics[width=0.8\textwidth]{j6folders}}
   \hfill
-  \subfigure[J \texttt{7.0x} Linux]{
+  \subfigure[J \texttt{7.0x} Linux configuration editor]{
     \label{epsj7folders}
     \includegraphics[width=0.7\textwidth]{j7folders}}
-\caption[JOD Folders]{The following folder configuration\index{configuration!J folders} is recommended for running all JOD labs and test scripts.  When defining JOD folders the full path, including the drive letter on Windows and a
-leading / for Linux, must be used: see page~\pageref{lst:foldercfg}} 
+\caption[JOD Folders]{This folder configuration\index{configuration!J folders} is recommended for running JOD labs and test scripts. When defining JOD folders the full path, including the drive letter on Windows and a
+leading / for Linux, must be used: see page~\pageref{lst:foldercfg}.} 
   \label{eps:jodfolders}
 \end{figure}

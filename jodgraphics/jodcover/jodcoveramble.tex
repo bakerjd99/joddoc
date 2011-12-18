@@ -1,0 +1,33 @@
+\documentclass[12pt]{article}
+\usepackage[paperheight=11.5in,paperwidth=8.65in,margin=0in]{geometry}
+
+% fontspec needs XeLaTeXe 
+\usepackage{fontspec}
+\setmainfont{Arial}  % use for backcover
+\setmonofont{APL385}  
+%\setmainfont[Color=000000,Scale=5]{Arial} % use for frontcover
+
+\usepackage{graphicx}
+\usepackage[dvipsnames]{xcolor}
+\usepackage{colortbl}
+
+\newcommand{\jodhspace}{\hspace{0.08\textwidth}}
+\newcommand{\jodbackspace}{\hspace{0.04\textwidth}}
+\newcommand{\jodcubewidth}{0.36}
+\newcommand{\jodauthorwidth}{0.25}
+\newcommand{\jodtxtwidth}{0.45}   % MAGIC NUMBERS: space + cube + txt < 1.0 & author < cube
+
+\newcommand{\rowacolor}{\rowcolor{lightgray}}
+\newcommand{\rowbcolor}{\rowcolor{lightgray}}
+\newcommand{\rowccolor}{\rowcolor{lightgray}}
+
+% cube colors used to build RGB cube
+\newcommand{\jodred}[1]{\textcolor{red}{#1}}
+\newcommand{\jodblue}[1]{\textcolor{RoyalBlue}{#1}}
+\newcommand{\jodgreen}[1]{\textcolor{PineGreen}{#1}}
+\newcommand{\jodcell}{\cellcolor{lightgray}}
+
+\setlength\arrayrulewidth{6pt}\arrayrulecolor{lightgray}
+\setlength\doublerulesep{6pt}\doublerulesepcolor{yellow}
+
+\begin{document}

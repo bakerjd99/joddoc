@@ -29,6 +29,11 @@
 %\PreviewEnvironment{tikzpicture}
 %\setlength\PreviewBorder{5pt}%
 
+% cube colors used to build RGB cube
+\newcommand{\jodred}[1]{\textcolor{red}{#1}}
+\newcommand{\jodblue}[1]{\textcolor{RoyalBlue}{#1}}
+\newcommand{\jodgreen}[1]{\textcolor{PineGreen}{#1}}
+
 
 \begin{comment}
 
@@ -56,11 +61,11 @@ at TeXblog_.
 \begin{tikzpicture}[scale=1.2,every node/.style={minimum size=0in},on grid]
 \begin{scope}[every node/.append style={yslant=-0.5},yslant=-0.5]
   \shade[right color=gray!10, left color=red!60] (0,0) rectangle +(3,3);
-  \node at (1.5,1.5) {\textcolor{red}{J}};%{\includegraphics[height=1.0cm]{jred.png}};
+  \node at (1.5,1.5) {\jodred{J}};%{\includegraphics[height=1.0cm]{jred.png}};
 %  \node at (1.5,2.5) {};
 %  \node at (2.5,2.5) {};
 %  \node at (0.5,1.5) {};
-%  \node at (1.5,1.5) {O};%{\textcolor{red}{O}};
+%  \node at (1.5,1.5) {O};%{\jodred{O}};
 %  \node at (2.5,1.5) {};
 %  \node at (0.5,0.5) {};
 %  \node at (1.5,0.5) {};
@@ -73,7 +78,7 @@ at TeXblog_.
 %  \node at (4.5,-0.5) {};
 %  \node at (5.5,-0.5) {};
 %  \node at (3.5,-1.5) {\includegraphics[height=1.0cm]{jblue.png}};
-  \node at  (4.5,-1.5) {\textcolor{RoyalBlue}{D}}; %{\textcolor{cyan}{O}}
+  \node at  (4.5,-1.5) {\jodblue{D}}; %{\textcolor{cyan}{O}}
 %  \node at (5.5,-1.5) {D}; %{\textcolor{cyan}{D}}
 %  \node at (3.5,-2.5) {};
 %  \node at (4.5,-2.5) {};
@@ -88,7 +93,7 @@ at TeXblog_.
 %  \node at (3.5,1.5) {\includegraphics[height=1.0cm]{jgreen.png}}; 
 %  \node at (3.5,0.5) {};
 %  \node at (4.5,2.5) {};
- \node at (4.5,1.5) {\textcolor{PineGreen}{O}};%{\textcolor{ForestGreen}{O}}
+ \node at (4.5,1.5) {\jodgreen{O}};%{\textcolor{ForestGreen}{O}}
 %  \node at (4.5,0.5) {};
 %  \node at (5.5,2.5) {};
 %  \node at (5.5,1.5) {D};%{\textcolor{ForestGreen}{D}}

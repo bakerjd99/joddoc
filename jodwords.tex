@@ -65,21 +65,47 @@ result.
 \end{verbatim}
 
   is an example of a compressed J script. In its fully commented
-  form this script is about 216 kilobytes when squeezed with
+  form this script is about 192 kilobytes when squeezed with
   \texttt{compj} it shrinks to about 72 kilobytes.
   \texttt{compj} does not compress words in JOD
   dictionaries it returns a compressed script result.
   
 \begin{quotation}
  \noindent\textcolor{red}{Warning: to safely use
-	  \texttt{compj} you must understand how to mark
-	  ambiguous names. If you do not correctly mark ambiguous names
-	  \texttt{compj} compression will break your
-	  code!}
+	  \texttt{compj} you must understand how to:
+     \begin{enumerate} 
+      \item mark ambiguous names.
+      \item exclude words with local names that
+        match quoted text. 
+     \end{enumerate}
+	  \emph{If you do not properly mark ambiguous names and exclude words
+     with local names that match quoted text 
+    \texttt{compj} will break your code!}}
 \end{quotation}
   
   Prior to compressing a word apply \hyperlink{il:globs}{\texttt{globs}}, 
   see page~\pageref{ss:globs}, to expose any name problems.
+
+  \texttt{compj} compression can be limited to \emph{white space removal} by
+  marking explicit words with the comment tag \textcolor{CodeComment}{\texttt{\textsl{(-.)=:}}}.
+
+\begin{lstlisting}[frame=single,framerule=0pt]
+donotsqueeze=: 4 : 0
+
+NB. I have local names that occur in quoted strings
+NB. Compressing me will end civilization as we know it.
+NB. Use the comment tag (-.)=: anywhere to save the day.
+
+NB. do not compress (-.)=:
+home=. 2 * y
+heart=. x - 1
+if. 0=|home do.
+  'home is where the heart is'
+else.
+  'heart health helps'
+end.
+)
+\end{lstlisting}
 
   Ambiguous names in J are words created in object instances,
   temporary locale globals, names masked by indirect assignments\index{assignments!indirect} and objects
@@ -1105,7 +1131,7 @@ A macro must be coded as a J script, (code 21), to be used as a postprocessor.
 A word or test can belong to many groups or suites. 
 
 \begin{wordhead}
-\monad & logrp clName \\
+\monad & locgrp clName \\
 \end{wordhead} 
 \begin{lstlisting}[frame=single,framerule=0pt]  
   NB. list all groups that contain myword
@@ -1274,7 +1300,7 @@ see subsection~\ref{ss:genscripts} Generated Script Structure, on page~\pageref{
   newd 'new';'c:/location/' 
   newd 'deep';'d:/we/can/root/dictionaries/down/deep'
   
-  NB. On Linux create dictionaries in your $HOME directory
+  NB. on linux create dictionaries in your $HOME directory
   newd 'homeboy';'/home/john/where/the/dictionaries/are'
 
   NB. optional third item is dictionary documentation
@@ -1308,10 +1334,12 @@ suites. Useful for finding loose ends and dead code.
   3 notgrp }. 1 dnl ''
 \end{lstlisting}
 
-\subsection{\texttt{nw} --- edit a new explicit word}\label{ss:nw} 
+\subsection{\texttt{nw} --- edit a new word}\label{ss:nw} 
 
-\hypertarget{il:nw}{\texttt{nw}} edits\index{edit!\texttt{nw}} a new explicit word in 
-an edit window using JOD format conventions.  \texttt{nw} will append the 
+\hypertarget{il:nw}{\texttt{nw}} edits\index{edit!\texttt{nw}} a new  word in 
+an edit window using JOD format conventions. \texttt{nw} assumes the
+new word is  \emph{explicit} but you can edit the default text to define \emph{tacit} words. 
+\texttt{nw} will append the 
 character list \texttt{DOCUMENTCOMMAND} to the text placed in an edit window.  
 This allows the user to define an arbitrary script that is run when a word is defined.\footnote{
 Key combinations like \texttt{CTRL-W} that run editor scripts depend on the J platform.
