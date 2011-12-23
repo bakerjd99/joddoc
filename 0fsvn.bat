@@ -17,7 +17,7 @@ copy jodgraphics\j6folders.eps      C:\jodsvn\joddictionary\jodtex\jodgraphics\
 copy jodgraphics\j6labs.eps         C:\jodsvn\joddictionary\jodtex\jodgraphics\
 copy jodgraphics\j7folders.eps      C:\jodsvn\joddictionary\jodtex\jodgraphics\
 copy jodgraphics\j7labs.eps         C:\jodsvn\joddictionary\jodtex\jodgraphics\
-copy jodgraphics\jodcubelogo01.eps  C:\jodsvn\joddictionary\jodtex\jodgraphics\
+copy jodgraphics\jodRGBcube.eps     C:\jodsvn\joddictionary\jodtex\jodgraphics\
 copy jodgraphics\joddot.eps         C:\jodsvn\joddictionary\jodtex\jodgraphics\
 copy jodgraphics\jodlittlecube.eps  C:\jodsvn\joddictionary\jodtex\jodgraphics\
 copy jodgraphics\zippy.eps          C:\jodsvn\joddictionary\jodtex\jodgraphics\ 

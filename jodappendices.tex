@@ -28,7 +28,12 @@
 	  \item \texttt{jod.ijs} --- main JOD source and test script dictionary
 	  \item \texttt{utils.ijs}  --- common utilities dictionary
      \item \texttt{jodsourcesetup.ijs} --- J script that creates and loads the three
-     JOD development dictionaries. 
+     JOD development dictionaries.\footnote{
+\textcolor{red}{The addon \texttt{arc/zip} can fail on 64 bit systems. This breaks \texttt{jodsourcesetup.ijs}.
+See \href{http://bakerjd99.wordpress.com/the-jod-page/}{The JOD Page} \cite{baker:jodpages} for instructions 
+on loading JOD dictionaries without using
+\texttt{jodsourcesetup.ijs}.}
+	 }
   \end{enumerate}
 \end{enumerate}
  
@@ -126,6 +131,11 @@ pages~\pageref{tab:objcodes}, \pageref{tab:qualcodes} and \pageref{tab:objneg}.
  \texttt{MACRO\T\B} & 4 & macro code & \begin{minipage}{3.9in}
 \begin{tabular}{l}
 \verb|4 disp 'test'  | \textcolor{CodeComment}{\ttfamily\textsl{NB. display macro}} \\
+\end{tabular} 
+\end{minipage} \\ \hline
+ \texttt{DICTIONARY\T\B} & 5 & dictionary code & \begin{minipage}{3.9in}
+\begin{tabular}{l}
+\verb|5 get ''  | \textcolor{CodeComment}{\ttfamily\textsl{NB. get dictionary documentation}} \\
 \end{tabular} 
 \end{minipage} \\ \hline
     \end{tabular}

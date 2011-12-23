@@ -87,7 +87,7 @@ result.
   see page~\pageref{ss:globs}, to expose any name problems.
 
   \texttt{compj} compression can be limited to \emph{white space removal} by
-  marking explicit words with the comment tag \textcolor{CodeComment}{\texttt{\textsl{(-.)=:}}}.
+  marking explicit words with the comment tag \textcolor{CodeComment}{\texttt{\textsl{(-.)=:}}}.\index{comment tag!\texttt{(-.)=:}}
 
 \begin{lstlisting}[frame=single,framerule=0pt]
 donotsqueeze=: 4 : 0
@@ -114,8 +114,8 @@ end.
   \index{cross references!names} all names. 
   
   JOD provides two comment\index{scope tags} scope tags
-   \textcolor{CodeComment}{\texttt{\textsl{(*)=.}}} and
-  \textcolor{CodeComment}{\texttt{\textsl{(*)=:}}} to clarify ambiguous names.  Comment
+   \textcolor{CodeComment}{\texttt{\textsl{(*)=.}}}\index{comment tag!\texttt{(*)=.}}and
+  \textcolor{CodeComment}{\texttt{\textsl{(*)=:}}}\index{comment tag!\texttt{(*)=:}} to clarify ambiguous names.  Comment
   scope tags override J scope.  
 
 \begin{enumerate}
@@ -172,9 +172,10 @@ NB. !(*)=. THIS STUFF IS INSIDE AN OBJECT
       JOD source code.  JOD source code is not 
      distributed with JOD.  You can get JOD source code by installing
      the  \href{http://www.jsoftware.com/jwiki/Addons/general/jodsource}{\texttt{jodsource}}
-     addon or by downloading \verb|jodsource.zip| from 
+     addon or by downloading \href{http://bakerjd99.wordpress.com/the-jod-page/}{\texttt{jodijs.zip}} from %point directly to box file
      \href{http://bakerjd99.wordpress.com/the-jod-page/}{\emph{The JOD Page}} \cite{baker:jodpages}.  
-     JOD source is distributed as JOD dictionary dump scripts.
+     JOD source is distributed as JOD dictionary dump scripts and as fully commented
+	 class files in \texttt{jodijs.zip}.
 
 \begin{wordhead}
 \monad & compj clName \argsep blclNames \\
@@ -688,7 +689,7 @@ A basic JOD rule is that if you can \texttt{put} it you can \texttt{get} it.
 \end{lstlisting}
 
 \begin{wordhead}
-\dyad & ilOptions get clName \argsep blclNames \\
+\dyad & ilOptions get clName \argsep blclNames \argsep uuIgnore \\
       & clLocale get clName \argsep blclNames \\
 \end{wordhead}
 \begin{lstlisting}[frame=single,framerule=0pt]
@@ -778,7 +779,10 @@ A basic JOD rule is that if you can \texttt{put} it you can \texttt{get} it.
   
   NB. explain macros
   4 8 get ;:'macros need explaining'  
-  4 9 get ;:'and documents too'     
+  4 9 get ;:'and documents too'
+  
+  NB. get dictionary documentation - ignores (y) argument
+  5 get ''     
 \end{lstlisting}
 
 
@@ -1532,10 +1536,11 @@ The \hypertarget{il:put}{\texttt{put}}
 \end{lstlisting} 
   
 \begin{wordhead}
-\dyad & iaObject put clName \argsep blclNames \argsep btNvalues \\
+\dyad & iaObject put clName \argsep blclNames \\
+      & iaObject put clDocument \argsep btNvalues \\
       & clLocale put clName \argsep blclNames \argsep btNvalues \\
       & (iaObject,iaQualifier) put clName \argsep blclNames  \\
-      & (iaObject,iaQualifier) put clName btNvalues \\
+      & (iaObject,iaQualifier) put clName \argsep btNvalues \\
 \end{wordhead}
 \begin{lstlisting}[frame=single,framerule=0pt] 
   NB. put words (monad)
@@ -1617,6 +1622,9 @@ are stored as J character lists.
   NB. put macro explain/document text
   4 8 put (;:'m0 m1'),.('text ...';'text ...')
   4 9 put (;:'m0 m1'),.('text ...';'text ...') 
+  
+  NB. update dictionary documentation text
+  5 put 'go ahead document this dictionary'
 \end{lstlisting}                  
 
 
