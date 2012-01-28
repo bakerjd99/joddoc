@@ -113,6 +113,13 @@
 sensitive=True,
 morecomment=[l]{NB.}
 }
+
+% overrides normal bash keywords - uncomment
+% for normal non JOD bash scripts
+\lstdefinelanguage{bash}
+{morekeywords={git,pwd,echo},
+sensitive=True
+}
   
 % listings package settings  
 \lstset{%
