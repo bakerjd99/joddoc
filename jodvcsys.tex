@@ -10,8 +10,10 @@ purpose is efficiently  refactoring, shuffling and recombining J words not track
 of source code} and provide detailed  merge, security and multiuser network 
 facilities that JOD  lacks.  However, since JOD generates
 standard J source code scripts it's easy to use JOD with version control systems. 
-The main difficulty is choosing a suitable level of detail: \emph{dictionary, script or word.} 
-The following shows how \texttt{Git} can be used for each of these levels.
+The main difficulty is choosing a suitable level of detail: \emph{dictionary, script} or \emph{word.} 
+The following shows how \texttt{Git} can be used for each of these levels. \texttt{Git} has
+a number of graphical \texttt{GUI} interfaces these examples use
+\emph{consistent} bash shell commands.
 
 \begin{enumerate}
 \item \textbf{Dictionary:}\label{it:dictlev} \texttt{make}, see page~\pageref{ss:make}, can dump entire
@@ -116,7 +118,7 @@ individual JOD objects as scripts. It only exports words
 It does not address the issue of synchronizing exported
 objects with dictionary state. For example, dictionary word
 deletions are not propagated. If you wish to track 
-dictionary state use dump files or the first \textbf{\texttt{Dictionary}} (\pageref{it:dictlev})
+dictionary state use the \textbf{\texttt{Dictionary}} (\pageref{it:dictlev})
 level method.}
 writes individual JOD put dictionary
 word files. \texttt{pwf} is stored in the \texttt{utils} dictionary.
@@ -124,7 +126,7 @@ word files. \texttt{pwf} is stored in the \texttt{utils} dictionary.
 \begin{lstlisting}[frame=single,framerule=0pt,basicstyle=\ttfamily\footnotesize]
 pwf=: 3 : 0
 
-NB.*pwf v-- write put dictionary words as files.
+NB.*pwf v-- write put dictionary words as script files.
 NB.
 NB. monad:  pwf clPattern
 NB.
@@ -165,7 +167,7 @@ end.
 \end{lstlisting}
 
 Using \texttt{pwf} is a simple matter of getting and running it.  The following
-exports  \texttt{joddev} words  to  \texttt{pwf}'s \verb|alien\words| subdirectory
+exports  \texttt{joddev} words  to \verb|joddev/alien/words| 
 and then commits differences in \texttt{Git}.
 
 \begin{lstlisting}[frame=single,framerule=0pt,basicstyle=\ttfamily\footnotesize]
