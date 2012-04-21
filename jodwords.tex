@@ -49,7 +49,7 @@ result.
 
 \subsection{\texttt{bget} --- backup get NIMP}\label{ss:bget}\index{backup!\texttt{bget}}   
 
-\subsection{\texttt{bnl} --- backup name lists NIMP}\label{ss:bnl}\index{backup!\texttt{bnl}}    
+\subsection{\texttt{bnl} --- backup name lists NIMP}\label{ss:bnl}\index{backup!\texttt{bnl}}\index{search!names!\texttt{bnl}}    
 
 \subsection{\texttt{compj} --- compress J code}
 
@@ -248,7 +248,7 @@ Warning: \texttt{del} will remove objects that are in use without warning.
 
 \texttt{delgrp} removes words from a group\index{group!\texttt{delgrp}} and tests from a suite.  
 
-Removing objects from groups and suites does delete them. To delete objects use 
+Removing objects from groups and suites does not delete them. To delete objects use 
 \hyperlink{il:del}{\texttt{del}}.
 
 \begin{wordhead}
@@ -333,7 +333,7 @@ list when successful and the standard boxed \verb|(paRc;clMessage)| when reporti
   4 disp 'macro';'byebye'    
 \end{lstlisting}
   
-\subsection{\texttt{dnl} --- dictionary name lists}\label{ss:dnl}
+\subsection{\texttt{dnl} --- dictionary name lists}\label{ss:dnl}\index{search!names!\texttt{dnl}}
 
 \hypertarget{il:dnl}{\texttt{dnl}} searches and returns dictionary name lists. 
 The entire path is searched for names and duplicates are removed. 
@@ -512,7 +512,7 @@ text in that it is not prefixed with leading \verb|NB.|'s.
 \end{lstlisting}  
 
 
-\subsection{\texttt{dpset} --- set and change parameters}\label{ss:dpset}
+\subsection{\texttt{dpset} --- set and change parameters}\label{ss:dpset}\index{parameters!\texttt{dpset}}
 
 \hypertarget{il:dpset}{\texttt{dpset}} modifies dictionary parameters. JOD uses a 
 variety of values that control putting, getting and generating objects. 
@@ -1129,7 +1129,7 @@ A macro must be coded as a J script, (code 21), to be used as a postprocessor.
 \end{lstlisting}
 
 
-\subsection{\texttt{locgrp} --- list groups/suites with word/test}\label{ss:locgrp}
+\subsection{\texttt{locgrp} --- list groups/suites with word/test}\label{ss:locgrp}\index{search!groups!\texttt{locgrp}}
 
 \texttt{locgrp} lists groups and suites with word or test \texttt{(y)}.   
 A word or test can belong to many groups or suites. 
@@ -1277,7 +1277,7 @@ see subsection~\ref{ss:genscripts} Generated Script Structure, on page~\pageref{
   2 mls 'bstats' 
 \end{lstlisting}
 
-\subsection{\texttt{mnl} --- master name lists NIMP}\label{ss:mnl}
+\subsection{\texttt{mnl} --- master name lists NIMP}\label{ss:mnl}\index{search!names!\texttt{mnl}}
 
 \subsection{\texttt{newd} --- create a new dictionary}\label{ss:newd} 
 
@@ -1795,7 +1795,7 @@ and \texttt{rtt} applies it to dictionary test scripts.\index{test suite}
   4 rtt 'silentsuite'      
 \end{lstlisting}   
 
-\subsection{\texttt{rxs} --- regular expression search NIMP}\label{ss:rxs}               
+\subsection{\texttt{rxs} --- regular expression search NIMP}\label{ss:rxs}\index{search!text!\texttt{rxs}}               
 
 \subsection{\texttt{uses} --- return word uses} 
 
