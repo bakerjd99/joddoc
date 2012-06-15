@@ -57,13 +57,25 @@
 
 \section{Installing and Configuring JOD}
 
-Before using JOD you need to install the current Windows or Linux version of J.\footnote{JOD runs on 
- J \texttt{6.0x} and  J \texttt{7.0x} Windows systems. The Linux version of JOD requires J
-\texttt{7.0x}. Currently there no are Mac versions of JOD. Porting JOD to the Mac is a simple task.
-If you are interested in helping me create such a port please contact me at:  
+Before using JOD you need to install the current Windows, Linux or Mac version of J.\footnote{JOD runs on 
+ J \texttt{6.0x} and  J \texttt{7.0x} Windows systems. The Linux and Mac versions of JOD require J
+\texttt{7.0x}. Currently there no \texttt{IOS} or \texttt{Android} versions of JOD. Porting JOD 
+to any J system is a simple task.
+If you are interested in helping me create ports please contact me at:  
 \texttt{bakerjd99@gmail.com}
 } J can be downloaded from \href{http://www.jsoftware.com}{\texttt{www.jsoftware.com}}.
 
+In addition to J you may need to install a number of J \emph{addons}. JOD uses the
+\texttt{regex}, \texttt{task}, \texttt{jfiles} and \texttt{zip} addons.  Some J versions
+include these addons as part of the basic J system. If you can run the following J commands
+without errors your system is ready for JOD. 
+\begin{lstlisting}[frame=single,framerule=0pt,label=lst:reqaddons]
+   require 'regex task jfiles'
+   require '~addons/arc/zip/zfiles.ijs'
+\end{lstlisting}
+If you encounter any errors running these commands use \texttt{JAL}\index{installation!JAL} to install 
+missing addons.
+ 
 JOD can be installed in two ways.  
 \begin{enumerate}
 	\item Use \href{http://202.67.223.49/jwiki/Addons/general/jod}{\texttt{JAL}}\index{installation!JAL}, J's package manager 
