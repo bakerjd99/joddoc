@@ -59,26 +59,26 @@
 
 Before using JOD you need to install the current Windows, Linux or Mac version of J.\footnote{JOD runs on 
  J \texttt{6.0x} and  J \texttt{7.0x} Windows systems. The Linux and Mac versions of JOD require J
-\texttt{7.0x}. Currently there no \texttt{IOS} or \texttt{Android} versions of JOD. Porting JOD 
+\texttt{7.0x}. Currently there are no \texttt{IOS} or \texttt{Android} versions of JOD. Porting JOD 
 to any J system is a simple task.
 If you are interested in helping me create ports please contact me at:  
 \texttt{bakerjd99@gmail.com}
 } J can be downloaded from \href{http://www.jsoftware.com}{\texttt{www.jsoftware.com}}.
 
 In addition to J you may need to install a number of J \emph{addons}. JOD uses the
-\texttt{regex}, \texttt{task}, \texttt{jfiles} and \texttt{zip} addons.  Some J versions
+\texttt{jfiles}, \texttt{regex}, \texttt{scriptdoc}, \texttt{task} and \texttt{zip} addons.  Some J versions
 include these addons as part of the basic J system. If you can run the following J commands
 without errors your system is ready for JOD. 
 \begin{lstlisting}[frame=single,framerule=0pt,label=lst:reqaddons]
-   require 'regex task jfiles'
-   require '~addons/arc/zip/zfiles.ijs'
+   require 'jfiles regex scriptdoc task'
+   load 'addons/arc/zip/zfiles.ijs'
 \end{lstlisting}
-If you encounter any errors running these commands use \texttt{JAL}\index{installation!JAL} to install 
+If you encounter any errors running these commands use \href{http://www.jsoftware.com/jwiki/JAL/}{\texttt{JAL}}\index{installation!JAL} to install 
 missing addons.
  
 JOD can be installed in two ways.  
 \begin{enumerate}
-	\item Use \href{http://202.67.223.49/jwiki/Addons/general/jod}{\texttt{JAL}}\index{installation!JAL}, J's package manager 
+	\item Use \href{http://www.jsoftware.com/jwiki/Addons/general/jod}{\texttt{JAL}}\index{installation!JAL}, J's package manager 
 	\cite{jwiki:jal}, to download JOD. \emph{Using JAL is the easiest way to install and maintain JOD.}
 	\item Download the current JOD distribution from \href{http://bakerjd99.wordpress.com/the-jod-page/}{\emph{The JOD Page}}\index{installation!\emph{The JOD Page}} \cite{baker:jodpages} and unzip, preserving directories, to the relative directory\footnote{Paths that begin with the \textbf{\texttt{\~}} character are relative directories. The full path can be obtained with \texttt{jpath} verb. } \verb|~addons/general/jod|
 \end{enumerate}
@@ -95,7 +95,7 @@ To configure and maintain JOD you must be aware of the following:
 	\item JOD uses the J startup file \verb|~config/startup.ijs| to store load scripts: see 
 	\hyperlink{il:mls}{\texttt{mls}} on page~\pageref{ss:mls}.  Exercise caution when manually
 	editing JOD's load script section.
-	\item To run JOD labs\index{labs} you must download and install the\index{Addon}
+	\item To run JOD \href{http://www.jsoftware.com/help/user/lab_system_overview.htm}{labs}\index{labs} you must download and install the\index{Addon}
 	 \href{http://www.jsoftware.com/jwiki/Addons/general/jodsource}{\texttt{jodsource}} addon \cite{baker:jodsource}. 
 	 \texttt{jodsource} can be installed with \texttt{JAL}.
 	\item JOD labs and test scripts assume some J folders have been configured.  Open J's
@@ -133,7 +133,9 @@ To configure and maintain JOD you must be aware of the following:
   \subfigure[J \texttt{7.0x} Linux configuration editor]{
     \label{epsj7folders}
     \includegraphics[width=0.7\textwidth]{j7folders}}
-\caption[JOD Folders]{This folder configuration\index{configuration!J folders} is recommended for running JOD labs and test scripts. When defining JOD folders the full path, including the drive letter on Windows and a
-leading / for Linux, must be used: see page~\pageref{lst:foldercfg}.} 
+\caption[JOD Folders]{This folder configuration\index{configuration!J folders} is recommended for 
+running JOD labs and test scripts. 
+When defining JOD folders the full path, including the drive letter on Windows and a
+leading / for Linux and the Mac must be used: see page~\pageref{lst:foldercfg}.} 
   \label{eps:jodfolders}
 \end{figure}

@@ -1,0 +1,2805 @@
+\section{\texttt{jodstore} Source Code}
+
+\begin{JODGroupHeader}
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. jodstore.ijs -- storage object class: extension of (jod)}
+\CommentTok{NB.}
+\CommentTok{NB. Hides the underlying database/file system used to store}
+\CommentTok{NB. dictionary objects. Replacing this class is all that's}
+\CommentTok{NB. required to change the dictionary storage system.}
+\CommentTok{NB.}
+\CommentTok{NB. Verb interface:}
+\CommentTok{NB.   checkopen    checks if any dictionary is open}
+\CommentTok{NB.   checkpath    checks current path against dictionary path}
+\CommentTok{NB.   checkput     checks if first path dictionary is a put dictionary}
+\CommentTok{NB.   closedict    closes dictionaries}
+\CommentTok{NB.   createst     initializes storage objects}
+\CommentTok{NB.   defwords     define words}
+\CommentTok{NB.   delstuff     delete objects}
+\CommentTok{NB.   didstats     dictionary statistics and path information}
+\CommentTok{NB.   dnlsearch    search for name patterns}
+\CommentTok{NB.   getdocument  get object documentation}
+\CommentTok{NB.   getexplain   get short object explanations}
+\CommentTok{NB.   getgstext    get group and suite script text}
+\CommentTok{NB.   getobjects   get objects}
+\CommentTok{NB.   getrefs      get references}
+\CommentTok{NB.   gslistnl     group and suite name lists}
+\CommentTok{NB.   inputdict    test for objects in put dictionary}
+\CommentTok{NB.   invappend    append inverted data}
+\CommentTok{NB.   invdelete    delete inverted data}
+\CommentTok{NB.   invfetch     fetch inverted data}
+\CommentTok{NB.   invreplace   update inverted data}
+\CommentTok{NB.   newregdict   create new or register dictionary}
+\CommentTok{NB.   opendict     open a dictionary}
+\CommentTok{NB.   pathnl       path name lists}
+\CommentTok{NB.   putexplain   store short object explanations}
+\CommentTok{NB.   putgs        store groups and suites}
+\CommentTok{NB.   puttable     store (name,text) and (name,class,text) tables}
+\CommentTok{NB.   puttexts     store object documentation and group/suite texts}
+\CommentTok{NB.   putwords     store words}
+\CommentTok{NB.   putwordxrs   store word global references}
+\CommentTok{NB.}
+\CommentTok{NB. Notes:}
+\CommentTok{NB.   Error messages (jodstore range 050-149)}
+
+\NormalTok{coclass  }\StringTok{'ajodstore'}
+\NormalTok{coinsert }\StringTok{'ajod'}
+
+\CommentTok{NB.*dependents x-- JODstore dependent defintions}
+
+\NormalTok{CNMARK}\AlertTok{=:}\index{CNMARK@\texttt{CNMARK}}\NormalTok{0      }\CommentTok{NB. file component: count and timestamp mark}
+\NormalTok{CNLIST}\AlertTok{=:}\index{CNLIST@\texttt{CNLIST}}\NormalTok{4      }\CommentTok{NB. file component: main object index list}
+\NormalTok{CNCOMPS}\AlertTok{=:}\index{CNCOMPS@\texttt{CNCOMPS}}\NormalTok{5     }\CommentTok{NB. file component: main object component list}
+
+\CommentTok{NB. main directory file component list}
+\NormalTok{CNDIR}\AlertTok{=:}\index{CNDIR@\texttt{CNDIR}}\NormalTok{CNMARK}\FunctionTok{,}\NormalTok{CNLIST}\FunctionTok{,}\NormalTok{CNCOMPS}
+
+\NormalTok{CNCLASS}\AlertTok{=:}\index{CNCLASS@\texttt{CNCLASS}}\NormalTok{6     }\CommentTok{NB. file component: word name class or macro type}
+\NormalTok{CNCREATION}\AlertTok{=:}\index{CNCREATION@\texttt{CNCREATION}}\NormalTok{8  }\CommentTok{NB. file component: when object was first created}
+\NormalTok{CNDICDOC}\AlertTok{=:}\index{CNDICDOC@\texttt{CNDICDOC}}\NormalTok{2    }\CommentTok{NB. file component: dictionary documentation - (regd)}
+\NormalTok{CNEXPLAIN}\AlertTok{=:}\index{CNEXPLAIN@\texttt{CNEXPLAIN}}\NormalTok{1}\DecValTok{1}  \CommentTok{NB. file component: short explanations}
+\NormalTok{CNPARMS}\AlertTok{=:}\index{CNPARMS@\texttt{CNPARMS}}\NormalTok{3     }\CommentTok{NB. file component: dictionary parameters}
+\NormalTok{CNPUTDATE}\AlertTok{=:}\index{CNPUTDATE@\texttt{CNPUTDATE}}\NormalTok{7   }\CommentTok{NB. file component: last time object was (put)}
+\NormalTok{CNREF}\AlertTok{=:}\index{CNREF@\texttt{CNREF}}\NormalTok{5}\FunctionTok{+i.}\NormalTok{2 2 }\CommentTok{NB. reference component table}
+\NormalTok{CNRPATH}\AlertTok{=:}\index{CNRPATH@\texttt{CNRPATH}}\NormalTok{1}\DecValTok{9}    \CommentTok{NB. file component: reference path - (didnum) list}
+\NormalTok{CNSIZE}\AlertTok{=:}\index{CNSIZE@\texttt{CNSIZE}}\NormalTok{9      }\CommentTok{NB. file component: size of object in bytes}
+
+\CommentTok{NB. inverted group and suite data file components}
+\NormalTok{INVGROUPS}\AlertTok{=:}\index{INVGROUPS@\texttt{INVGROUPS}} \NormalTok{CNPUTDATE}\FunctionTok{,}\NormalTok{CNCREATION}\FunctionTok{,}\NormalTok{CNEXPLAIN}
+\NormalTok{INVSUITES}\AlertTok{=:}\index{INVSUITES@\texttt{INVSUITES}} \NormalTok{INVGROUPS}
+
+\CommentTok{NB. inverted macro and word data file components}
+\NormalTok{INVMACROS}\AlertTok{=:}\index{INVMACROS@\texttt{INVMACROS}} \NormalTok{CNCLASS}\FunctionTok{,}\NormalTok{CNPUTDATE}\FunctionTok{,}\NormalTok{CNCREATION}\FunctionTok{,}\NormalTok{CNSIZE}\FunctionTok{,}\NormalTok{CNEXPLAIN}
+\NormalTok{INVWORDS}\AlertTok{=:}\index{INVWORDS@\texttt{INVWORDS}}  \NormalTok{INVMACROS}
+
+\CommentTok{NB. inverted test data}
+\NormalTok{INVTESTS}\AlertTok{=:}\index{INVTESTS@\texttt{INVTESTS}} \NormalTok{CNPUTDATE}\FunctionTok{,}\NormalTok{CNCREATION}\FunctionTok{,}\NormalTok{CNSIZE}\FunctionTok{,}\NormalTok{CNEXPLAIN}
+
+\CommentTok{NB. trim right (trailing) path delimiters !(*)=. PATHDEL}
+\NormalTok{rpdtrim}\AlertTok{=:}\index{rpdtrim@\texttt{rpdtrim}}\FunctionTok{]} \FunctionTok{#}\OtherTok{~} \FunctionTok{[:} \FunctionTok{-.} \FunctionTok{[:} \FunctionTok{*.}\OtherTok{/\textbackslash{}.} \NormalTok{PATHDEL}\OtherTok{"}\NormalTok{_ }\FunctionTok{=} \FunctionTok{]}
+
+\CommentTok{NB.*enddependents}
+\CommentTok{NB.*end-header}
+\end{Highlighting}
+\end{Shaded}
+
+\end{JODGroupHeader}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. initial documentation list: latex ; html ; text}
+\NormalTok{DOCINIT}\AlertTok{=:}\index{DOCINIT@\texttt{DOCINIT}}\FunctionTok{<}\OtherTok{;.}\NormalTok{_}\DecValTok{1} \StringTok{'   '}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{50}\AlertTok{=:}\index{ERR050@\texttt{ERR050}}\StringTok{'no dictionaries open'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{51}\AlertTok{=:}\index{ERR051@\texttt{ERR051}}\StringTok{'not a put dictionary ->'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{52}\AlertTok{=:}\index{ERR052@\texttt{ERR052}}\StringTok{'unable to initialize ->'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{53}\AlertTok{=:}\index{ERR053@\texttt{ERR053}}\StringTok{'word(s) do not exist ->'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{54}\AlertTok{=:}\index{ERR054@\texttt{ERR054}}\StringTok{'unable to load directory'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{55}\AlertTok{=:}\index{ERR055@\texttt{ERR055}}\StringTok{'directory-data inconsistency'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{56}\AlertTok{=:}\index{ERR056@\texttt{ERR056}}\StringTok{'jfile replace failure'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{57}\AlertTok{=:}\index{ERR057@\texttt{ERR057}}\StringTok{'directory update failure'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{58}\AlertTok{=:}\index{ERR058@\texttt{ERR058}}\StringTok{'jfile append failure'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{59}\AlertTok{=:}\index{ERR059@\texttt{ERR059}}\StringTok{'full rooted path required'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{60}\AlertTok{=:}\index{ERR060@\texttt{ERR060}}\StringTok{'unable to create directory ->'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{61}\AlertTok{=:}\index{ERR061@\texttt{ERR061}}\StringTok{'invalid dictionary name;path[;documentation]'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{62}\AlertTok{=:}\index{ERR062@\texttt{ERR062}}\StringTok{'invalid characters in name'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{63}\AlertTok{=:}\index{ERR063@\texttt{ERR063}}\StringTok{'invalid characters in path'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{64}\AlertTok{=:}\index{ERR064@\texttt{ERR064}}\StringTok{'target drive is required'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{65}\AlertTok{=:}\index{ERR065@\texttt{ERR065}}\StringTok{'not enough space on drive/volume ->'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{66}\AlertTok{=:}\index{ERR066@\texttt{ERR066}}\StringTok{'dictionary name in use'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{67}\AlertTok{=:}\index{ERR067@\texttt{ERR067}}\StringTok{'unable to create subdirectories'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{68}\AlertTok{=:}\index{ERR068@\texttt{ERR068}}\StringTok{'unable to setup dictionary file(s)'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{69}\AlertTok{=:}\index{ERR069@\texttt{ERR069}}\StringTok{'error updating master'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{70}\AlertTok{=:}\index{ERR070@\texttt{ERR070}}\StringTok{'request exceeds open limit'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{71}\AlertTok{=:}\index{ERR071@\texttt{ERR071}}\StringTok{'already open ->'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{72}\AlertTok{=:}\index{ERR072@\texttt{ERR072}}\StringTok{'another task opened read/write ->'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{73}\AlertTok{=:}\index{ERR073@\texttt{ERR073}}\StringTok{'missing dictionary file(s) ->'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{74}\AlertTok{=:}\index{ERR074@\texttt{ERR074}}\StringTok{'cannot read dictionary parameters ->'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{75}\AlertTok{=:}\index{ERR075@\texttt{ERR075}}\StringTok{'unable to open directory ->'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{76}\AlertTok{=:}\index{ERR076@\texttt{ERR076}}\StringTok{'master-dictionary inconsistency - try (dpset) ->'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{77}\AlertTok{=:}\index{ERR077@\texttt{ERR077}}\StringTok{'unable to update master'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{79}\AlertTok{=:}\index{ERR079@\texttt{ERR079}}\StringTok{'unable to load references'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{80}\AlertTok{=:}\index{ERR080@\texttt{ERR080}}\StringTok{'not open ->'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{81}\AlertTok{=:}\index{ERR081@\texttt{ERR081}}\StringTok{'path mismatch'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{82}\AlertTok{=:}\index{ERR082@\texttt{ERR082}}\StringTok{'unable to set reference path'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{83}\AlertTok{=:}\index{ERR083@\texttt{ERR083}}\StringTok{'not on path ->'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{84}\AlertTok{=:}\index{ERR084@\texttt{ERR084}}\StringTok{'unable to read data'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{85}\AlertTok{=:}\index{ERR085@\texttt{ERR085}}\StringTok{'words(s) not defined ->'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{86}\AlertTok{=:}\index{ERR086@\texttt{ERR086}}\StringTok{'not in put dictionary ->'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{87}\AlertTok{=:}\index{ERR087@\texttt{ERR087}}\StringTok{'nothing in put dictionary'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{88}\AlertTok{=:}\index{ERR088@\texttt{ERR088}}\StringTok{'jfile read failure'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{89}\AlertTok{=:}\index{ERR089@\texttt{ERR089}}\StringTok{'text(s) to long'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{90}\AlertTok{=:}\index{ERR090@\texttt{ERR090}}\StringTok{'file offset invalid'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{91}\AlertTok{=:}\index{ERR091@\texttt{ERR091}}\StringTok{'definition failure'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{92}\AlertTok{=:}\index{ERR092@\texttt{ERR092}}\StringTok{'duplicate dictionary id number'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{93}\AlertTok{=:}\index{ERR093@\texttt{ERR093}}\StringTok{'directory damaged'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{94}\AlertTok{=:}\index{ERR094@\texttt{ERR094}}\StringTok{'exceeds locale symbol table size - no words defined'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{95}\AlertTok{=:}\index{ERR095@\texttt{ERR095}}\StringTok{'dictionary file attributes do not allow read/write ->'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{96}\AlertTok{=:}\index{ERR096@\texttt{ERR096}}\StringTok{'linux/unix dictionary paths must be / rooted ->'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{97}\AlertTok{=:}\index{ERR097@\texttt{ERR097}}\StringTok{'invalid dictionary document must be character list'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{98}\AlertTok{=:}\index{ERR098@\texttt{ERR098}}\StringTok{'master/dictionary file path mismatch - name/DIDNUM ->'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. name.n or name.name separator character}
+\NormalTok{NDOT}\AlertTok{=:}\index{NDOT@\texttt{NDOT}}\StringTok{'.'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. directory and reserved components in *.ijf files}
+\NormalTok{OFFSET}\AlertTok{=:}\index{OFFSET@\texttt{OFFSET}}\NormalTok{3}\DecValTok{9}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{OK0}\DecValTok{50}\AlertTok{=:}\index{OK050@\texttt{OK050}}\StringTok{'dictionary created ->'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{OK0}\DecValTok{51}\AlertTok{=:}\index{OK051@\texttt{OK051}}\StringTok{' word(s) put in ->'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{OK0}\DecValTok{52}\AlertTok{=:}\index{OK052@\texttt{OK052}}\StringTok{'opened ('}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{OK0}\DecValTok{54}\AlertTok{=:}\index{OK054@\texttt{OK054}}\StringTok{'closed ->'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{OK0}\DecValTok{55}\AlertTok{=:}\index{OK055@\texttt{OK055}}\StringTok{' explanation(s) put in ->'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{OK0}\DecValTok{56}\AlertTok{=:}\index{OK056@\texttt{OK056}}\StringTok{' references put in ->'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{OK0}\DecValTok{57}\AlertTok{=:}\index{OK057@\texttt{OK057}}\StringTok{'(s) put in ->'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{OK0}\DecValTok{58}\AlertTok{=:}\index{OK058@\texttt{OK058}}\StringTok{'dictionary registered ->'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{OK0}\DecValTok{59}\AlertTok{=:}\index{OK059@\texttt{OK059}}\StringTok{'put in ->'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{OK0}\DecValTok{60}\AlertTok{=:}\index{OK060@\texttt{OK060}}\StringTok{' word(s) defined'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{OK0}\DecValTok{61}\AlertTok{=:}\index{OK061@\texttt{OK061}}\StringTok{'(s) deleted from ->'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{OK0}\DecValTok{62}\AlertTok{=:}\index{OK062@\texttt{OK062}}\StringTok{'dictionary document updated ->'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{OK0}\DecValTok{63}\AlertTok{=:}\index{OK063@\texttt{OK063}}\StringTok{'(DOCUMENTDICT = 0) - dictionary document not updated ->'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. path report title}
+\NormalTok{PATHTIT}\AlertTok{=:}\index{PATHTIT@\texttt{PATHTIT}}\StringTok{'Path*'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. visible read status text}
+\NormalTok{READSTATS}\AlertTok{=:}\index{READSTATS@\texttt{READSTATS}}\FunctionTok{<}\OtherTok{;.}\NormalTok{_}\DecValTok{1} \StringTok{' ro rw'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. retains string (y) after last occurrence of (x)}
+\NormalTok{afterlaststr}\AlertTok{=:}\index{afterlaststr@\texttt{afterlaststr}}\FunctionTok{]} \FunctionTok{\}.}\OtherTok{~} \FunctionTok{#}\OtherTok{@}\FunctionTok{[} \FunctionTok{+} \NormalTok{1}\OtherTok{&}\RegionMarkerTok{(}\FunctionTok{i:}\OtherTok{~}\RegionMarkerTok{)}\OtherTok{@}\RegionMarkerTok{(}\FunctionTok{[} \FunctionTok{E.} \FunctionTok{]}\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. contains string in lists of list of names}
+\NormalTok{allnlctn}\AlertTok{=:}\index{allnlctn@\texttt{allnlctn}}\FunctionTok{[} \FunctionTok{/:}\OtherTok{~@:}\NormalTok{nlctn}\OtherTok{&.}\FunctionTok{>} \FunctionTok{[:} \FunctionTok{<} \FunctionTok{]}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. match prefixes in lists of lists of names - (pathnl) related}
+\NormalTok{allnlpfx}\AlertTok{=:}\index{allnlpfx@\texttt{allnlpfx}}\FunctionTok{[} \FunctionTok{/:}\OtherTok{~@:}\NormalTok{nlpfx}\OtherTok{&.}\FunctionTok{>} \FunctionTok{[:} \FunctionTok{<} \FunctionTok{]}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. match suffixes in lists of lists of names}
+\NormalTok{allnlsfx}\AlertTok{=:}\index{allnlsfx@\texttt{allnlsfx}}\FunctionTok{[} \FunctionTok{/:}\OtherTok{~@:}\NormalTok{nlsfx}\OtherTok{&.}\FunctionTok{>} \FunctionTok{[:} \FunctionTok{<} \FunctionTok{]}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{apptable}\AlertTok{=:}\index{apptable@\texttt{apptable}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*apptable v-- appends (name,text) and (name,class,text) tables to file.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  bl apptable bt}
+
+\StringTok{'ttype ixn cnn fp DL'}\CharTok{=.} \DataTypeTok{x}  \CommentTok{NB. directory object !(*)=. DL}
+\NormalTok{sizes}\CharTok{=.} \FunctionTok{#}\OtherTok{&}\FunctionTok{>} \FunctionTok{\{:}\OtherTok{"}\NormalTok{1 }\DataTypeTok{y}         \CommentTok{NB. sizes}
+\NormalTok{pf}\CharTok{=.} \NormalTok{PUTFACTOR_}\DecValTok{_}\NormalTok{DL}
+
+\CommentTok{NB. words and macros have class or type}
+\KeywordTok{if.} \NormalTok{wmt}\CharTok{=.} \NormalTok{ttype }\FunctionTok{e.} \NormalTok{WORD}\FunctionTok{,}\NormalTok{MACRO }\KeywordTok{do.} \NormalTok{class }\CharTok{=.} \FunctionTok{;} \NormalTok{1 }\FunctionTok{\{}\OtherTok{"}\NormalTok{1 }\DataTypeTok{y} \KeywordTok{end.}
+
+\NormalTok{texts}\CharTok{=.} \DataTypeTok{y}
+\NormalTok{cnall}\CharTok{=.} \FunctionTok{i.}\NormalTok{0}
+\DataTypeTok{y}\CharTok{=.} \FunctionTok{\{.}\OtherTok{"}\NormalTok{1 }\DataTypeTok{y}   \CommentTok{NB. no longer required}
+
+\KeywordTok{while.} \FunctionTok{#}\NormalTok{texts }\KeywordTok{do.}
+  \NormalTok{cnt}\CharTok{=.} \NormalTok{pf }\FunctionTok{<.} \FunctionTok{#}\NormalTok{texts}
+  \NormalTok{tn}\CharTok{=.}  \NormalTok{cnt }\FunctionTok{\{.} \NormalTok{texts}
+
+  \NormalTok{un0}\CharTok{=.} \FunctionTok{<}\OtherTok{"}\NormalTok{1 tn}
+  \NormalTok{un1}\CharTok{=.} \FunctionTok{<}\OtherTok{"}\NormalTok{1 }\RegionMarkerTok{(}\FunctionTok{\{.}\OtherTok{"}\NormalTok{1 tn}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{"}\NormalTok{0 1 DOCINIT}
+
+  \KeywordTok{if.} \NormalTok{badappend cn}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{,} \NormalTok{un0 }\FunctionTok{,.} \NormalTok{un1}\RegionMarkerTok{)} \NormalTok{jappend fp }\KeywordTok{do.}
+    \NormalTok{jderr ERR0}\DecValTok{58} \KeywordTok{return.}  \CommentTok{NB. errmsg: append failure}
+  \KeywordTok{else.}
+    \NormalTok{cnall}\CharTok{=.} \NormalTok{cnall }\FunctionTok{,} \NormalTok{fod cn}
+  \KeywordTok{end.}
+
+  \NormalTok{texts}\CharTok{=.} \NormalTok{cnt }\FunctionTok{\}.} \NormalTok{texts}
+\KeywordTok{end.}
+
+\CommentTok{NB. append directory and inverted lists}
+\NormalTok{msg}\CharTok{=.} \NormalTok{ERR0}\DecValTok{57}  \CommentTok{NB. errmsg: directory update failure}
+\KeywordTok{if.} \RegionMarkerTok{(}\NormalTok{tc}\CharTok{=.} \FunctionTok{#}\DataTypeTok{y}\RegionMarkerTok{)} \FunctionTok{~:} \FunctionTok{#}\NormalTok{cnall }\KeywordTok{do.} \NormalTok{jderr msg }\KeywordTok{return.} \KeywordTok{end.}
+
+\NormalTok{stamp}\CharTok{=.} \NormalTok{tc}\FunctionTok{#}\NormalTok{nowfd now }\StringTok{''}
+\NormalTok{un0}\CharTok{=.} \NormalTok{stamp}\FunctionTok{;}\NormalTok{stamp}\FunctionTok{;}\NormalTok{sizes}\FunctionTok{;<}\NormalTok{tc}\FunctionTok{#a:}
+\NormalTok{un1}\CharTok{=.} \NormalTok{CNPUTDATE}\FunctionTok{,}\NormalTok{CNCREATION}\FunctionTok{,}\NormalTok{CNSIZE}\FunctionTok{,}\NormalTok{CNEXPLAIN}
+
+\KeywordTok{if.} \NormalTok{wmt }\KeywordTok{do.}
+  \NormalTok{dropnc_}\DecValTok{_}\NormalTok{DL ttype  }\CommentTok{NB. force class reload}
+  \NormalTok{un0}\CharTok{=.} \NormalTok{class}\FunctionTok{;}\NormalTok{un0}
+  \NormalTok{un1}\CharTok{=.} \NormalTok{CNCLASS}\FunctionTok{,}\NormalTok{un1}
+\KeywordTok{end.}
+
+\KeywordTok{if.} \NormalTok{badrc msg}\CharTok{=.} \NormalTok{un0 invappend fp}\FunctionTok{;}\NormalTok{un1 }\KeywordTok{do.} \NormalTok{msg}
+\KeywordTok{else.}
+  \CommentTok{NB. update directory}
+  \DataTypeTok{y}\CharTok{=.}    \RegionMarkerTok{(}\FunctionTok{".}\NormalTok{ixn}\RegionMarkerTok{)} \FunctionTok{,} \DataTypeTok{y}
+  \NormalTok{cnall}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{".}\NormalTok{cnn}\RegionMarkerTok{)} \FunctionTok{,} \NormalTok{cnall}
+  \KeywordTok{if.} \NormalTok{badrc }\RegionMarkerTok{(}\NormalTok{ttype}\FunctionTok{,}\NormalTok{fp}\RegionMarkerTok{)} \NormalTok{savedir_}\DecValTok{_}\NormalTok{DL }\DataTypeTok{y}\FunctionTok{;}\NormalTok{cnall }\KeywordTok{do.} \NormalTok{jderr msg }\KeywordTok{else.} \NormalTok{ok tc }\KeywordTok{end.}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{appwords}\AlertTok{=:}\index{appwords@\texttt{appwords}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*appwords v-- appends new words in blocks of (PUTFACTOR).}
+
+\StringTok{'loc DL'}\CharTok{=.} \DataTypeTok{x}  \CommentTok{NB. directory object !(*)=. DL}
+\NormalTok{wp}\CharTok{=.} \NormalTok{WP_}\DecValTok{_}\NormalTok{DL }\FunctionTok{[} \NormalTok{pf}\CharTok{=.} \NormalTok{PUTFACTOR_}\DecValTok{_}\NormalTok{DL}
+\NormalTok{names}\CharTok{=.} \DataTypeTok{y}
+\NormalTok{lnames}\CharTok{=.} \DataTypeTok{y} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \NormalTok{locsfx loc}
+\NormalTok{size}\CharTok{=.} \NormalTok{class}\CharTok{=.} \NormalTok{cnall}\CharTok{=.} \FunctionTok{i.}\NormalTok{0}
+
+\KeywordTok{while.} \FunctionTok{#}\NormalTok{names }\KeywordTok{do.}
+  \NormalTok{cnt}\CharTok{=.} \NormalTok{pf }\FunctionTok{<.} \FunctionTok{#}\NormalTok{names}
+  \NormalTok{wn}\CharTok{=.}  \NormalTok{cnt }\FunctionTok{\{.} \NormalTok{names }\FunctionTok{[} \NormalTok{lwn}\CharTok{=.} \NormalTok{cnt }\FunctionTok{\{.} \NormalTok{lnames}
+  \NormalTok{val}\CharTok{=.} \NormalTok{wrep}\OtherTok{&.}\FunctionTok{>} \NormalTok{lwn   }\CommentTok{NB. word values}
+  \NormalTok{bsz}\CharTok{=.} \FunctionTok{#}\OtherTok{&}\FunctionTok{>} \NormalTok{val       }\CommentTok{NB. NIMP word byte sizes (size testing)}
+  \NormalTok{bnc}\CharTok{=.} \NormalTok{nc lwn}
+  \NormalTok{un0}\CharTok{=.} \FunctionTok{<}\OtherTok{"}\NormalTok{1 wn }\FunctionTok{,.} \RegionMarkerTok{(}\FunctionTok{<}\OtherTok{"}\NormalTok{0 bnc}\RegionMarkerTok{)} \FunctionTok{,.} \NormalTok{val}
+  \NormalTok{un1}\CharTok{=.} \FunctionTok{<}\OtherTok{"}\NormalTok{1 wn }\FunctionTok{,}\OtherTok{"}\NormalTok{0 1 DOCINIT}
+
+  \CommentTok{NB. append words}
+  \KeywordTok{if.} \NormalTok{badappend cn}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{,} \NormalTok{un0 }\FunctionTok{,.} \NormalTok{un1}\RegionMarkerTok{)} \NormalTok{jappend wp }\KeywordTok{do.}
+    \NormalTok{jderr ERR0}\DecValTok{58} \KeywordTok{return.}  \CommentTok{NB. errmsg: append failure}
+  \KeywordTok{else.}
+    \NormalTok{cnall}\CharTok{=.} \NormalTok{cnall }\FunctionTok{,} \NormalTok{fod cn}
+    \NormalTok{size}\CharTok{=.}  \NormalTok{size }\FunctionTok{,} \NormalTok{bsz}
+    \NormalTok{class}\CharTok{=.} \NormalTok{class }\FunctionTok{,} \NormalTok{bnc}
+  \KeywordTok{end.}
+
+  \NormalTok{names }\CharTok{=.} \NormalTok{cnt }\FunctionTok{\}.} \NormalTok{names }\FunctionTok{[} \NormalTok{lnames }\CharTok{=.} \NormalTok{cnt }\FunctionTok{\}.} \NormalTok{lnames}
+\KeywordTok{end.}
+
+\CommentTok{NB. append directory and inverted lists}
+\NormalTok{msg}\CharTok{=.} \NormalTok{ERR0}\DecValTok{57}  \CommentTok{NB. errmsg: directory update failure}
+\KeywordTok{if.} \RegionMarkerTok{(}\FunctionTok{#}\DataTypeTok{y}\RegionMarkerTok{)} \FunctionTok{~:} \FunctionTok{#}\NormalTok{cnall }\KeywordTok{do.} \NormalTok{jderr msg }\KeywordTok{return.} \KeywordTok{end.}
+\NormalTok{wc}\CharTok{=.} \FunctionTok{#}\DataTypeTok{y}  \CommentTok{NB. number of words}
+
+\NormalTok{stamp}\CharTok{=.} \NormalTok{wc}\FunctionTok{#}\NormalTok{nowfd now }\StringTok{''}
+\NormalTok{un0}\CharTok{=.} \NormalTok{class}\FunctionTok{;}\NormalTok{stamp}\FunctionTok{;}\NormalTok{stamp}\FunctionTok{;}\NormalTok{size}\FunctionTok{;<}\NormalTok{wc}\FunctionTok{#a:}
+\NormalTok{un1}\CharTok{=.} \NormalTok{CNCLASS}\FunctionTok{,}\NormalTok{CNPUTDATE}\FunctionTok{,}\NormalTok{CNCREATION}\FunctionTok{,}\NormalTok{CNSIZE}\FunctionTok{,}\NormalTok{CNEXPLAIN }\CommentTok{NB. NIMP word append}
+\KeywordTok{if.} \NormalTok{badrc msg}\CharTok{=.} \NormalTok{un0 invappend wp}\FunctionTok{;}\NormalTok{un1 }\KeywordTok{do.} \NormalTok{msg}
+\KeywordTok{else.}
+  \CommentTok{NB. update word directory}
+  \DataTypeTok{y}\CharTok{=.}    \NormalTok{WORDIX_}\DecValTok{_}\NormalTok{DL }\FunctionTok{,} \DataTypeTok{y}
+  \NormalTok{cnall}\CharTok{=.} \NormalTok{WORDCN_}\DecValTok{_}\NormalTok{DL }\FunctionTok{,} \NormalTok{cnall}
+  \KeywordTok{if.} \NormalTok{badrc }\RegionMarkerTok{(}\NormalTok{WORD}\FunctionTok{,}\NormalTok{wp}\RegionMarkerTok{)} \NormalTok{savedir_}\DecValTok{_}\NormalTok{DL }\DataTypeTok{y}\FunctionTok{;}\NormalTok{cnall }\KeywordTok{do.} \NormalTok{jderr msg }\KeywordTok{else.} \NormalTok{ok wc }\KeywordTok{end.}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. bad jfile components - first names do not match list}
+\NormalTok{badcn}\AlertTok{=:}\index{badcn@\texttt{badcn}}\FunctionTok{[:} \FunctionTok{-.} \FunctionTok{[} \FunctionTok{-:} \FunctionTok{[:} \FunctionTok{\{.}\OtherTok{&}\FunctionTok{>} \FunctionTok{]}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{bnlsearch}\AlertTok{=:}\index{bnlsearch@\texttt{bnlsearch}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*bnlsearch  v-- searches put dictionary backup name  lists for}
+\CommentTok{NB. simple character list patterns.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad: ilObjOptNc dnlsearch (clPattern ; clDir)}
+
+\CommentTok{NB. put dictionary directory object}
+\NormalTok{DL}\CharTok{=.} \FunctionTok{\{:}\NormalTok{0}\FunctionTok{\{}\NormalTok{DPATH}
+
+\CommentTok{NB. if y is '.' (NDOT) return backup suffixes}
+\KeywordTok{if.} \RegionMarkerTok{(}\FunctionTok{,}\NormalTok{NDOT}\RegionMarkerTok{)}\FunctionTok{-:}\NormalTok{alltrim }\DataTypeTok{y} \KeywordTok{do.}
+ \NormalTok{dot}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{0}\FunctionTok{<#}\NormalTok{bn}\CharTok{=.} \NormalTok{bnums BAK_}\DecValTok{_}\NormalTok{DL}\RegionMarkerTok{)}\FunctionTok{\{}\StringTok{''}\FunctionTok{;}\NormalTok{NDOT}
+ \NormalTok{ok dot }\FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \StringTok{'r<0>0.d'} \NormalTok{8}\OtherTok{!:}\NormalTok{0 bn}
+\KeywordTok{else.}
+ \NormalTok{ok }\StringTok{'NIMP bnlsearch'}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{bnums}\AlertTok{=:}\index{bnums@\texttt{bnums}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*bnums  v--  returns unique backup ordered list  of dictionary}
+\CommentTok{NB. backup numbers.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  il =. bnums clPath}
+\CommentTok{NB.}
+\CommentTok{NB.   bnums BAK NB. (BAK) directory object noun}
+
+\CommentTok{NB. requires first character of all (JDFILES) to be the same}
+\FunctionTok{\textbackslash{}:}\OtherTok{~} \FunctionTok{~.} \FunctionTok{,} \FunctionTok{".} \RegionMarkerTok{(}\FunctionTok{\{.;}\NormalTok{JDFILES}\RegionMarkerTok{)}\OtherTok{&}\NormalTok{beforestr}\OtherTok{&}\FunctionTok{>} \FunctionTok{\{.}\OtherTok{"}\NormalTok{1 }\RegionMarkerTok{(}\NormalTok{1}\OtherTok{!:}\NormalTok{0}\RegionMarkerTok{)} \FunctionTok{<}\DataTypeTok{y}\FunctionTok{,}\StringTok{'*'}\FunctionTok{,}\NormalTok{IJF}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{checkopen}\AlertTok{=:}\index{checkopen@\texttt{checkopen}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*checkopen v-- are any dictionaries open?}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  checkopen uuIgnore}
+
+\KeywordTok{if.} \FunctionTok{#}\NormalTok{DPATH }\KeywordTok{do.} \NormalTok{OK }\KeywordTok{else.} \NormalTok{jderr ERR0}\DecValTok{50} \KeywordTok{end.} \CommentTok{NB. errmsg: no dictionaries open}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{checkpath}\AlertTok{=:}\index{checkpath@\texttt{checkpath}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*checkpath  v-- returns  ok  if the current  path matches  the}
+\CommentTok{NB. current   dictionary's  reference   path.  Path  matching  is}
+\CommentTok{NB. critical to the integrity of groups and suites.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  checkpath bacl}
+\CommentTok{NB.}
+\CommentTok{NB.   checkpath <'6'   NB. directory object reference}
+
+\NormalTok{DL}\CharTok{=.} \DataTypeTok{y}  \CommentTok{NB. directory object !(*)=. DL}
+\NormalTok{rpath}\CharTok{=.} \FunctionTok{,}\NormalTok{RPATH_}\DecValTok{_}\NormalTok{DL}
+\NormalTok{dpath}\CharTok{=.} \FunctionTok{,>} \NormalTok{1 }\FunctionTok{\{}\OtherTok{"}\NormalTok{1 DPATH}
+
+\KeywordTok{if.} \FunctionTok{#}\NormalTok{rpath }\KeywordTok{do.}
+  \KeywordTok{if.} \NormalTok{rpath }\FunctionTok{-:} \NormalTok{dpath }\KeywordTok{do.} \NormalTok{OK }\KeywordTok{else.} \NormalTok{jderr ERR0}\DecValTok{81} \KeywordTok{end.} \CommentTok{NB. errmsg: path mismatch}
+\KeywordTok{else.}
+
+  \CommentTok{NB. dictionary path empty save current path and return ok}
+  \KeywordTok{if.} \NormalTok{badreps }\RegionMarkerTok{(}\FunctionTok{<}\NormalTok{dpath}\RegionMarkerTok{)} \NormalTok{jreplace UF_}\DecValTok{_}\NormalTok{DL}\FunctionTok{;}\NormalTok{CNRPATH }\KeywordTok{do.}
+    \NormalTok{jderr ERR0}\DecValTok{82} \CommentTok{NB. errmsg: unable to set reference path}
+  \KeywordTok{else.}
+    \NormalTok{RPATH_}\DecValTok{_}\NormalTok{DL}\AlertTok{=:}\index{RPATH\_\_DL@\texttt{RPATH\_\_DL}} \NormalTok{dpath}
+    \NormalTok{OK}
+  \KeywordTok{end.}
+
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{checkput}\AlertTok{=:}\index{checkput@\texttt{checkput}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*checkput  v--  is  the  first  path  dictionary a  read/write}
+\CommentTok{NB. dictionary?}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  checkput uuIgnore}
+
+\KeywordTok{if.} \FunctionTok{#}\NormalTok{DPATH }\KeywordTok{do.}
+  \NormalTok{DL}\CharTok{=.} \NormalTok{3}\FunctionTok{\{}\NormalTok{0}\FunctionTok{\{}\NormalTok{DPATH  }\CommentTok{NB. directory object !(*)=. DL}
+
+  \CommentTok{NB. return directory object reference or errmsg: not a put dictionary}
+  \KeywordTok{if.} \NormalTok{RW_}\DecValTok{_}\NormalTok{DL }\KeywordTok{do.} \NormalTok{ok DL }\KeywordTok{else.} \RegionMarkerTok{(}\NormalTok{jderr ERR0}\DecValTok{51}\RegionMarkerTok{)}\FunctionTok{,<}\NormalTok{DNAME_}\DecValTok{_}\NormalTok{DL }\KeywordTok{end.}
+\KeywordTok{else.}
+  \NormalTok{jderr ERR0}\DecValTok{50}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{closedict}\AlertTok{=:}\index{closedict@\texttt{closedict}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*closedict v-- closes dictionaries. Dictionary names have been}
+\CommentTok{NB. validated prior to calling this verb. Destroys  all directory}
+\CommentTok{NB. objects. The state  of directories on file are maintained  by}
+\CommentTok{NB. other verbs. So no directory updating is required here.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  closedict blclDictionary}
+\CommentTok{NB.}
+\CommentTok{NB.   closedict 'd0';'d1'   NB. close di}
+
+\CommentTok{NB. close request seems valid - mark master}
+\KeywordTok{if.} \NormalTok{badrc msg}\CharTok{=.} \NormalTok{markmast 1 }\KeywordTok{do.} \NormalTok{msg }\KeywordTok{return.} \KeywordTok{end.}
+
+\CommentTok{NB. destroy open directory objects}
+\NormalTok{uv}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{\{.}\OtherTok{"}\NormalTok{1 DPATH}\RegionMarkerTok{)} \FunctionTok{e.} \DataTypeTok{y}
+\KeywordTok{if.} \FunctionTok{+.}\OtherTok{/}\NormalTok{uv }\KeywordTok{do.}
+  \NormalTok{coerase}\OtherTok{"}\NormalTok{0 uv}\FunctionTok{#\{:}\OtherTok{"}\NormalTok{1 DPATH}
+  \NormalTok{DPATH}\AlertTok{=:}\index{DPATH@\texttt{DPATH}} \NormalTok{DPATH }\FunctionTok{#}\OtherTok{~} \FunctionTok{-.} \NormalTok{uv}
+\KeywordTok{else.}
+  \RegionMarkerTok{(}\NormalTok{jderr ERR0}\DecValTok{80}\RegionMarkerTok{)}\FunctionTok{,<}\DataTypeTok{y} \CommentTok{NB. errmsg: not open}
+\KeywordTok{end.}
+
+\CommentTok{NB. update master open status and release}
+\DataTypeTok{x}\CharTok{=.} \FunctionTok{>} \DataTypeTok{x}
+\NormalTok{uv}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{0}\FunctionTok{\{}\DataTypeTok{x}\RegionMarkerTok{)} \FunctionTok{i.} \DataTypeTok{y}
+\DataTypeTok{x}\CharTok{=.} \FunctionTok{<} \RegionMarkerTok{(}\FunctionTok{<}\NormalTok{0}\RegionMarkerTok{)} \RegionMarkerTok{(}\FunctionTok{<}\NormalTok{3}\FunctionTok{;}\NormalTok{uv}\RegionMarkerTok{)}\OtherTok{\}} \DataTypeTok{x}
+\KeywordTok{if.} \NormalTok{badreps }\DataTypeTok{x} \NormalTok{jreplace JMASTER}\FunctionTok{;}\NormalTok{CNMFTAB }\KeywordTok{do.}
+  \NormalTok{jdmasterr ERR0}\DecValTok{77}  \CommentTok{NB. errmsg: unable to update master}
+\KeywordTok{elseif.} \NormalTok{badrc msg}\CharTok{=.} \NormalTok{markmast}\OtherTok{~}\NormalTok{0  }\KeywordTok{do.} \NormalTok{msg}
+\KeywordTok{elseif.} \KeywordTok{do.} \RegionMarkerTok{(}\NormalTok{ok OK0}\DecValTok{54}\RegionMarkerTok{)}\FunctionTok{,}\DataTypeTok{y}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{createst}\AlertTok{=:}\index{createst@\texttt{createst}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*createst v-- storage object creation verb. (y) is the object}
+\CommentTok{NB. locale reference returned by (conew).}
+\CommentTok{NB.}
+\CommentTok{NB. monad: createst uuIgnore}
+\CommentTok{NB.}
+\CommentTok{NB.   createst__ST ST;MK;UT;<SO}
+
+\CommentTok{NB. object references !(*)=. JOD ST MK UT SO}
+\StringTok{'JOD ST MK UT SO'}\AlertTok{=:}\index{00multiple@\texttt{'...'=:}} \DataTypeTok{y}
+
+\CommentTok{NB. word and macro type/name class codes !(*)=. HASTYPE}
+\NormalTok{HASTYPE}\AlertTok{=:}\index{HASTYPE@\texttt{HASTYPE}} \RegionMarkerTok{(}\FunctionTok{i.} \NormalTok{4}\RegionMarkerTok{)}\FunctionTok{,}\NormalTok{MACROTYPE}
+
+\CommentTok{NB. brand storage object with unique id !(*)=. JODOBID}
+\NormalTok{saveobid JODOBID}\AlertTok{=:}\index{JODOBID@\texttt{JODOBID}} \NormalTok{didnum 0}
+
+\CommentTok{NB. inverted data/code component cross reference !(*)=. INCNXR}
+\NormalTok{uv}\CharTok{=.} \NormalTok{CNCLASS}\FunctionTok{,}\NormalTok{CNCREATION}\FunctionTok{,}\NormalTok{CNPUTDATE}\FunctionTok{,}\NormalTok{CNSIZE}
+\NormalTok{1 }\FunctionTok{[} \NormalTok{INCNXR}\AlertTok{=:}\index{INCNXR@\texttt{INCNXR}} \RegionMarkerTok{(}\NormalTok{INCLASS}\FunctionTok{,}\NormalTok{INCREATE}\FunctionTok{,}\NormalTok{INPUT}\FunctionTok{,}\NormalTok{INSIZE}\RegionMarkerTok{)} \FunctionTok{,:} \NormalTok{uv}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{defwords}\AlertTok{=:}\index{defwords@\texttt{defwords}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*defwords v-- fetches and defines words.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  bacl defwords blcl}
+\CommentTok{NB.}
+\CommentTok{NB.   (<'base') defwords ;:'please define my words'}
+
+\KeywordTok{if.} \NormalTok{badrc }\DataTypeTok{y}\CharTok{=.} \NormalTok{checknames }\DataTypeTok{y} \KeywordTok{do.} \DataTypeTok{y} \KeywordTok{return.} \KeywordTok{end.}
+\NormalTok{wrds}\CharTok{=.} \DataTypeTok{y}\CharTok{=.} \FunctionTok{\}.}\DataTypeTok{y}
+
+\CommentTok{NB. if all words are not on path get nothing}
+\KeywordTok{if.} \NormalTok{badrc wnl}\CharTok{=.} \NormalTok{pathnl WORD }\KeywordTok{do.} \NormalTok{wnl }\KeywordTok{return.} \KeywordTok{end.}
+\NormalTok{wnl}\CharTok{=.} \FunctionTok{\}.} \NormalTok{wnl}
+
+\CommentTok{NB. errmsg: exceeds symbol table limit for locale}
+\KeywordTok{if.} \NormalTok{SYMBOLLIM }\FunctionTok{<:} \FunctionTok{#}\NormalTok{wnl }\KeywordTok{do.} \NormalTok{jderr ERR0}\DecValTok{94} \KeywordTok{return.} \KeywordTok{end.}
+
+\CommentTok{NB. remove any empty dictionaries from path}
+\NormalTok{b}\CharTok{=.}   \NormalTok{0}\OtherTok{&}\FunctionTok{<}\OtherTok{@:}\FunctionTok{#}\OtherTok{&}\FunctionTok{>} \NormalTok{wnl}
+\NormalTok{wnl}\CharTok{=.} \NormalTok{b}\FunctionTok{#}\NormalTok{wnl }\FunctionTok{[} \NormalTok{dpath}\CharTok{=.} \NormalTok{b}\FunctionTok{#}\NormalTok{DPATH}
+
+\KeywordTok{if.} \FunctionTok{*.}\OtherTok{/}\NormalTok{b}\CharTok{=.} \DataTypeTok{y} \FunctionTok{e.} \FunctionTok{;} \NormalTok{wnl }\KeywordTok{do.}
+
+  \NormalTok{loc}\CharTok{=.} \NormalTok{locsfx }\DataTypeTok{x}
+
+  \CommentTok{NB. run down the path fetching the first word occurrences}
+  \KeywordTok{for_dp.} \NormalTok{wnl }\KeywordTok{do.}
+    \NormalTok{ix}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{dp}\CharTok{=.} \FunctionTok{>}\NormalTok{dp}\RegionMarkerTok{)} \FunctionTok{i.} \DataTypeTok{y}
+
+    \CommentTok{NB. if any words in current dictionary load them}
+    \KeywordTok{if.} \FunctionTok{+.}\OtherTok{/}\NormalTok{wf}\CharTok{=.} \NormalTok{ix}\FunctionTok{<#}\NormalTok{dp }\KeywordTok{do.}
+      \KeywordTok{if.} \NormalTok{badrc msg}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{wf}\FunctionTok{#}\NormalTok{ix}\RegionMarkerTok{)} \NormalTok{loadwords loc}\FunctionTok{,\{:}\NormalTok{dp_index}\FunctionTok{\{}\NormalTok{dpath }\KeywordTok{do.}
+        \NormalTok{msg }\KeywordTok{return.}
+      \KeywordTok{end.}
+
+      \CommentTok{NB. remove fetched words from list quit if no more words}
+      \KeywordTok{if.} \NormalTok{0}\FunctionTok{=#}\DataTypeTok{y}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{-.}\NormalTok{wf}\RegionMarkerTok{)}\FunctionTok{#}\DataTypeTok{y} \KeywordTok{do.} \KeywordTok{break.} \KeywordTok{end.}
+    \KeywordTok{end.}
+  \KeywordTok{end.}
+
+  \CommentTok{NB. test name class of fetched words}
+  \KeywordTok{if.} \NormalTok{1}\OtherTok{&}\FunctionTok{e.} \NormalTok{b}\CharTok{=.} \NormalTok{0}\OtherTok{&}\FunctionTok{>} \NormalTok{nc wrds}\CharTok{=.} \NormalTok{wrds}\FunctionTok{,}\OtherTok{&.}\FunctionTok{>}\NormalTok{loc }\KeywordTok{do.}
+    \RegionMarkerTok{(}\NormalTok{jderr ERR0}\DecValTok{85}\RegionMarkerTok{)}\FunctionTok{,}\NormalTok{b}\FunctionTok{#}\NormalTok{wrds }\CommentTok{NB. errmsg: words(s) not defined}
+  \KeywordTok{else.}
+    \NormalTok{ok }\RegionMarkerTok{(}\FunctionTok{":#}\NormalTok{b}\RegionMarkerTok{)}\FunctionTok{,}\NormalTok{OK0}\DecValTok{60}
+  \KeywordTok{end.}
+
+\KeywordTok{else.}
+  \RegionMarkerTok{(}\NormalTok{jderr ERR0}\DecValTok{83}\RegionMarkerTok{)}\FunctionTok{,}\RegionMarkerTok{(}\FunctionTok{-.}\NormalTok{b}\RegionMarkerTok{)}\FunctionTok{#}\DataTypeTok{y} \CommentTok{NB. errmsg: not on path}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{delstuff}\AlertTok{=:}\index{delstuff@\texttt{delstuff}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*delstuff v-- deletes words, tests, groups, suites and macros}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  (iaObject ; il ; bacl) delstuff blcl}
+\CommentTok{NB.}
+\CommentTok{NB.   cn =. CNPUTDATE,CNCREATION,CNEXPLAIN}
+\CommentTok{NB.   (GROUP;cn;<DL) delstuff ;:'we groups are toast'}
+
+\StringTok{'obj cn DL'}\CharTok{=.} \DataTypeTok{x}  \CommentTok{NB. directory object !(*)=. DL}
+
+\KeywordTok{if.} \NormalTok{badrc }\DataTypeTok{y}\CharTok{=.} \NormalTok{checknames }\DataTypeTok{y} \KeywordTok{do.} \DataTypeTok{y}
+\KeywordTok{elseif.} \NormalTok{loaddir_}\DecValTok{_}\NormalTok{DL obj }\KeywordTok{do.}
+  \NormalTok{jderr ERR0}\DecValTok{54} \CommentTok{NB. errmsg: unable to load directory}
+\KeywordTok{elseif.} \FunctionTok{#}\NormalTok{ix }\CharTok{=.}\FunctionTok{".}\RegionMarkerTok{(}\FunctionTok{>}\NormalTok{dnix_}\DecValTok{_}\NormalTok{DL obj}\RegionMarkerTok{)}\FunctionTok{,}\StringTok{'__DL'} \KeywordTok{do.}
+
+  \NormalTok{oc}\CharTok{=.} \FunctionTok{+}\OtherTok{/}\NormalTok{b}\CharTok{=.} \NormalTok{ix }\FunctionTok{e.} \DataTypeTok{y}\CharTok{=.} \FunctionTok{~.\}.}\DataTypeTok{y}
+
+  \KeywordTok{if.} \NormalTok{oc }\FunctionTok{~:} \FunctionTok{#}\DataTypeTok{y} \KeywordTok{do.}
+    \RegionMarkerTok{(}\NormalTok{jderr ERR0}\DecValTok{86}\RegionMarkerTok{)}\FunctionTok{,}\RegionMarkerTok{(}\FunctionTok{-.}\DataTypeTok{y} \FunctionTok{e.} \NormalTok{ix}\RegionMarkerTok{)}\FunctionTok{#}\DataTypeTok{y} \CommentTok{NB. errmsg: not in put dictionary}
+    \KeywordTok{return.}
+  \KeywordTok{end.}
+
+  \NormalTok{list}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{b}\CharTok{=.} \FunctionTok{-.}\NormalTok{b}\RegionMarkerTok{)}\FunctionTok{#}\NormalTok{ix}
+  \NormalTok{comp}\CharTok{=.} \NormalTok{b}\FunctionTok{#".}\RegionMarkerTok{(}\NormalTok{in}\CharTok{=.} \FunctionTok{>}\NormalTok{dncn_}\DecValTok{_}\NormalTok{DL obj}\RegionMarkerTok{)}\FunctionTok{,}\StringTok{'__DL'}
+  \NormalTok{fp}\CharTok{=.} \NormalTok{dfopen_}\DecValTok{_}\NormalTok{DL in}\CharTok{=.} \FunctionTok{\{.}\NormalTok{in}
+
+  \CommentTok{NB. remove old inverted data from object}
+  \NormalTok{dropinv_}\DecValTok{_}\NormalTok{DL 0}
+
+  \CommentTok{NB. delete from inverted lists and main directory}
+  \KeywordTok{if.} \NormalTok{badrc msg}\CharTok{=.} \NormalTok{b invdelete fp}\FunctionTok{;}\NormalTok{cn }\KeywordTok{do.}
+    \NormalTok{msg }\FunctionTok{[} \NormalTok{dfclose_}\DecValTok{_}\NormalTok{DL in }\KeywordTok{return.}
+  \KeywordTok{elseif.} \NormalTok{badrc msg}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{obj}\FunctionTok{,}\NormalTok{fp}\RegionMarkerTok{)} \NormalTok{savedir_}\DecValTok{_}\NormalTok{DL list}\FunctionTok{;}\NormalTok{comp }\KeywordTok{do.}
+    \NormalTok{msg }\FunctionTok{[} \NormalTok{dfclose_}\DecValTok{_}\NormalTok{DL in }\KeywordTok{return.}
+  \KeywordTok{end.}
+
+  \CommentTok{NB. remove any put dictionary word references}
+  \KeywordTok{if.} \NormalTok{WORD}\FunctionTok{=}\NormalTok{obj }\KeywordTok{do.}
+    \KeywordTok{if.} \NormalTok{badrc msg}\CharTok{=.} \NormalTok{DL delwordrefs }\DataTypeTok{y} \KeywordTok{do.} \NormalTok{msg }\FunctionTok{[} \NormalTok{dfclose_}\DecValTok{_}\NormalTok{DL in }\KeywordTok{return.} \KeywordTok{end.}
+  \KeywordTok{end.}
+
+  \NormalTok{dfclose_}\DecValTok{_}\NormalTok{DL in}
+  \NormalTok{msg}\CharTok{=.} \StringTok{' '}\FunctionTok{,>}\NormalTok{dnnm_}\DecValTok{_}\NormalTok{DL obj}
+  \RegionMarkerTok{(}\NormalTok{ok }\RegionMarkerTok{(}\FunctionTok{":} \NormalTok{oc}\RegionMarkerTok{)}\FunctionTok{,}\NormalTok{msg}\FunctionTok{,}\NormalTok{OK0}\DecValTok{61}\RegionMarkerTok{)}\FunctionTok{,<}\NormalTok{DNAME_}\DecValTok{_}\NormalTok{DL}
+
+\KeywordTok{elseif.do.}
+  \NormalTok{jderr ERR0}\DecValTok{87} \CommentTok{NB. errmsg: nothing in put dictionary}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{delwordrefs}\AlertTok{=:}\index{delwordrefs@\texttt{delwordrefs}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*delwordrefs  v--  deletes  word  references.  Word  reference}
+\CommentTok{NB. deletion is required when deleting words to insure that words}
+\CommentTok{NB. do not leave  "reference shadows." A reference  shadow occurs}
+\CommentTok{NB. when  a  word  with  references  is  deleted and  moved to  a}
+\CommentTok{NB. dictionary further down  on the path. The reference reporting}
+\CommentTok{NB. mechanism picks  up  the shadow and never fetches the  actual}
+\CommentTok{NB. reference list. Words are the  only  JOD  objects with stored}
+\CommentTok{NB. references.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  ba delwordrefs blclWords}
+
+\NormalTok{DL}\CharTok{=.} \DataTypeTok{x} \CommentTok{NB. directory object !(*)=. DL}
+
+\CommentTok{NB. errmsg: unable to load references}
+\KeywordTok{if.} \NormalTok{loadref_}\DecValTok{_}\NormalTok{DL WORD }\KeywordTok{do.} \NormalTok{jderr ERR0}\DecValTok{79}
+\KeywordTok{elseif.do.}
+
+  \CommentTok{NB. find any references to deleted words}
+  \NormalTok{uv}\CharTok{=.} \NormalTok{WORDREFIX_}\DecValTok{_}\NormalTok{DL }\FunctionTok{e.} \DataTypeTok{y}
+  \KeywordTok{if.} \FunctionTok{+.}\OtherTok{/}\NormalTok{uv }\KeywordTok{do.}
+
+    \NormalTok{dfopen_}\DecValTok{_}\NormalTok{DL }\StringTok{'U'}
+    \NormalTok{fp}\CharTok{=.} \NormalTok{UP_}\DecValTok{_}\NormalTok{DL}
+
+    \CommentTok{NB. remove any references from put dictionary}
+    \NormalTok{uv1}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{uv}\CharTok{=.} \FunctionTok{-.}\NormalTok{uv}\RegionMarkerTok{)}\FunctionTok{#}\NormalTok{WORDREFIX_}\DecValTok{_}\NormalTok{DL}
+    \NormalTok{uv2}\CharTok{=.} \NormalTok{uv}\FunctionTok{#}\NormalTok{WORDREFCN_}\DecValTok{_}\NormalTok{DL}
+
+    \CommentTok{NB. update reference directory and close}
+    \KeywordTok{if.} \NormalTok{badrc msg}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{WORD}\FunctionTok{,}\NormalTok{fp}\RegionMarkerTok{)} \NormalTok{saveref_}\DecValTok{_}\NormalTok{DL uv1}\FunctionTok{;}\NormalTok{uv2 }\KeywordTok{do.} \NormalTok{msg }\FunctionTok{[} \NormalTok{dfclose_}\DecValTok{_}\NormalTok{DL }\StringTok{'U'} \KeywordTok{return.} \KeywordTok{end.}
+
+    \NormalTok{dfclose_}\DecValTok{_}\NormalTok{DL }\StringTok{'U'}
+  \KeywordTok{end.}
+
+  \NormalTok{OK}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{didstats}\AlertTok{=:}\index{didstats@\texttt{didstats}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*didstats v-- dictionary statistics. Returns a table of object}
+\CommentTok{NB. counts and reference paths for each dictionary in path order.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  uuIgnore didstats uuIgnore}
+
+\CommentTok{NB. are any dictionaries open?}
+\KeywordTok{if.} \NormalTok{badrc uv}\CharTok{=.} \NormalTok{checkopen 0 }\KeywordTok{do.} \NormalTok{uv }\KeywordTok{return.} \KeywordTok{end.}
+
+\CommentTok{NB. gerund of directory object (loadstamps) calls}
+\NormalTok{ger}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{<}\StringTok{'loadstamps'}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \NormalTok{locsfx ol}\CharTok{=.} \FunctionTok{\{:}\OtherTok{"}\NormalTok{1 DPATH}
+\KeywordTok{if.} \FunctionTok{+.}\OtherTok{/}\RegionMarkerTok{(}\NormalTok{ger }\OtherTok{`:}\NormalTok{0}\RegionMarkerTok{)} \NormalTok{0 }\KeywordTok{do.}
+  \NormalTok{jderr ERR0}\DecValTok{54}  \CommentTok{NB. errmsg: unable to load directory}
+\KeywordTok{else.}
+  \NormalTok{dn}\CharTok{=.} \NormalTok{DIRTS__oj }\FunctionTok{[} \NormalTok{oj}\CharTok{=.} \FunctionTok{\{.} \FunctionTok{\{:}\OtherTok{"}\NormalTok{1 DPATH  }\CommentTok{NB. (*)=. oj}
+  \NormalTok{hd}\CharTok{=.} \StringTok{''} \FunctionTok{;} \StringTok{'--'} \FunctionTok{;} \NormalTok{HEADNMS__oj}
+
+  \CommentTok{NB. collect values of directory object nouns}
+  \NormalTok{uv}\CharTok{=.}\RegionMarkerTok{(}\StringTok{'RW'}\FunctionTok{;}\StringTok{'RPATH'}\FunctionTok{;}\NormalTok{dn}\RegionMarkerTok{)} \NormalTok{fullmonty}\OtherTok{&}\FunctionTok{><}\NormalTok{ol}
+  \NormalTok{rpaths}\CharTok{=.} \NormalTok{1}\FunctionTok{\{}\NormalTok{uv }\FunctionTok{[} \NormalTok{rs}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{;\{.}\NormalTok{uv}\RegionMarkerTok{)}\FunctionTok{\{}\NormalTok{READSTATS}
+  \NormalTok{dt}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{\{.}\OtherTok{"}\NormalTok{1 DPATH}\RegionMarkerTok{)} \FunctionTok{,.} \NormalTok{rs }\FunctionTok{,.} \FunctionTok{\{.}\OtherTok{&}\FunctionTok{>} \FunctionTok{\textbar{}:} \NormalTok{2 }\FunctionTok{\}.} \NormalTok{uv}
+  \NormalTok{dt}\CharTok{=.} \NormalTok{hd }\FunctionTok{,} \NormalTok{dt}
+
+  \CommentTok{NB. read master to get as complete a list of names and numbers}
+  \CommentTok{NB. as possible. Some (DIDNUM)'s may still be missing - missing}
+  \CommentTok{NB. dictionaries reported as dictionary numbers - hey life is cruel!}
+  \KeywordTok{if.} \NormalTok{badjr uv}\CharTok{=.} \NormalTok{jread JMASTER}\FunctionTok{;}\NormalTok{CNMFTAB }\KeywordTok{do.}
+    \NormalTok{jderr ERR0}\DecValTok{06} \KeywordTok{return.} \CommentTok{NB. errmsg: cannot read master}
+  \KeywordTok{end.}
+
+  \NormalTok{rb}\CharTok{=.} \FunctionTok{<}\OtherTok{"}\NormalTok{0 }\RegionMarkerTok{(}\FunctionTok{~.} \FunctionTok{;}\NormalTok{rpaths}\RegionMarkerTok{)} \FunctionTok{-.} \FunctionTok{;}\NormalTok{1}\FunctionTok{\{}\NormalTok{uv }\CharTok{=.} \FunctionTok{>}\NormalTok{uv}
+  \NormalTok{hd}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{0}\FunctionTok{\{}\NormalTok{uv}\RegionMarkerTok{)} \FunctionTok{,} \FunctionTok{":}\OtherTok{&.}\FunctionTok{>} \NormalTok{rb  }\CommentTok{NB. all dictionary names}
+  \NormalTok{dn}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{1}\FunctionTok{\{}\NormalTok{uv}\RegionMarkerTok{)} \FunctionTok{,} \NormalTok{rb        }\CommentTok{NB. dictionary numbers}
+
+  \CommentTok{NB. display formatted paths with each dictionary using current names}
+  \NormalTok{rpaths}\CharTok{=.} \FunctionTok{;}\OtherTok{&.}\FunctionTok{>}\NormalTok{PATHSHOWDEL}\FunctionTok{,}\OtherTok{L:}\NormalTok{0}\RegionMarkerTok{((}\FunctionTok{<;}\NormalTok{dn}\RegionMarkerTok{)}\FunctionTok{i.}\OtherTok{&.}\FunctionTok{>}\NormalTok{rpaths}\RegionMarkerTok{)}\FunctionTok{\{}\OtherTok{&.}\FunctionTok{><}\NormalTok{hd}
+  \NormalTok{ok }\FunctionTok{<}\NormalTok{dt }\FunctionTok{,.} \NormalTok{PATHTIT }\FunctionTok{;} \NormalTok{rpaths}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{dnlsearch}\AlertTok{=:}\index{dnlsearch@\texttt{dnlsearch}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*dnlsearch  v--  searches  dictionary name  lists  for  simple}
+\CommentTok{NB. character list patterns.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad: ilObjOptNc dnlsearch (clPattern ; clDir)}
+\CommentTok{NB.}
+\CommentTok{NB.   3 2 7 dnlsearch 'boo'   NB. suite names containing 'boo'}
+\CommentTok{NB.   3 _2 0 dnlsearch 'boo'  NB. nouns with names containing 'boo'}
+
+\NormalTok{mop}\CharTok{=.} \NormalTok{ERR0}\DecValTok{01}
+\KeywordTok{if.} \FunctionTok{-.}\RegionMarkerTok{(}\NormalTok{second }\DataTypeTok{x}\RegionMarkerTok{)} \FunctionTok{e.} \NormalTok{PATOPS }\KeywordTok{do.} \NormalTok{jderr mop }\KeywordTok{return.} \KeywordTok{end.}
+
+\CommentTok{NB. following code is essentially (pathnl) - maintained}
+\CommentTok{NB. inline because (pob) and (oj) used elsewhere}
+\NormalTok{pob}\CharTok{=.} \FunctionTok{\{:}\OtherTok{"}\NormalTok{1 DPATH }\FunctionTok{[} \NormalTok{dt}\CharTok{=.} \FunctionTok{\textbar{}\{.}\DataTypeTok{x}
+\KeywordTok{if.} \NormalTok{badrc msg}\CharTok{=.} \NormalTok{dt loadalldirs pob }\KeywordTok{do.} \NormalTok{msg }\KeywordTok{return.} \KeywordTok{end.}
+\NormalTok{nl}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{>}\NormalTok{dnix__oj dt}\RegionMarkerTok{)} \NormalTok{fullmonty pob }\FunctionTok{[} \NormalTok{oj}\CharTok{=.} \FunctionTok{\{.}\NormalTok{pob  }\CommentTok{NB. (*)=. oj}
+
+\KeywordTok{if.} \NormalTok{DEFAULT}\FunctionTok{~:\{:}\DataTypeTok{x} \KeywordTok{do.}
+   \CommentTok{NB. object noun !(*)=. HASTYPE}
+   \KeywordTok{if.} \RegionMarkerTok{((}\FunctionTok{\{.}\DataTypeTok{x}\RegionMarkerTok{)} \FunctionTok{e.} \NormalTok{WORD}\FunctionTok{,}\NormalTok{MACRO}\RegionMarkerTok{)} \FunctionTok{*.} \RegionMarkerTok{(}\FunctionTok{\{:}\DataTypeTok{x}\RegionMarkerTok{)} \FunctionTok{e.} \NormalTok{HASTYPE }\KeywordTok{do.}
+     \NormalTok{ger}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{<}\StringTok{'loadnc'}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \NormalTok{locsfx pob}
+     \KeywordTok{if.} \FunctionTok{+.}\OtherTok{/}\RegionMarkerTok{(}\NormalTok{ger }\OtherTok{`:}\NormalTok{0}\RegionMarkerTok{)} \NormalTok{dt }\KeywordTok{do.}
+       \NormalTok{jderr ERR0}\DecValTok{54} \KeywordTok{return.} \CommentTok{NB. errmsg: unable to load directory}
+     \KeywordTok{end.}
+     \NormalTok{dc}\CharTok{=.} \FunctionTok{;}\OtherTok{&.}\FunctionTok{>} \RegionMarkerTok{(}\FunctionTok{>}\NormalTok{dnnc__oj dt}\RegionMarkerTok{)} \NormalTok{fullmonty pob}
+
+     \CommentTok{NB. remove items of (nl) that do not have type (\{:x)}
+     \NormalTok{nl}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{dc }\FunctionTok{=}\OtherTok{&.}\FunctionTok{>} \FunctionTok{<\{:}\DataTypeTok{x}\RegionMarkerTok{)} \FunctionTok{#}\OtherTok{&.}\FunctionTok{>} \NormalTok{nl}
+
+   \KeywordTok{else.}
+     \NormalTok{jderr mop }\KeywordTok{return.}
+   \KeywordTok{end.}
+\KeywordTok{end.}
+
+\DataTypeTok{x}\CharTok{=.} \NormalTok{second }\DataTypeTok{x}
+\KeywordTok{if.} \NormalTok{isempty }\DataTypeTok{y} \KeywordTok{do.}
+  \KeywordTok{if.} \NormalTok{0}\FunctionTok{>}\DataTypeTok{x} \KeywordTok{do.} \NormalTok{ok }\RegionMarkerTok{(}\FunctionTok{/:}\OtherTok{~}\RegionMarkerTok{)}\OtherTok{&.}\FunctionTok{>} \NormalTok{nl }\KeywordTok{return.} \KeywordTok{else.} \NormalTok{ok sortdnub nl }\KeywordTok{end.}
+\KeywordTok{elseif.} \KeywordTok{do.}
+  \DataTypeTok{y}\CharTok{=.} \FunctionTok{,}\DataTypeTok{y}
+  \CommentTok{NB. insure nulls behave}
+  \NormalTok{sublists}\CharTok{=.} \NormalTok{0}\FunctionTok{>}\DataTypeTok{x}
+  \NormalTok{shape}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{sublists}\FunctionTok{#}\NormalTok{0}\RegionMarkerTok{)}\FunctionTok{,}\NormalTok{0}
+  \NormalTok{nl}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{<}\NormalTok{shape}\FunctionTok{$}\StringTok{''}\RegionMarkerTok{)} \RegionMarkerTok{(}\FunctionTok{I.} \NormalTok{0}\FunctionTok{=#}\OtherTok{&}\FunctionTok{>} \NormalTok{nl}\RegionMarkerTok{)}\OtherTok{\}} \NormalTok{nl}
+  \CommentTok{NB. remove any empties}
+  \KeywordTok{if.} \NormalTok{0}\FunctionTok{=#}\NormalTok{nl}\CharTok{=.} \NormalTok{nl }\FunctionTok{-.} \FunctionTok{a:} \KeywordTok{do.} \NormalTok{ok}\StringTok{''} \KeywordTok{return.} \KeywordTok{end.}
+  \KeywordTok{select.} \FunctionTok{\textbar{}}\DataTypeTok{x}
+    \KeywordTok{case.} \NormalTok{1 }\KeywordTok{do.} \KeywordTok{if.} \NormalTok{sublists }\KeywordTok{do.} \NormalTok{ok nl allnlpfx }\DataTypeTok{y} \KeywordTok{else.} \NormalTok{ok nl nubnlpfx }\DataTypeTok{y} \KeywordTok{end.}
+    \KeywordTok{case.} \NormalTok{2 }\KeywordTok{do.} \KeywordTok{if.} \NormalTok{sublists }\KeywordTok{do.} \NormalTok{ok nl allnlctn }\DataTypeTok{y} \KeywordTok{else.} \NormalTok{ok nl nubnlctn }\DataTypeTok{y} \KeywordTok{end.}
+    \KeywordTok{case.} \NormalTok{3 }\KeywordTok{do.} \KeywordTok{if.} \NormalTok{sublists }\KeywordTok{do.} \NormalTok{ok nl allnlsfx }\DataTypeTok{y} \KeywordTok{else.} \NormalTok{ok nl nubnlsfx }\DataTypeTok{y} \KeywordTok{end.}
+    \KeywordTok{case.} \KeywordTok{do.} \NormalTok{jderr mop}
+  \KeywordTok{end.}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{freedisk}\AlertTok{=:}\index{freedisk@\texttt{freedisk}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*freedisk v-- returns free disk/volume space in bytes.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  freedisk clDisk \textbar{} clLinuxVolume}
+\CommentTok{NB.}
+\CommentTok{NB.   freedisk 'c:\textbackslash{}'       NB. :\textbackslash{} required for windows}
+\CommentTok{NB.   freedisk '/sd1/dev'  NB. linux file system root - null sums all devices}
+
+\CommentTok{NB. NOTE: assume enough space for IOS, Android and unknown?}
+
+\KeywordTok{if.}     \NormalTok{IFWIN            }\KeywordTok{do.} \NormalTok{freediskwin }\DataTypeTok{y}
+\KeywordTok{elseif.} \NormalTok{UNAME}\FunctionTok{-:}\StringTok{'Linux'}   \KeywordTok{do.} \NormalTok{freedisklinux }\DataTypeTok{y}
+\KeywordTok{elseif.} \NormalTok{IFIOS            }\KeywordTok{do.} \FunctionTok{>:}\NormalTok{FREESPACE}
+\KeywordTok{elseif.} \NormalTok{UNAME}\FunctionTok{-:}\StringTok{'Darwin'}  \KeywordTok{do.} \NormalTok{freediskmac }\DataTypeTok{y}
+\KeywordTok{elseif.} \NormalTok{UNAME}\FunctionTok{-:}\StringTok{'Android'} \KeywordTok{do.} \FunctionTok{>:}\NormalTok{FREESPACE}
+\KeywordTok{elseif.do.} \FunctionTok{>:}\NormalTok{FREESPACE}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{freedisklinux}\AlertTok{=:}\index{freedisklinux@\texttt{freedisklinux}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*freedisklinux v-- bytes free on not 'none' linux volumes.}
+\CommentTok{NB.}
+\CommentTok{NB. NOTE: NIMP: I don't know how to determine which}
+\CommentTok{NB. linux volume the dictionary will be on so I return}
+\CommentTok{NB. the minimum of all not 'none' mounted volumes.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  fl =. freedisklinux uuIgnore}
+\CommentTok{NB.}
+\CommentTok{NB.   freedisklinux 0   NB. bytes (possibly floating) free on mounted filesystems}
+
+\CommentTok{NB. linux shell command fetches free 1k blocks - expected format is:}
+\CommentTok{NB. Filesystem           1K-blocks      Used Available Use% Mounted on}
+\CommentTok{NB. /dev/sda1            149301564  11113004 130604408   8% /}
+\CommentTok{NB. none                    764396       648    763748   1% /dev}
+\CommentTok{NB. none                    771004      1364    769640   1% /dev/shm}
+\CommentTok{NB. none                    771004        96    770908   1% /var/run}
+\CommentTok{NB. none                    771004         0    771004   0% /var/lock}
+\NormalTok{txt}\CharTok{=.} \NormalTok{host }\StringTok{'df -l'}
+
+\CommentTok{NB. cut into lines and drop header}
+\NormalTok{txt}\CharTok{=.} \FunctionTok{\}.} \FunctionTok{<}\OtherTok{;.}\NormalTok{_}\DecValTok{2} \NormalTok{txt}
+
+\CommentTok{NB. remove all 'none' filesystems HARDCODE: length of 'none'}
+\CommentTok{NB. NIMP: ignoring empty result - hey there}
+\CommentTok{NB. has to be at least one mounted filesystem!}
+\NormalTok{txt}\CharTok{=.} \NormalTok{txt }\FunctionTok{#}\OtherTok{~} \FunctionTok{-.} \StringTok{'none'}\OtherTok{&}\FunctionTok{-:}\OtherTok{&}\FunctionTok{>} \NormalTok{4 }\FunctionTok{\{.}\OtherTok{&.}\FunctionTok{>} \NormalTok{txt}
+
+\CommentTok{NB. min bytes free using 1000 byte blocks - this will}
+\CommentTok{NB. underestimate free space and leave a little safety cushion}
+\FunctionTok{<.}\OtherTok{/} \NormalTok{1}\DecValTok{000} \FunctionTok{*} \NormalTok{3 }\FunctionTok{\{}\OtherTok{"}\NormalTok{1 }\FunctionTok{]} \NormalTok{_}\DecValTok{1}\OtherTok{&}\FunctionTok{".}\OtherTok{&}\FunctionTok{>} \NormalTok{txt}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{freediskmac}\AlertTok{=:}\index{freediskmac@\texttt{freediskmac}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*freediskmac v-- free disk bytes on mac dictionary volume.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  iaBytes =. freediskmac clMacVolume}
+
+\CommentTok{NB. NIMP: assume enough space for now}
+\FunctionTok{>:}\NormalTok{FREESPACE}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{freediskwin}\AlertTok{=:}\index{freediskwin@\texttt{freediskwin}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*freediskwin v-- returns free disk/volume space in btyes for win systems}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  freediskwin clDisk \textbar{} clLinuxVolume}
+\CommentTok{NB.}
+\CommentTok{NB.   freediskwin 'c:\textbackslash{}'       NB. :\textbackslash{} required for windows}
+
+\NormalTok{s}\CharTok{=.} \StringTok{'kernel32 GetDiskFreeSpaceA i *c *i *i *i *i'} \NormalTok{cd }\DataTypeTok{y}\FunctionTok{;}\RegionMarkerTok{(}\FunctionTok{,}\NormalTok{0}\RegionMarkerTok{)}\FunctionTok{;}\RegionMarkerTok{(}\FunctionTok{,}\NormalTok{0}\RegionMarkerTok{)}\FunctionTok{;}\RegionMarkerTok{(}\FunctionTok{,}\NormalTok{0}\RegionMarkerTok{)}\FunctionTok{;}\RegionMarkerTok{(}\FunctionTok{,}\NormalTok{0}\RegionMarkerTok{)}
+\FunctionTok{*}\OtherTok{/} \FunctionTok{;} \NormalTok{2 3 4 }\FunctionTok{\{} \NormalTok{s}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. returns lists of directory object noun values - see long documentation}
+\NormalTok{fullmonty}\AlertTok{=:}\index{fullmonty@\texttt{fullmonty}}\FunctionTok{[:} \FunctionTok{".}\OtherTok{&.}\FunctionTok{>} \RegionMarkerTok{(}\FunctionTok{[:} \FunctionTok{<} \FunctionTok{[}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \FunctionTok{[:} \NormalTok{locsfx }\FunctionTok{]}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{getdicdoc}\AlertTok{=:}\index{getdicdoc@\texttt{getdicdoc}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*getdicdoc v-- fetches put dictionary documentation.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  cl =. getdicdoc uuIgnore}
+
+\CommentTok{NB. assumes a put dictionary is open.}
+\NormalTok{DL}\CharTok{=.} \FunctionTok{\{:\{.}\NormalTok{DPATH  }\CommentTok{NB. directory object !(*)=. DL}
+\KeywordTok{if.} \NormalTok{badjr dat}\CharTok{=.} \NormalTok{jread WP_}\DecValTok{_}\NormalTok{DL}\FunctionTok{;}\NormalTok{CNDICDOC }\KeywordTok{do.} \NormalTok{jderr ERR0}\DecValTok{88} \CommentTok{NB. errmsg: read failure}
+\KeywordTok{else.}
+  \NormalTok{ok }\FunctionTok{,>}\NormalTok{dat}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{getdocument}\AlertTok{=:}\index{getdocument@\texttt{getdocument}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*getdocument v-- get object documentation}
+\CommentTok{NB.}
+\CommentTok{NB. dyad: iaObject getdocument blcl}
+
+\KeywordTok{if.} \NormalTok{badrc uv}\CharTok{=.} \RegionMarkerTok{(}\DataTypeTok{x}\FunctionTok{,}\NormalTok{1}\RegionMarkerTok{)} \NormalTok{getobjects }\DataTypeTok{y} \KeywordTok{do.} \NormalTok{uv }\KeywordTok{else.} \NormalTok{ok }\FunctionTok{<}\NormalTok{0 3 }\FunctionTok{\{}\OtherTok{"}\NormalTok{1 rv uv }\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{getexplain}\AlertTok{=:}\index{getexplain@\texttt{getexplain}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*getexplain v-- gets short explanations.}
+\CommentTok{NB.}
+\CommentTok{NB. Note: Similar  to (invfetch)  and  (getobjects) but different}
+\CommentTok{NB. enough to justify new verb.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  iaObject getexplain blcl}
+\CommentTok{NB.}
+\CommentTok{NB.   WORD getexplain ;:'you have some explaining to do'}
+
+\KeywordTok{if.} \NormalTok{badrc }\DataTypeTok{y}\CharTok{=.} \NormalTok{checknames }\DataTypeTok{y} \KeywordTok{do.} \DataTypeTok{y} \KeywordTok{return.} \KeywordTok{end.}
+\NormalTok{obs}\CharTok{=.} \DataTypeTok{y}\CharTok{=.} \FunctionTok{\}.}\DataTypeTok{y}
+\KeywordTok{if.} \NormalTok{badrc tnl}\CharTok{=.} \NormalTok{pathnl }\DataTypeTok{x} \KeywordTok{do.} \NormalTok{tnl }\KeywordTok{return.} \KeywordTok{end.}
+
+\CommentTok{NB. remove any empty dictionaries from path}
+\NormalTok{tnl}\CharTok{=.} \FunctionTok{\}.} \NormalTok{tnl}
+\NormalTok{b}\CharTok{=.} \NormalTok{0}\OtherTok{&}\FunctionTok{<}\OtherTok{@:}\FunctionTok{#}\OtherTok{&}\FunctionTok{>} \NormalTok{tnl}
+\NormalTok{tnl}\CharTok{=.} \NormalTok{b}\FunctionTok{#}\NormalTok{tnl }\FunctionTok{[} \NormalTok{dpath}\CharTok{=.} \NormalTok{b}\FunctionTok{#}\NormalTok{DPATH}
+
+\CommentTok{NB. if all objects are not on path get nothing}
+\KeywordTok{if.} \FunctionTok{*.}\OtherTok{/}\NormalTok{b}\CharTok{=.} \DataTypeTok{y} \FunctionTok{e.} \FunctionTok{;} \NormalTok{tnl }\KeywordTok{do.}
+
+  \NormalTok{DL}\CharTok{=.}  \FunctionTok{\{:\{:}\NormalTok{DPATH                  }\CommentTok{NB. any object}
+  \NormalTok{fp}\CharTok{=.}  \RegionMarkerTok{(}\FunctionTok{\{.>}\NormalTok{dncn_}\DecValTok{_}\NormalTok{DL }\FunctionTok{\{.}\DataTypeTok{x}\RegionMarkerTok{)}\FunctionTok{,}\StringTok{'P__DL'}  \CommentTok{NB. file pointer}
+  \NormalTok{res}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{#}\NormalTok{obs}\RegionMarkerTok{)}\FunctionTok{$a:}                  \CommentTok{NB. result list}
+
+  \CommentTok{NB. run down path}
+  \KeywordTok{for_dp.} \NormalTok{tnl }\KeywordTok{do.}
+    \NormalTok{ix}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{dp}\CharTok{=.} \FunctionTok{>}\NormalTok{dp}\RegionMarkerTok{)} \FunctionTok{i.} \DataTypeTok{y}
+
+    \CommentTok{NB. get data in current dictionary}
+    \KeywordTok{if.} \FunctionTok{+.}\OtherTok{/}\NormalTok{bm}\CharTok{=.} \NormalTok{ix}\FunctionTok{<#}\NormalTok{dp }\KeywordTok{do.}
+      \NormalTok{DL }\CharTok{=.} \FunctionTok{\{:}\NormalTok{dp_index}\FunctionTok{\{}\NormalTok{dpath  }\CommentTok{NB. directory object !(*)=. DL}
+      \KeywordTok{if.} \NormalTok{badjr dat}\CharTok{=.} \NormalTok{jread }\RegionMarkerTok{(}\FunctionTok{".}\NormalTok{fp}\RegionMarkerTok{)}\FunctionTok{;}\NormalTok{CNEXPLAIN }\KeywordTok{do.}
+        \NormalTok{jderr ERR0}\DecValTok{88} \KeywordTok{return.} \CommentTok{NB. errmsg: read failure}
+      \KeywordTok{end.}
+      \NormalTok{dat}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{bm}\FunctionTok{#}\NormalTok{ix}\RegionMarkerTok{)}\FunctionTok{\{>}\NormalTok{dat}
+
+      \CommentTok{NB. merge data into final result order matters here}
+      \NormalTok{res}\CharTok{=.} \NormalTok{dat }\RegionMarkerTok{(}\NormalTok{obs }\FunctionTok{i.} \NormalTok{bm}\FunctionTok{#}\DataTypeTok{y}\RegionMarkerTok{)}\OtherTok{\}} \NormalTok{res}
+
+      \CommentTok{NB. remove fetched objects from list quit if no more}
+      \KeywordTok{if.} \NormalTok{0}\FunctionTok{=#}\DataTypeTok{y}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{-.}\NormalTok{bm}\RegionMarkerTok{)}\FunctionTok{#}\DataTypeTok{y} \KeywordTok{do.} \KeywordTok{break.} \KeywordTok{end.}
+    \KeywordTok{end.}
+  \KeywordTok{end.}
+
+  \CommentTok{NB. return objects in requested order}
+  \NormalTok{ok }\FunctionTok{<}\NormalTok{obs }\FunctionTok{,.} \NormalTok{res}
+
+\KeywordTok{else.}
+  \RegionMarkerTok{(}\NormalTok{jderr ERR0}\DecValTok{83}\RegionMarkerTok{)}\FunctionTok{,}\DataTypeTok{y} \FunctionTok{#}\OtherTok{~} \FunctionTok{-.} \NormalTok{b  }\CommentTok{NB. errmsg: not on path}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{getgstext}\AlertTok{=:}\index{getgstext@\texttt{getgstext}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*getgstext v-- get group and suite text.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  iaObject getgstext blcl}
+
+\KeywordTok{if.} \NormalTok{badrc uv}\CharTok{=.} \RegionMarkerTok{(}\DataTypeTok{x}\FunctionTok{,}\NormalTok{0}\RegionMarkerTok{)} \NormalTok{getobjects }\DataTypeTok{y} \KeywordTok{do.} \NormalTok{uv }\KeywordTok{else.} \NormalTok{ok }\FunctionTok{<}\NormalTok{0 1 }\FunctionTok{\{}\OtherTok{"}\NormalTok{1 rv uv }\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{getobjects}\AlertTok{=:}\index{getobjects@\texttt{getobjects}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*getobjects  v-- fetches object names and values. A successful}
+\CommentTok{NB. result  is  a  boxed  table. Column  0 holds  names remaining}
+\CommentTok{NB. columns hold types and values. If there  is no  type or  name}
+\CommentTok{NB. class only two columns are returned.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  il getobjects blcl}
+\CommentTok{NB.}
+\CommentTok{NB.   NB. 2 columns (name,value)}
+\CommentTok{NB.   (TEST,0) getobjects ;:'some test names ehh'}
+\CommentTok{NB.}
+\CommentTok{NB.   NB. 3 columns (name,class,value)}
+\CommentTok{NB.   (WORD,0) getobjects ;:'words are us'}
+
+\KeywordTok{if.} \NormalTok{badrc }\DataTypeTok{y}\CharTok{=.}\NormalTok{checknames }\DataTypeTok{y} \KeywordTok{do.} \DataTypeTok{y} \KeywordTok{return.} \KeywordTok{end.}
+\NormalTok{ord}\CharTok{=.} \DataTypeTok{y}\CharTok{=.} \FunctionTok{\}.}\DataTypeTok{y}
+
+\StringTok{'obj offset'}\CharTok{=.} \DataTypeTok{x}
+\KeywordTok{if.} \NormalTok{badrc onl}\CharTok{=.} \NormalTok{pathnl obj }\KeywordTok{do.} \NormalTok{onl }\KeywordTok{return.} \KeywordTok{end.}
+
+\CommentTok{NB. remove any empty dictionaries from path}
+\NormalTok{onl}\CharTok{=.} \FunctionTok{\}.} \NormalTok{onl}
+\NormalTok{b}\CharTok{=.} \NormalTok{0}\OtherTok{&}\FunctionTok{<}\OtherTok{@:}\FunctionTok{#}\OtherTok{&}\FunctionTok{>} \NormalTok{onl}
+\NormalTok{onl}\CharTok{=.} \NormalTok{b}\FunctionTok{#}\NormalTok{onl }\FunctionTok{[} \NormalTok{dpath }\CharTok{=.} \NormalTok{b}\FunctionTok{#}\NormalTok{DPATH}
+\NormalTok{val}\CharTok{=.} \NormalTok{0 0}\FunctionTok{$}\StringTok{''}
+
+\CommentTok{NB. if all objects are not on path get nothing}
+\KeywordTok{if.} \FunctionTok{*.}\OtherTok{/}\NormalTok{b}\CharTok{=.} \DataTypeTok{y} \FunctionTok{e.} \FunctionTok{;} \NormalTok{onl }\KeywordTok{do.}
+
+  \NormalTok{doj}\CharTok{=.} \FunctionTok{\{:} \FunctionTok{\{.}\NormalTok{dpath            }\CommentTok{NB. any directory object}
+  \NormalTok{cnn}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{uv}\CharTok{=.} \FunctionTok{>}\NormalTok{dncn__doj obj}\RegionMarkerTok{)}\FunctionTok{,}\StringTok{'__DL'}  \CommentTok{NB. object component noun name}
+  \NormalTok{fp}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{\{.}\NormalTok{uv}\RegionMarkerTok{)}\FunctionTok{,}\StringTok{'P__DL'}         \CommentTok{NB. file pointer noun name}
+
+  \CommentTok{NB. run down the path fetching first occurrences}
+  \KeywordTok{for_dp.} \NormalTok{onl }\KeywordTok{do.}
+    \NormalTok{ix}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{dp}\CharTok{=.} \FunctionTok{>}\NormalTok{dp}\RegionMarkerTok{)} \FunctionTok{i.} \DataTypeTok{y}
+
+    \CommentTok{NB. NIMP GETFACTOR not used yet}
+    \CommentTok{NB. get any objects in current dictionary}
+    \KeywordTok{if.} \FunctionTok{+.}\OtherTok{/}\NormalTok{wf}\CharTok{=.} \NormalTok{ix}\FunctionTok{<#}\NormalTok{dp }\KeywordTok{do.}
+      \NormalTok{DL}\CharTok{=.} \FunctionTok{\{:}\NormalTok{dp_index}\FunctionTok{\{}\NormalTok{dpath  }\CommentTok{NB. directory object !(*)=. DL}
+      \KeywordTok{if.} \NormalTok{badjr dat}\CharTok{=.} \NormalTok{jread }\RegionMarkerTok{(}\FunctionTok{".}\NormalTok{fp}\RegionMarkerTok{)}\FunctionTok{;}\RegionMarkerTok{(}\NormalTok{wf}\FunctionTok{#}\NormalTok{ix}\RegionMarkerTok{)}\FunctionTok{\{}\NormalTok{offset}\FunctionTok{+".}\NormalTok{cnn }\KeywordTok{do.}
+        \NormalTok{jderr ERR0}\DecValTok{88} \KeywordTok{return.} \CommentTok{NB. errmsg: read failure}
+      \KeywordTok{end.}
+      \NormalTok{val}\CharTok{=.} \NormalTok{val }\FunctionTok{,} \FunctionTok{>}\NormalTok{dat}
+
+      \CommentTok{NB. remove fetched objects from list quit if no more objects}
+      \KeywordTok{if.} \NormalTok{0}\FunctionTok{=#}\DataTypeTok{y}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{-.}\NormalTok{wf}\RegionMarkerTok{)}\FunctionTok{#}\DataTypeTok{y} \KeywordTok{do.} \KeywordTok{break.} \KeywordTok{end.}
+    \KeywordTok{end.}
+  \KeywordTok{end.}
+
+  \CommentTok{NB. insure objects are returned in requested order}
+  \NormalTok{val}\CharTok{=.} \RegionMarkerTok{((}\FunctionTok{\{.}\OtherTok{"}\NormalTok{1 val}\RegionMarkerTok{)} \FunctionTok{i.} \NormalTok{ord}\RegionMarkerTok{)} \FunctionTok{\{} \NormalTok{val}
+  \NormalTok{ok }\FunctionTok{<}\NormalTok{val}
+
+\KeywordTok{else.}
+  \RegionMarkerTok{(}\NormalTok{jderr ERR0}\DecValTok{83}\RegionMarkerTok{)}\FunctionTok{,}\RegionMarkerTok{(}\FunctionTok{-.}\NormalTok{b}\RegionMarkerTok{)}\FunctionTok{#}\DataTypeTok{y} \CommentTok{NB. errmsg: not on path}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{getrefs}\AlertTok{=:}\index{getrefs@\texttt{getrefs}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*getrefs  v-- fetches reference lists. A  successful result is}
+\CommentTok{NB. an OK  boxed table of  boxed  character lists. Column 0 holds}
+\CommentTok{NB. names  and column  1  holds  boxed reference lists. Currently}
+\CommentTok{NB. only words have stored  references  but  this verb  has  been}
+\CommentTok{NB. coded to  allow  for additional  reference types  as the need}
+\CommentTok{NB. arises.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  iaObject getrefs blcl}
+\CommentTok{NB.}
+\CommentTok{NB.   WORD getrefs ;:'get our references please'}
+
+\KeywordTok{if.} \NormalTok{badrc }\DataTypeTok{y}\CharTok{=.}\NormalTok{checknames }\DataTypeTok{y} \KeywordTok{do.} \DataTypeTok{y} \KeywordTok{return.} \KeywordTok{end.}
+\DataTypeTok{y}\CharTok{=.} \FunctionTok{\}.}\DataTypeTok{y}
+
+\CommentTok{NB. if all objects are not on path get nothing}
+\KeywordTok{if.} \NormalTok{badrc onl}\CharTok{=.} \NormalTok{pathnl }\DataTypeTok{x} \KeywordTok{do.} \NormalTok{onl }\KeywordTok{return.} \KeywordTok{end.}
+\KeywordTok{if.} \NormalTok{0 }\FunctionTok{e.} \NormalTok{b}\CharTok{=.} \DataTypeTok{y} \FunctionTok{e.} \FunctionTok{;} \FunctionTok{\}.}\NormalTok{onl }\KeywordTok{do.}
+  \RegionMarkerTok{(}\NormalTok{jderr ERR0}\DecValTok{83}\RegionMarkerTok{)}\FunctionTok{,}\RegionMarkerTok{(}\FunctionTok{-.}\NormalTok{b}\RegionMarkerTok{)}\FunctionTok{#}\DataTypeTok{y} \KeywordTok{return.}  \CommentTok{NB. errmsg: not on path}
+\KeywordTok{end.}
+
+\CommentTok{NB. reference table}
+\NormalTok{rft }\CharTok{=.} \FunctionTok{i.} \NormalTok{0 0}
+
+\CommentTok{NB. objects with stored references}
+\KeywordTok{if.} \NormalTok{badrc onl}\CharTok{=.} \NormalTok{pathref }\DataTypeTok{x} \KeywordTok{do.} \NormalTok{onl }\KeywordTok{return.} \KeywordTok{end.}
+
+\CommentTok{NB. remove dictionaries with no references from path}
+\NormalTok{onl}\CharTok{=.} \FunctionTok{\}.} \NormalTok{onl}
+\NormalTok{b}\CharTok{=.} \NormalTok{0}\OtherTok{&}\FunctionTok{<}\OtherTok{@:}\FunctionTok{#}\OtherTok{&}\FunctionTok{>} \NormalTok{onl}
+\NormalTok{onl}\CharTok{=.} \NormalTok{b}\FunctionTok{#}\NormalTok{onl }\FunctionTok{[} \NormalTok{dpath }\CharTok{=.} \NormalTok{b}\FunctionTok{#}\NormalTok{DPATH}
+
+\CommentTok{NB. if any stored references get them}
+\KeywordTok{if.} \FunctionTok{#}\NormalTok{dpath }\KeywordTok{do.}
+
+  \CommentTok{NB. reference component noun name in directory object}
+  \NormalTok{DL}\CharTok{=.} \FunctionTok{\{:\{.} \NormalTok{dpath}
+  \NormalTok{cnn}\CharTok{=.} \FunctionTok{>}\NormalTok{0 dnrn_}\DecValTok{_}\NormalTok{DL }\DataTypeTok{x}
+
+  \CommentTok{NB. run down the path fetching the first occurrences}
+  \KeywordTok{for_dp.} \NormalTok{onl }\KeywordTok{do.}
+    \NormalTok{rix}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{dp}\CharTok{=.} \FunctionTok{>}\NormalTok{dp}\RegionMarkerTok{)} \FunctionTok{i.} \DataTypeTok{y}
+
+    \CommentTok{NB. NIMP GETFACTOR not used yet}
+    \CommentTok{NB. if any references in current dictionary get them}
+    \KeywordTok{if.} \FunctionTok{+.}\OtherTok{/}\NormalTok{rf}\CharTok{=.} \NormalTok{rix}\FunctionTok{<#}\NormalTok{dp }\KeywordTok{do.}
+      \NormalTok{DL}\CharTok{=.} \FunctionTok{\{:}\NormalTok{dp_index}\FunctionTok{\{}\NormalTok{dpath  }\CommentTok{NB. directory object !(*)=. DL}
+      \KeywordTok{if.} \NormalTok{badjr dat}\CharTok{=.} \NormalTok{jread UF_}\DecValTok{_}\NormalTok{DL}\FunctionTok{;}\RegionMarkerTok{(}\NormalTok{rf}\FunctionTok{#}\NormalTok{rix}\RegionMarkerTok{)}\FunctionTok{\{".}\NormalTok{cnn}\FunctionTok{,}\StringTok{'__DL'} \KeywordTok{do.}
+        \NormalTok{jderr ERR0}\DecValTok{88} \KeywordTok{return.}  \CommentTok{NB. errmsg: read failure}
+      \KeywordTok{end.}
+      \NormalTok{rft}\CharTok{=.} \NormalTok{rft }\FunctionTok{,} \FunctionTok{>}\NormalTok{dat}
+
+      \CommentTok{NB. remove names with fetched references from list quit if no more}
+      \KeywordTok{if.} \NormalTok{0}\FunctionTok{=#}\DataTypeTok{y}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{-.}\NormalTok{rf}\RegionMarkerTok{)}\FunctionTok{#}\DataTypeTok{y} \KeywordTok{do.} \KeywordTok{break.} \KeywordTok{end.}
+    \KeywordTok{end.}
+  \KeywordTok{end.}
+\KeywordTok{end.}
+
+\CommentTok{NB. any remaining objects currently have no stored references}
+\KeywordTok{if.} \FunctionTok{#}\DataTypeTok{y} \KeywordTok{do.} \NormalTok{ok }\FunctionTok{<}\NormalTok{rft }\FunctionTok{,} \RegionMarkerTok{(}\DataTypeTok{y} \FunctionTok{,}\OtherTok{"}\NormalTok{0 1 }\FunctionTok{<}\DataTypeTok{x}\RegionMarkerTok{)}\FunctionTok{,.<}\StringTok{''}\FunctionTok{;}\StringTok{''} \KeywordTok{else.} \NormalTok{ok }\FunctionTok{<}\NormalTok{rft }\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{gslistnl}\AlertTok{=:}\index{gslistnl@\texttt{gslistnl}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*gslistnl v-- returns  a group or  suite name list.  Prior  to}
+\CommentTok{NB. calling this verb a  dictionary  must be  open  and  the (x)}
+\CommentTok{NB. object code argument validated. The name list returned is the}
+\CommentTok{NB. first one found on the current path.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  iaObject gslistnl clName}
+\CommentTok{NB.}
+\CommentTok{NB.  GROUP gslistnl 'groupname'}
+
+\KeywordTok{if.} \NormalTok{badrc path}\CharTok{=.} \NormalTok{pathnl }\DataTypeTok{x} \KeywordTok{do.} \NormalTok{path }\KeywordTok{return.} \KeywordTok{end.}
+\NormalTok{uv}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{path}\CharTok{=.} \FunctionTok{\}.}\NormalTok{path}\RegionMarkerTok{)} \NormalTok{fopix }\DataTypeTok{y}
+
+\KeywordTok{if.} \NormalTok{uv}\FunctionTok{=#}\NormalTok{path }\KeywordTok{do.} \RegionMarkerTok{(}\NormalTok{jderr ERR0}\DecValTok{83}\RegionMarkerTok{)}\FunctionTok{,<}\DataTypeTok{y} \KeywordTok{return.} \KeywordTok{end.} \CommentTok{NB. errmsg: not on path}
+
+\NormalTok{uv}\CharTok{=.} \FunctionTok{\{:}\NormalTok{uv}\FunctionTok{\{}\NormalTok{DPATH  }\CommentTok{NB. directory object reference (*)=. uv}
+
+\NormalTok{cn}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{".}\RegionMarkerTok{(}\NormalTok{ln}\CharTok{=.} \FunctionTok{>}\NormalTok{dnix__uv }\DataTypeTok{x}\RegionMarkerTok{)}\FunctionTok{,}\StringTok{'__uv'}\RegionMarkerTok{)} \FunctionTok{i.} \FunctionTok{<}\DataTypeTok{y}
+\NormalTok{cn}\CharTok{=.} \NormalTok{cn }\FunctionTok{\{} \FunctionTok{".}\RegionMarkerTok{(}\FunctionTok{>}\NormalTok{dncn__uv }\DataTypeTok{x}\RegionMarkerTok{)}\FunctionTok{,}\StringTok{'__uv'}    \CommentTok{NB. file component of list}
+
+\KeywordTok{if.} \NormalTok{badjr cn}\CharTok{=.} \NormalTok{jread }\RegionMarkerTok{(}\FunctionTok{".}\RegionMarkerTok{(}\FunctionTok{\{.}\NormalTok{ln}\RegionMarkerTok{)}\FunctionTok{,}\StringTok{'P__uv'}\RegionMarkerTok{)}\FunctionTok{;}\NormalTok{cn }\KeywordTok{do.}
+  \NormalTok{jderr ERR0}\DecValTok{84} \CommentTok{NB. errmsg: unable to read data}
+\KeywordTok{else.}
+  \NormalTok{ok }\FunctionTok{>\{:>}\NormalTok{cn  }\CommentTok{NB. stored list is unique and sorted}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{inputdict}\AlertTok{=:}\index{inputdict@\texttt{inputdict}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*inputdict v-- tests for objects in put dictionary}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  (iaObject ;< ba) inputdict blcl}
+\CommentTok{NB.}
+\CommentTok{NB.  (WORD;<DL) inputdict ;:'are we in put dictionary'}
+
+\StringTok{'obj DL'}\CharTok{=.} \DataTypeTok{x}  \CommentTok{NB. directory object !(*)=. DL}
+
+\CommentTok{NB. errmsg: unable to load directory}
+\KeywordTok{if.} \NormalTok{loaddir_}\DecValTok{_}\NormalTok{DL obj }\KeywordTok{do.} \NormalTok{jderr ERR0}\DecValTok{54}
+\KeywordTok{elseif.} \NormalTok{ix}\CharTok{=.} \FunctionTok{".}\RegionMarkerTok{(}\FunctionTok{>}\NormalTok{dnix_}\DecValTok{_}\NormalTok{DL obj}\RegionMarkerTok{)}\FunctionTok{,}\StringTok{'__DL'}
+  \FunctionTok{*.}\OtherTok{/}\NormalTok{b}\CharTok{=.} \DataTypeTok{y} \FunctionTok{e.} \NormalTok{ix }\KeywordTok{do.} \NormalTok{OK}
+\KeywordTok{elseif.do.}
+  \RegionMarkerTok{(}\NormalTok{jderr ERR0}\DecValTok{86}\RegionMarkerTok{)}\FunctionTok{,}\RegionMarkerTok{(}\FunctionTok{-.}\NormalTok{b}\RegionMarkerTok{)}\FunctionTok{#}\DataTypeTok{y} \CommentTok{NB. errmsg: not in put dictionary}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{invappend}\AlertTok{=:}\index{invappend@\texttt{invappend}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*invappend v-- appends items to inverted data lists.  The (x)}
+\CommentTok{NB. argument is a boxed list append  list. (y)  is  a boxed list}
+\CommentTok{NB. containing a file pointer and inverted component numbers.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  blul invappend blul}
+\CommentTok{NB.}
+\CommentTok{NB.   apps invappend WF__DL ; CNCLASS,CNPUTDATE,CNSIZE}
+
+\NormalTok{msg}\CharTok{=.} \NormalTok{ERR0}\DecValTok{57}  \CommentTok{NB. errmsg: directory update failure}
+
+\CommentTok{NB. file pointer & component list}
+\StringTok{'fp cmpl'}\CharTok{=.} \DataTypeTok{y}
+\KeywordTok{if.} \RegionMarkerTok{(}\FunctionTok{#}\DataTypeTok{x}\RegionMarkerTok{)}\FunctionTok{~:#}\NormalTok{cmpl }\KeywordTok{do.} \NormalTok{jderr msg }\KeywordTok{return.} \KeywordTok{end.}
+\NormalTok{rc}\CharTok{=.} \FunctionTok{i.}\NormalTok{0}
+
+\CommentTok{NB. get the total number of expected elements from 0 component}
+\KeywordTok{if.} \NormalTok{badjr dat}\CharTok{=.} \NormalTok{jread fp}\FunctionTok{;}\NormalTok{CNMARK }\KeywordTok{do.} \NormalTok{jderr msg }\KeywordTok{return.} \KeywordTok{end.}
+\NormalTok{oldlen}\CharTok{=.} \FunctionTok{>\{.>}\NormalTok{dat}
+
+\CommentTok{NB. loop for maximum safety and space savings}
+\KeywordTok{for_cn.} \NormalTok{cmpl }\KeywordTok{do.}
+
+  \KeywordTok{if.} \NormalTok{badjr dat}\CharTok{=.} \NormalTok{jread fp}\FunctionTok{;}\NormalTok{cn }\KeywordTok{do.} \NormalTok{jderr msg }\KeywordTok{return.} \KeywordTok{end.}
+  \NormalTok{dat}\CharTok{=.} \FunctionTok{>}\NormalTok{dat}
+
+  \CommentTok{NB. all inverted list lengths must match expected}
+  \KeywordTok{if.} \NormalTok{oldlen }\FunctionTok{~:} \FunctionTok{#}\NormalTok{dat }\KeywordTok{do.} \NormalTok{jderr msg }\KeywordTok{return.} \KeywordTok{end.}
+
+  \NormalTok{dat}\CharTok{=.} \NormalTok{dat }\FunctionTok{,} \FunctionTok{>}\NormalTok{cn_index}\FunctionTok{\{}\DataTypeTok{x}
+  \NormalTok{rc}\CharTok{=.} \NormalTok{rc}\FunctionTok{,} \RegionMarkerTok{(}\FunctionTok{<}\NormalTok{dat}\RegionMarkerTok{)} \NormalTok{jreplace fp }\FunctionTok{;} \NormalTok{cn}
+\KeywordTok{end.}
+
+\CommentTok{NB. test replacements for errors}
+\KeywordTok{if.} \NormalTok{badreps rc }\KeywordTok{do.} \NormalTok{jderr msg }\KeywordTok{else.} \NormalTok{OK }\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{invdelete}\AlertTok{=:}\index{invdelete@\texttt{invdelete}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*invdelete v--  deletes items  from  inverted data lists.  The}
+\CommentTok{NB. (x)  argument  is a mask list. (y) consists of a boxed list}
+\CommentTok{NB. containing a file pointer and inverted component numbers.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  pl invdelete blul}
+\CommentTok{NB.}
+\CommentTok{NB.   mask invdelete WF__DL ; CNCLASS,CNPUTDATE,CNCREATION,CNSIZE}
+
+\CommentTok{NB. file pointer & component list}
+\StringTok{'fp cmpl'}\CharTok{=.} \DataTypeTok{y}
+\NormalTok{msg}\CharTok{=.} \NormalTok{ERR0}\DecValTok{57}  \CommentTok{NB. errmsg: directory update failure}
+\NormalTok{rc}\CharTok{=.} \FunctionTok{i.}\NormalTok{0 }\FunctionTok{[} \NormalTok{len}\CharTok{=.} \FunctionTok{#}\DataTypeTok{x}
+
+\CommentTok{NB. get the total number of expected elements from 0 component}
+\KeywordTok{if.} \NormalTok{badjr dat}\CharTok{=.} \NormalTok{jread fp}\FunctionTok{;}\NormalTok{CNMARK }\KeywordTok{do.} \NormalTok{jderr msg }\KeywordTok{return.} \KeywordTok{end.}
+\NormalTok{oldlen}\CharTok{=.} \FunctionTok{>\{.>}\NormalTok{dat}
+
+\CommentTok{NB. loop for maximum safety and space savings}
+\KeywordTok{for_cn.} \NormalTok{cmpl }\KeywordTok{do.}
+
+  \KeywordTok{if.} \NormalTok{badjr dat}\CharTok{=.} \NormalTok{jread fp}\FunctionTok{;}\NormalTok{cn }\KeywordTok{do.} \NormalTok{jderr msg }\KeywordTok{return.} \KeywordTok{end.}
+  \NormalTok{dat}\CharTok{=.} \FunctionTok{>}\NormalTok{dat}
+
+  \CommentTok{NB. all inverted list lengths must match expected}
+  \KeywordTok{if.} \NormalTok{oldlen }\FunctionTok{~:} \FunctionTok{#}\NormalTok{dat }\KeywordTok{do.} \NormalTok{jderr msg }\KeywordTok{return.} \KeywordTok{end.}
+
+  \NormalTok{rc}\CharTok{=.} \NormalTok{rc}\FunctionTok{,} \RegionMarkerTok{(}\FunctionTok{<}\DataTypeTok{x}\FunctionTok{#}\NormalTok{dat}\RegionMarkerTok{)} \NormalTok{jreplace fp}\FunctionTok{;}\NormalTok{cn}
+\KeywordTok{end.}
+
+\CommentTok{NB. test replacements for errors}
+\KeywordTok{if.} \NormalTok{badreps rc }\KeywordTok{do.} \NormalTok{jderr msg }\KeywordTok{else.} \NormalTok{OK }\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{invfetch}\AlertTok{=:}\index{invfetch@\texttt{invfetch}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*invfetch  v--  reads  inverted   numerical  data  lists  from}
+\CommentTok{NB. dictionary  files.  Assumes  the  (x)   argument   has  been}
+\CommentTok{NB. validated prior to calling.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  ilDcodes invfetch blcl}
+\CommentTok{NB.}
+\CommentTok{NB.  (INCREATE,INPUT,INSIZE) invfetch ;: 'info about us poor words'}
+
+\KeywordTok{if.} \NormalTok{badrc }\DataTypeTok{y}\CharTok{=.} \NormalTok{checknames }\DataTypeTok{y} \KeywordTok{do.} \DataTypeTok{y} \KeywordTok{return.} \KeywordTok{end.}
+\NormalTok{obs}\CharTok{=.} \DataTypeTok{y}\CharTok{=.} \FunctionTok{\}.}\DataTypeTok{y}
+\KeywordTok{if.} \NormalTok{badrc tnl}\CharTok{=.} \NormalTok{pathnl }\FunctionTok{\{.}\DataTypeTok{x} \KeywordTok{do.} \NormalTok{tnl }\KeywordTok{return.} \KeywordTok{end.}
+
+\CommentTok{NB. remove any empty dictionaries from path}
+\NormalTok{tnl}\CharTok{=.} \FunctionTok{\}.} \NormalTok{tnl}
+\NormalTok{b}\CharTok{=.} \NormalTok{0}\OtherTok{&}\FunctionTok{<}\OtherTok{@:}\FunctionTok{#}\OtherTok{&}\FunctionTok{>} \NormalTok{tnl}
+\NormalTok{tnl}\CharTok{=.} \NormalTok{b}\FunctionTok{#}\NormalTok{tnl }\FunctionTok{[} \NormalTok{dpath}\CharTok{=.} \NormalTok{b}\FunctionTok{#}\NormalTok{DPATH}
+
+\CommentTok{NB. if all objects are not on path get nothing}
+\KeywordTok{if.} \FunctionTok{*.}\OtherTok{/}\NormalTok{b}\CharTok{=.} \DataTypeTok{y} \FunctionTok{e.} \FunctionTok{;} \NormalTok{tnl }\KeywordTok{do.}
+
+  \CommentTok{NB. map external codes to inverted data components}
+  \NormalTok{cninv}\CharTok{=.} \RegionMarkerTok{((}\NormalTok{0}\FunctionTok{\{}\NormalTok{INCNXR}\RegionMarkerTok{)} \FunctionTok{i.} \FunctionTok{\}.}\DataTypeTok{x}\RegionMarkerTok{)} \FunctionTok{\{} \NormalTok{1}\FunctionTok{\{}\NormalTok{INCNXR   }\CommentTok{NB. object noun !(*)=. INCNXR}
+  \NormalTok{DL}\CharTok{=.}    \FunctionTok{\{:\{:}\NormalTok{DPATH                  }\CommentTok{NB. any object}
+  \NormalTok{fp}\CharTok{=.}    \RegionMarkerTok{(}\FunctionTok{\{.>}\NormalTok{dncn_}\DecValTok{_}\NormalTok{DL }\FunctionTok{\{.}\DataTypeTok{x}\RegionMarkerTok{)}\FunctionTok{,}\StringTok{'P__DL'}  \CommentTok{NB. file pointer}
+  \NormalTok{res}\CharTok{=.}   \RegionMarkerTok{((}\FunctionTok{#}\NormalTok{cninv}\RegionMarkerTok{)}\FunctionTok{,#}\NormalTok{obs}\RegionMarkerTok{)}\FunctionTok{$}\NormalTok{0          }\CommentTok{NB. result table}
+
+  \CommentTok{NB. run down path}
+  \KeywordTok{for_dp.} \NormalTok{tnl }\KeywordTok{do.}
+    \NormalTok{ix}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{dp}\CharTok{=.} \FunctionTok{>}\NormalTok{dp}\RegionMarkerTok{)} \FunctionTok{i.} \DataTypeTok{y}
+
+    \CommentTok{NB. get data in current dictionary}
+    \KeywordTok{if.} \FunctionTok{+.}\OtherTok{/}\NormalTok{bm}\CharTok{=.} \NormalTok{ix}\FunctionTok{<#}\NormalTok{dp }\KeywordTok{do.}
+      \NormalTok{DL }\CharTok{=.} \FunctionTok{\{:}\NormalTok{dp_index}\FunctionTok{\{}\NormalTok{dpath  }\CommentTok{NB. directory object !(*)=. DL}
+      \KeywordTok{if.} \NormalTok{badjr dat}\CharTok{=.} \NormalTok{jread }\RegionMarkerTok{(}\FunctionTok{".}\NormalTok{fp}\RegionMarkerTok{)}\FunctionTok{;}\NormalTok{cninv }\KeywordTok{do.}
+        \NormalTok{jderr ERR0}\DecValTok{88} \KeywordTok{return.} \CommentTok{NB. errmsg: read failure}
+      \KeywordTok{end.}
+      \NormalTok{dat}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{bm}\FunctionTok{#}\NormalTok{ix}\RegionMarkerTok{)} \FunctionTok{\{}\OtherTok{"}\NormalTok{1 }\FunctionTok{>} \NormalTok{dat}
+
+      \CommentTok{NB. merge data into final result order matters here}
+      \NormalTok{res}\CharTok{=.} \NormalTok{dat }\RegionMarkerTok{(}\FunctionTok{<a:;}\NormalTok{obs }\FunctionTok{i.} \NormalTok{bm}\FunctionTok{#}\DataTypeTok{y}\RegionMarkerTok{)}\OtherTok{\}} \NormalTok{res}
+
+      \CommentTok{NB. remove fetched objects from list quit if no more}
+      \KeywordTok{if.} \NormalTok{0}\FunctionTok{=#}\DataTypeTok{y}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{-.}\NormalTok{bm}\RegionMarkerTok{)}\FunctionTok{#}\DataTypeTok{y} \KeywordTok{do.} \KeywordTok{break.} \KeywordTok{end.}
+    \KeywordTok{end.}
+  \KeywordTok{end.}
+
+  \CommentTok{NB. returns a list when only one item otherwise table}
+  \NormalTok{ok }\FunctionTok{<} \FunctionTok{]}\OtherTok{`}\FunctionTok{,}\OtherTok{@.}\RegionMarkerTok{(}\NormalTok{1}\OtherTok{&}\FunctionTok{=}\OtherTok{@:}\FunctionTok{#}\RegionMarkerTok{)} \NormalTok{res}
+
+\KeywordTok{else.}
+  \RegionMarkerTok{(}\NormalTok{jderr ERR0}\DecValTok{83}\RegionMarkerTok{)}\FunctionTok{,}\DataTypeTok{y} \FunctionTok{#}\OtherTok{~} \FunctionTok{-.} \NormalTok{b  }\CommentTok{NB. errmsg: not on path}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{invreplace}\AlertTok{=:}\index{invreplace@\texttt{invreplace}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*invreplace v-- replaces  items  from inverted data lists. The}
+\CommentTok{NB. (x) argument is a boxed list of positions and  replacements.}
+\CommentTok{NB. (y) is a  boxed list containing a file pointer and  inverted}
+\CommentTok{NB. component numbers.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  blul invreplace blul}
+\CommentTok{NB.}
+\CommentTok{NB.   (pos;reps) invreplace WF__DL ; CNCLASS,CNPUTDATE,CNSIZE}
+
+\NormalTok{msg}\CharTok{=.} \NormalTok{ERR0}\DecValTok{57}  \CommentTok{NB. errmsg: directory update failure}
+
+\CommentTok{NB. file pointer & component list}
+\StringTok{'fp cmpl'}\CharTok{=.}  \DataTypeTok{y}
+\StringTok{'pos repl'}\CharTok{=.} \DataTypeTok{x}
+\KeywordTok{if.} \RegionMarkerTok{(}\FunctionTok{#}\NormalTok{repl}\RegionMarkerTok{)}\FunctionTok{~:#}\NormalTok{cmpl }\KeywordTok{do.} \NormalTok{jderr msg }\KeywordTok{return.} \KeywordTok{end.}
+\NormalTok{rc}\CharTok{=.} \FunctionTok{i.}\NormalTok{0}
+
+\CommentTok{NB. replacements do not change the length of inverted lists}
+\CommentTok{NB. get the total number of elements from 0 component}
+\KeywordTok{if.} \NormalTok{badjr dat}\CharTok{=.} \NormalTok{jread fp}\FunctionTok{;}\NormalTok{CNMARK }\KeywordTok{do.} \NormalTok{jderr msg }\KeywordTok{return.} \KeywordTok{end.}
+\NormalTok{len}\CharTok{=.} \FunctionTok{>\{.>}\NormalTok{dat}
+
+\CommentTok{NB. loop for maximum safety and space savings}
+\KeywordTok{for_cn.} \NormalTok{cmpl }\KeywordTok{do.}
+
+  \KeywordTok{if.} \NormalTok{badjr dat}\CharTok{=.} \NormalTok{jread fp}\FunctionTok{;}\NormalTok{cn }\KeywordTok{do.} \NormalTok{jderr msg }\KeywordTok{return.} \KeywordTok{end.}
+  \NormalTok{dat}\CharTok{=.} \FunctionTok{>}\NormalTok{dat}
+
+  \CommentTok{NB. all inverted list lengths must match}
+  \KeywordTok{if.} \NormalTok{len }\FunctionTok{~:} \FunctionTok{#}\NormalTok{dat }\KeywordTok{do.} \NormalTok{jderr msg }\KeywordTok{return.} \KeywordTok{end.}
+
+  \NormalTok{dat}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{>}\NormalTok{cn_index}\FunctionTok{\{}\NormalTok{repl}\RegionMarkerTok{)} \NormalTok{pos}\OtherTok{\}} \NormalTok{dat}
+  \NormalTok{rc}\CharTok{=.} \NormalTok{rc}\FunctionTok{,} \RegionMarkerTok{(}\FunctionTok{<}\NormalTok{dat}\RegionMarkerTok{)} \NormalTok{jreplace fp }\FunctionTok{;} \NormalTok{cn}
+\KeywordTok{end.}
+
+\CommentTok{NB. test replacements for errors}
+\KeywordTok{if.} \NormalTok{badreps rc }\KeywordTok{do.} \NormalTok{jderr msg }\KeywordTok{else.} \NormalTok{OK }\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. 1 if dictionary is a library}
+\NormalTok{islib}\AlertTok{=:}\index{islib@\texttt{islib}}\StringTok{'*'}\OtherTok{"}\NormalTok{_ }\FunctionTok{=} \FunctionTok{[:} \FunctionTok{\{.} \FunctionTok{[:} \FunctionTok{>} \FunctionTok{\{.}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{iswriteable}\AlertTok{=:}\index{iswriteable@\texttt{iswriteable}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*iswriteable  v--  tests  a blcl of full  path file  names for}
+\CommentTok{NB. writeablity.}
+\CommentTok{NB.}
+\CommentTok{NB. This verb takes  a list of full path file names and tests the}
+\CommentTok{NB. read/write status of  the files.  The  result is boolean list}
+\CommentTok{NB. with 1 denoting "writeable" and 0 denoting "not-writeable."}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  pl =. iswriteable blclPathFile}
+
+\KeywordTok{if.} \NormalTok{IFWIN }\KeywordTok{do.} \NormalTok{iswriteablewin }\DataTypeTok{y} \KeywordTok{else.} \NormalTok{iswriteablelinux }\DataTypeTok{y} \KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{iswriteablelinux}\AlertTok{=:}\index{iswriteablelinux@\texttt{iswriteablelinux}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*iswriteablelinux  v-- tests a blcl of full path  linux  files}
+\CommentTok{NB. for writeablity.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  pl =. iswriteablelinux blclPathFile}
+
+\CommentTok{NB. NIMP: check linux file read/write/access status}
+\CommentTok{NB. NIMP: returns all 1's for now}
+\RegionMarkerTok{(}\FunctionTok{#,}\DataTypeTok{y}\RegionMarkerTok{)}\FunctionTok{#}\NormalTok{1}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. tests permissions/attributes of a blcl of full path file names for writeablity}
+\NormalTok{iswriteablewin}\AlertTok{=:}\index{iswriteablewin@\texttt{iswriteablewin}}\StringTok{'w-'}\OtherTok{"}\NormalTok{_ }\FunctionTok{-:}\OtherTok{"}\NormalTok{1 }\FunctionTok{[:} \FunctionTok{]} \NormalTok{1 3}\OtherTok{"}\NormalTok{_ }\FunctionTok{\{}\OtherTok{"}\NormalTok{1 }\FunctionTok{[:} \FunctionTok{;}\OtherTok{"}\NormalTok{1 }\FunctionTok{[:} \FunctionTok{]} \FunctionTok{_2:} \FunctionTok{\{.}\OtherTok{"}\NormalTok{1 }\FunctionTok{[:} \FunctionTok{>} \FunctionTok{[:} \FunctionTok{,}\OtherTok{&}\RegionMarkerTok{(}\NormalTok{1}\OtherTok{!:}\NormalTok{0}\RegionMarkerTok{)}\OtherTok{&.}\FunctionTok{>} \FunctionTok{]}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{jdatcreate}\AlertTok{=:}\index{jdatcreate@\texttt{jdatcreate}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*jdatcreate v-- creates an empty dictionary data file. (y) is}
+\CommentTok{NB. a path and (x) is a file name}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  clFile jdatcreate clPath}
+\CommentTok{NB.}
+\CommentTok{NB.   'jtests' jdatcreate 'c:\textbackslash{}temp\textbackslash{}jdict2a\textbackslash{}'}
+\CommentTok{NB.   'jgroups' jdatcreate 'c:\textbackslash{}blanks are cool\textbackslash{}jdict 2a\textbackslash{}'}
+
+\NormalTok{fn}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{alltrim }\DataTypeTok{y}\RegionMarkerTok{)} \FunctionTok{,} \DataTypeTok{x} \FunctionTok{-.} \StringTok{' '}
+\NormalTok{msg}\CharTok{=.} \NormalTok{ERR0}\DecValTok{52} \CommentTok{NB. errmsg: unable to initialize}
+
+\KeywordTok{if.}     \FunctionTok{-.}\NormalTok{jcreate fn }\KeywordTok{do.} \RegionMarkerTok{(}\NormalTok{jderr msg}\RegionMarkerTok{)}\FunctionTok{,<}\NormalTok{fn}
+\KeywordTok{elseif.} \NormalTok{c}\CharTok{=.} \FunctionTok{<} \NormalTok{0 }\FunctionTok{;} \NormalTok{t}\CharTok{=.} \NormalTok{now }\StringTok{''}        \CommentTok{NB. length and directory stamp}
+        \NormalTok{c}\CharTok{=.} \NormalTok{c }\FunctionTok{,} \FunctionTok{<}\StringTok{''}                 \CommentTok{NB. c1 RESERVED}
+        \NormalTok{badappend c}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{c }\FunctionTok{,} \RegionMarkerTok{(}\NormalTok{OFFSET}\FunctionTok{-#}\NormalTok{c}\RegionMarkerTok{)} \FunctionTok{#} \FunctionTok{a:}\RegionMarkerTok{)} \NormalTok{jappend fn }\KeywordTok{do.} \RegionMarkerTok{(}\NormalTok{jderr msg}\RegionMarkerTok{)}\FunctionTok{,<}\NormalTok{fn}
+\KeywordTok{elseif.} \KeywordTok{do.}
+ \NormalTok{ok }\FunctionTok{\{:} \NormalTok{c  }\CommentTok{NB. return last component}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{jwordscreate}\AlertTok{=:}\index{jwordscreate@\texttt{jwordscreate}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*jwordscreate v-- creates an empty word file. (y) argument is}
+\CommentTok{NB. a  fully  qualified  file  name.  (x)  is  a  boxed list  of}
+\CommentTok{NB. dictionary  creation  parameters.  The  target  directory  is}
+\CommentTok{NB. assumed to exist. Result is a return code and message.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  blParms jwordscreate clFile}
+\CommentTok{NB.}
+\CommentTok{NB.  (doc;parms) jwordscreate 'c:\textbackslash{}temp\textbackslash{}jdict2a\textbackslash{}jwords' NB. no extension}
+
+\NormalTok{msg}\CharTok{=.} \NormalTok{ERR0}\DecValTok{52} \CommentTok{NB. errmsg: unable to initialize}
+
+\KeywordTok{if.}     \FunctionTok{-.}\NormalTok{jcreate }\DataTypeTok{y}  \KeywordTok{do.} \RegionMarkerTok{(}\NormalTok{jderr msg}\RegionMarkerTok{)}\FunctionTok{,<}\DataTypeTok{y}
+\KeywordTok{elseif.} \NormalTok{c}\CharTok{=.} \FunctionTok{<} \NormalTok{0 }\FunctionTok{;} \NormalTok{t}\CharTok{=.} \NormalTok{now }\StringTok{''}        \CommentTok{NB. c0 length and directory stamp}
+        \NormalTok{c}\CharTok{=.} \NormalTok{c }\FunctionTok{,} \FunctionTok{<}\StringTok{''}                 \CommentTok{NB. c1 RESERVED}
+        \NormalTok{c}\CharTok{=.} \NormalTok{c }\FunctionTok{,} \NormalTok{0}\FunctionTok{\{}\DataTypeTok{x}                 \CommentTok{NB. c2 this dictionary's documentation}
+        \NormalTok{c}\CharTok{=.} \NormalTok{c }\FunctionTok{,} \FunctionTok{<\}.} \DataTypeTok{x}               \CommentTok{NB. c3 dictionary parameters}
+        \NormalTok{badappend c}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{c }\FunctionTok{,} \RegionMarkerTok{(}\NormalTok{OFFSET}\FunctionTok{-#}\NormalTok{c}\RegionMarkerTok{)} \FunctionTok{#} \FunctionTok{a:}\RegionMarkerTok{)} \NormalTok{jappend }\DataTypeTok{y} \KeywordTok{do.} \RegionMarkerTok{(}\NormalTok{jderr msg}\RegionMarkerTok{)}\FunctionTok{,<}\DataTypeTok{y}
+\KeywordTok{elseif.} \KeywordTok{do.}
+ \NormalTok{ok }\FunctionTok{\{:} \NormalTok{c  }\CommentTok{NB. return last component}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{loadalldirs}\AlertTok{=:}\index{loadalldirs@\texttt{loadalldirs}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*loadalldirs v-- loads all (x) directories for each open (y)}
+\CommentTok{NB. dictionary.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  iaObject loadalldirs blcl}
+\CommentTok{NB.}
+\CommentTok{NB.   WORD loadalldirs \{:"1 DPATH}
+
+\DataTypeTok{x}\CharTok{=.} \FunctionTok{\textbar{}}\DataTypeTok{x}
+\KeywordTok{for_oj.} \DataTypeTok{y} \KeywordTok{do.}
+  \KeywordTok{if.} \NormalTok{loaddir__oj }\DataTypeTok{x} \KeywordTok{do.}
+    \NormalTok{jderr ERR0}\DecValTok{54} \KeywordTok{return.} \CommentTok{NB. errmsg: unable to load directory}
+  \KeywordTok{end.}
+\KeywordTok{end.}
+\NormalTok{OK}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{loadallrefs}\AlertTok{=:}\index{loadallrefs@\texttt{loadallrefs}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*loadallrefs v-- loads all references for (y) dictionary.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  iaObject loadallrefs blcl}
+\CommentTok{NB.}
+\CommentTok{NB.   WORD loadallrefs \{:"1 DPATH}
+
+\KeywordTok{for_oj.} \DataTypeTok{y} \KeywordTok{do.}
+  \KeywordTok{if.} \NormalTok{loadref__oj }\DataTypeTok{x} \KeywordTok{do.}
+    \NormalTok{jderr ERR0}\DecValTok{79} \KeywordTok{return.} \CommentTok{NB. errmsg: unable to load references}
+  \KeywordTok{end.}
+\KeywordTok{end.}
+\NormalTok{OK}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{loadwords}\AlertTok{=:}\index{loadwords@\texttt{loadwords}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*loadwords v-- loads dictionary words into target locales.}
+
+\NormalTok{DL}\CharTok{=.} \FunctionTok{\{:} \DataTypeTok{y}  \CommentTok{NB. directory object !(*)=. DL}
+
+\CommentTok{NB. NIMP GETFACTOR not used yet}
+\CommentTok{NB. read words and determine name class}
+\KeywordTok{if.} \NormalTok{badjr w}\CharTok{=.} \NormalTok{jread WF_}\DecValTok{_}\NormalTok{DL}\FunctionTok{;}\DataTypeTok{x}\FunctionTok{\{}\NormalTok{WORDCN_}\DecValTok{_}\NormalTok{DL }\KeywordTok{do.}
+  \NormalTok{jderr ERR0}\DecValTok{88}  \CommentTok{NB. errmsg: read failure}
+\KeywordTok{else.}
+  \NormalTok{b}\CharTok{=.}   \NormalTok{0 }\FunctionTok{~:} \FunctionTok{;} \NormalTok{1}\OtherTok{&}\FunctionTok{\{}\OtherTok{&}\FunctionTok{>} \NormalTok{w}
+  \NormalTok{loc}\CharTok{=.} \FunctionTok{>\{.} \DataTypeTok{y}  \CommentTok{NB. target locale}
+
+  \CommentTok{NB. define words that are not nouns}
+  \CommentTok{NB. NIMP may be able to speed things up by switching}
+  \CommentTok{NB. to target locale in top of script and then switching}
+  \CommentTok{NB. back to current - eliminates need to hard wire target locale}
+  \CommentTok{NB. to each word.}
+
+  \KeywordTok{try.}
+    \KeywordTok{if.} \FunctionTok{#}\DataTypeTok{v}\CharTok{=.} \NormalTok{b}\FunctionTok{#}\NormalTok{w }\KeywordTok{do.}
+      \NormalTok{0}\OtherTok{!:}\NormalTok{0  }\FunctionTok{;} \RegionMarkerTok{((}\FunctionTok{\{.}\OtherTok{&}\FunctionTok{>} \DataTypeTok{v}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \FunctionTok{<}\NormalTok{loc}\FunctionTok{,}\StringTok{'=:'}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \RegionMarkerTok{(}\FunctionTok{\{:}\OtherTok{&}\FunctionTok{>} \DataTypeTok{v}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \FunctionTok{<}\NormalTok{LF}
+    \KeywordTok{end.}
+
+    \CommentTok{NB. define nouns}
+    \KeywordTok{if.} \FunctionTok{#}\DataTypeTok{n}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{-.}\NormalTok{b}\RegionMarkerTok{)}\FunctionTok{#}\NormalTok{w }\KeywordTok{do.}
+      \DataTypeTok{v}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{\{.}\OtherTok{&}\FunctionTok{>} \DataTypeTok{n}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \FunctionTok{<}\NormalTok{loc}
+      \RegionMarkerTok{(}\DataTypeTok{v}\RegionMarkerTok{)}\AlertTok{=:}\index{01indirect@\texttt{(...)=:}} \RegionMarkerTok{(}\NormalTok{3}\OtherTok{!:}\NormalTok{2}\RegionMarkerTok{)}\OtherTok{&.}\FunctionTok{>} \FunctionTok{\{:}\OtherTok{&}\FunctionTok{>} \DataTypeTok{n}
+    \KeywordTok{end.}
+  \KeywordTok{catch.} \NormalTok{jderr ERR0}\DecValTok{91} \KeywordTok{return.} \KeywordTok{end.}
+  \NormalTok{OK}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{mainddir}\AlertTok{=:}\index{mainddir@\texttt{mainddir}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*mainddir v--  creates  the main  dictionary  directory from a}
+\CommentTok{NB. path.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  mainddir clPath}
+\CommentTok{NB.}
+\CommentTok{NB.   mainddir 'c:\textbackslash{}go\textbackslash{}ahead\textbackslash{}create\textbackslash{}my\textbackslash{}directory'}
+
+\CommentTok{NB.#ASSERT 0 < #y.}
+\DataTypeTok{y}\CharTok{=.}  \RegionMarkerTok{(}\FunctionTok{-}\NormalTok{PATHDEL}\FunctionTok{=\{:} \DataTypeTok{y}\RegionMarkerTok{)} \FunctionTok{\}.} \DataTypeTok{y} \FunctionTok{,} \NormalTok{PATHDEL}
+\NormalTok{drv}\CharTok{=.} \NormalTok{alltrim }\RegionMarkerTok{(}\FunctionTok{,}\OtherTok{&}\StringTok{':'}\OtherTok{`}\FunctionTok{]}\OtherTok{@.}\RegionMarkerTok{(}\NormalTok{0}\OtherTok{&}\FunctionTok{=}\OtherTok{@:}\FunctionTok{#}\RegionMarkerTok{))} \NormalTok{justdrv }\DataTypeTok{y}
+
+\CommentTok{NB. standard path format}
+\NormalTok{sp}\CharTok{=.} \NormalTok{alltrim justpath }\DataTypeTok{y}
+\DataTypeTok{y}\CharTok{=.} \NormalTok{drv}\FunctionTok{,}\NormalTok{sp}\FunctionTok{,}\NormalTok{PATHDEL}
+
+\CommentTok{NB. path must begin with (PATHDEL) to force user to}
+\CommentTok{NB. think carefully about where dictionary is placed}
+\KeywordTok{if.} \NormalTok{PATHDEL}\FunctionTok{~:\{.} \NormalTok{sp}\FunctionTok{,}\StringTok{' '} \KeywordTok{do.}
+  \NormalTok{jderr ERR0}\DecValTok{59} \CommentTok{NB. errmsg: full rooted path required}
+  \KeywordTok{return.}
+\KeywordTok{end.}
+
+\CommentTok{NB. subpath list with any drive attached}
+\NormalTok{sp}\CharTok{=.} \FunctionTok{;}\OtherTok{&.}\FunctionTok{>} \FunctionTok{<}\OtherTok{"}\NormalTok{1 }\FunctionTok{,}\OtherTok{/\textbackslash{}} \FunctionTok{<}\OtherTok{;.}\NormalTok{1 sp}
+\NormalTok{sp}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{<}\NormalTok{drv}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \NormalTok{sp}
+
+\CommentTok{NB. attempt to create last directory on path}
+\KeywordTok{if.} \NormalTok{1}\FunctionTok{=}\NormalTok{makedir }\FunctionTok{\{:} \NormalTok{sp }\KeywordTok{do.} \NormalTok{ok }\DataTypeTok{y}
+
+\CommentTok{NB. upon failure run down paths attempting to create all}
+\CommentTok{NB. intermediate directories - many operations will}
+\CommentTok{NB. typically fail because some intermediates will exist}
+\KeywordTok{elseif.} \NormalTok{makedir}\OtherTok{"}\NormalTok{0 }\FunctionTok{\}:} \NormalTok{sp}
+        \NormalTok{1}\FunctionTok{=}\NormalTok{makedir }\FunctionTok{\{:} \NormalTok{sp }\KeywordTok{do.} \NormalTok{ok }\DataTypeTok{y}
+\KeywordTok{elseif.} \KeywordTok{do.}
+  \RegionMarkerTok{(}\NormalTok{jderr ERR0}\DecValTok{60}\RegionMarkerTok{)}\FunctionTok{,<}\DataTypeTok{y} \CommentTok{NB. errmsg: unable to create directory}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{newdparms}\AlertTok{=:}\index{newdparms@\texttt{newdparms}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*newdparms  v--  sets  the dictionary  parameters  for  a  new}
+\CommentTok{NB. dictionary.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  newdparms bluu}
+\CommentTok{NB.}
+\CommentTok{NB.   newdparms sd;dp;dname;dn;path}
+
+\CommentTok{NB. subdirectories, parameters, name, unique number and path}
+\StringTok{'sd dp name dn path'}\CharTok{=.} \DataTypeTok{y}
+
+\CommentTok{NB. name, number, creation, last dump, [paths], J version, J system}
+\NormalTok{uv}\CharTok{=.} \NormalTok{name }\FunctionTok{;} \NormalTok{dn }\FunctionTok{;} \RegionMarkerTok{(}\NormalTok{now }\StringTok{''}\RegionMarkerTok{)} \FunctionTok{;} \RegionMarkerTok{(}\NormalTok{6}\FunctionTok{#}\NormalTok{0}\RegionMarkerTok{)} \FunctionTok{;} \RegionMarkerTok{(}\FunctionTok{<}\NormalTok{path}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \NormalTok{sd }\FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \NormalTok{PATHDEL}
+\NormalTok{uv}\CharTok{=.} \NormalTok{uv }\FunctionTok{,} \RegionMarkerTok{(}\NormalTok{9}\OtherTok{!:}\NormalTok{1}\DecValTok{4}\StringTok{''}\RegionMarkerTok{)}\FunctionTok{;}\NormalTok{9}\OtherTok{!:}\NormalTok{1}\DecValTok{2} \StringTok{''}
+
+\CommentTok{NB. dictionary number path context - empty until references created}
+\NormalTok{uv}\CharTok{=.} \NormalTok{uv }\FunctionTok{,} \FunctionTok{<i.}\NormalTok{0}
+
+\CommentTok{NB. reduce user parameter table to names and values}
+\NormalTok{uv }\FunctionTok{,} \FunctionTok{<} \FunctionTok{\textbar{}:} \NormalTok{0 2 }\FunctionTok{\{}\OtherTok{"}\NormalTok{1 dp}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{newregdict}\AlertTok{=:}\index{newregdict@\texttt{newregdict}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*newregdict v-- creates a new dictionary  or registers an extant}
+\CommentTok{NB. dictionary.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  iaOptions newregdict (clDictionary ; clPathroot)}
+\CommentTok{NB.}
+\CommentTok{NB.   NB. register extant dictinary}
+\CommentTok{NB.   0 newregdict 'dictionary name';'c:\textbackslash{}where\textbackslash{}it\textbackslash{}lives' NB. drive required}
+\CommentTok{NB.}
+\CommentTok{NB.   NB. create new dictionary}
+\CommentTok{NB.   1 newregdict 'new name';'c:\textbackslash{}new\textbackslash{}location'}
+
+\NormalTok{mf}\CharTok{=.}  \NormalTok{JMASTER  }\CommentTok{NB. master file}
+\NormalTok{msg}\CharTok{=.} \NormalTok{ERR0}\DecValTok{61}   \CommentTok{NB. errmsg: invalid dictionary name;path[;documentation]}
+
+\KeywordTok{if.} \RegionMarkerTok{(}\NormalTok{badbu }\DataTypeTok{y}\RegionMarkerTok{)} \FunctionTok{+.} \NormalTok{1}\FunctionTok{~:#$} \DataTypeTok{y}  \KeywordTok{do.} \NormalTok{jderr msg}
+\KeywordTok{elseif.} \RegionMarkerTok{(}\NormalTok{3}\FunctionTok{<#}\DataTypeTok{y}\RegionMarkerTok{)} \FunctionTok{+.} \NormalTok{2}\FunctionTok{>#}\DataTypeTok{y}    \KeywordTok{do.} \NormalTok{jderr msg}
+\KeywordTok{elseif.} \FunctionTok{+.}\OtherTok{/}\NormalTok{badcl}\OtherTok{&}\FunctionTok{>} \DataTypeTok{y}      \KeywordTok{do.} \NormalTok{jderr msg}
+\KeywordTok{elseif.do.}
+
+  \CommentTok{NB. names and paths cannot be empty - sorry}
+  \StringTok{'name path doc'}\CharTok{=.} \NormalTok{3}\FunctionTok{\{.}\DataTypeTok{y}\FunctionTok{,<}\StringTok{''}
+  \NormalTok{name}\CharTok{=.} \NormalTok{alltrim name }\FunctionTok{[} \NormalTok{path}\CharTok{=.} \NormalTok{hostsep alltrim path}
+  \KeywordTok{if.} \NormalTok{0}\OtherTok{&}\FunctionTok{e.} \RegionMarkerTok{(}\FunctionTok{#}\NormalTok{name}\RegionMarkerTok{)}\FunctionTok{,#}\NormalTok{path }\KeywordTok{do.} \NormalTok{jderr msg }\KeywordTok{return.} \KeywordTok{end.}
+
+  \CommentTok{NB. restrict dictionary name and path characters}
+  \KeywordTok{if.} \NormalTok{0}\OtherTok{&}\FunctionTok{e.} \NormalTok{name }\FunctionTok{e.} \StringTok{' '}\FunctionTok{,}\NormalTok{ALPHA }\KeywordTok{do.}
+    \NormalTok{jderr ERR0}\DecValTok{62} \KeywordTok{return.} \CommentTok{NB. errmsg: invalid characters in name}
+  \KeywordTok{elseif.} \NormalTok{0}\OtherTok{&}\FunctionTok{e.} \NormalTok{path }\FunctionTok{e.} \NormalTok{PATHCHRS}\FunctionTok{,}\NormalTok{ALPHA }\KeywordTok{do.}
+    \NormalTok{jderr ERR0}\DecValTok{63} \KeywordTok{return.} \CommentTok{NB. errmsg: invalid characters in path}
+  \KeywordTok{end.}
+
+  \KeywordTok{if.} \NormalTok{IFWIN }\KeywordTok{do.}
+    \CommentTok{NB. check for UNC paths}
+    \KeywordTok{if.} \RegionMarkerTok{(}\NormalTok{2}\FunctionTok{#}\NormalTok{PATHDEL}\RegionMarkerTok{)} \FunctionTok{-:} \NormalTok{2}\FunctionTok{\{.}\NormalTok{path }\KeywordTok{do.}
+      \CommentTok{NB. insure UNC paths are terminated}
+      \NormalTok{path}\CharTok{=.} \NormalTok{path}\FunctionTok{,}\RegionMarkerTok{(}\NormalTok{PATHDEL}\FunctionTok{=\{:}\NormalTok{path}\RegionMarkerTok{)}\FunctionTok{\}.}\NormalTok{PATHDEL}
+
+      \CommentTok{NB. NIMP: NOTE: (freedisk)'ing windows network drives (more}
+      \CommentTok{NB. than once) is time consuming and typically unnecesary!}
+      \CommentTok{NB. These volumes are often huge and JOD empty dictionaries}
+      \CommentTok{NB. are tiny - hence we ASSUME sufficient space. The following}
+      \CommentTok{NB. commented code tests UNC volumes.}
+
+      \NormalTok{disk}\CharTok{=.}\StringTok{''} \CommentTok{NB. empty disk suppresses space testing}
+
+      \CommentTok{NB. test if the maximum size of subpaths exceeds threshold}
+      \CommentTok{NB. depends on (freedisk) returning zero for invalid paths}
+      \CommentTok{NB. omit root \textbackslash{}\textbackslash{} and last nonexistant path}
+      \CommentTok{NB. if. 0=#uv=. _1 \}. 2 \}.;&.> <"1 ,/\textbackslash{} <;.2 path do.}
+      \CommentTok{NB.   (jderr ERR065),<path return. NB. errmsg: not enough space on drive}
+      \CommentTok{NB. end.}
+      \CommentTok{NB. if. (>./freedisk&> uv) < FREESPACE do. (jderr ERR065),<path return. end.}
+    \KeywordTok{else.}
+      \CommentTok{NB. check for windows drive letter (required) and}
+      \CommentTok{NB. determine if there is enough space on the target drive}
+      \CommentTok{NB. errmsg: target drive is required}
+      \KeywordTok{if.} \NormalTok{isempty tdrv}\CharTok{=.} \NormalTok{justdrv path }\KeywordTok{do.} \NormalTok{jderr ERR0}\DecValTok{64}  \KeywordTok{return.} \KeywordTok{end.}
+
+      \CommentTok{NB. windows drive letters}
+      \NormalTok{disk}\CharTok{=.} \NormalTok{tdrv}\FunctionTok{,}\StringTok{':'}\FunctionTok{,}\NormalTok{PATHDEL}
+    \KeywordTok{end.}
+  \KeywordTok{else.}
+    \CommentTok{NB. require rooted linux paths}
+    \KeywordTok{if.} \NormalTok{PATHDEL }\FunctionTok{~:} \FunctionTok{\{.}\NormalTok{path }\KeywordTok{do.} \RegionMarkerTok{(}\NormalTok{jderr ERR0}\DecValTok{96}\RegionMarkerTok{)}\FunctionTok{,<}\NormalTok{path }\KeywordTok{return.} \KeywordTok{end.}
+
+    \CommentTok{NB. NIMP: how does one determine the volume name for a given}
+    \CommentTok{NB. fully qualified linux file that resides on said volume?}
+    \NormalTok{disk}\CharTok{=.} \NormalTok{path}
+  \KeywordTok{end.}
+
+  \KeywordTok{if.} \RegionMarkerTok{(}\DataTypeTok{x}\FunctionTok{=}\NormalTok{1}\RegionMarkerTok{)} \FunctionTok{*.} \NormalTok{0}\FunctionTok{<#}\NormalTok{disk }\KeywordTok{do.} \CommentTok{NB. HARDCODE (x) option}
+    \NormalTok{bytes}\CharTok{=.} \NormalTok{freedisk disk}
+    \CommentTok{NB. errmsg: not enough space}
+    \KeywordTok{if.} \NormalTok{bytes }\FunctionTok{<} \NormalTok{FREESPACE }\KeywordTok{do.} \RegionMarkerTok{(}\NormalTok{jderr ERR0}\DecValTok{65}\RegionMarkerTok{)}\FunctionTok{,<}\NormalTok{disk }\KeywordTok{return.} \KeywordTok{end.}
+  \KeywordTok{end.}
+
+  \CommentTok{NB. attempt to read master}
+  \KeywordTok{if.} \NormalTok{badjr uv}\CharTok{=.} \NormalTok{jread mf}\FunctionTok{;}\NormalTok{CNMFTAB}\FunctionTok{,}\NormalTok{CNMFPARMS}\FunctionTok{,}\NormalTok{CNMFDLOG }\KeywordTok{do.}
+    \NormalTok{jderr ERR0}\DecValTok{06} \KeywordTok{return.} \CommentTok{NB. errmsg: cannot read master}
+  \KeywordTok{end.}
+
+  \CommentTok{NB. mark master - this verb updates if successful}
+  \CommentTok{NB. all error calls should use (jdmasterr) until}
+  \CommentTok{NB. the master is cleared at the end of this verb}
+  \KeywordTok{if.} \NormalTok{badrc msg}\CharTok{=.} \NormalTok{markmast 1 }\KeywordTok{do.} \NormalTok{msg }\KeywordTok{return.} \KeywordTok{end.}
+
+  \CommentTok{NB. master table, dictionary parameters, number log}
+  \StringTok{'mdt dpt dlg'}\CharTok{=.} \NormalTok{uv}
+  \CommentTok{NB. errmsg: dictionary name in use}
+  \KeywordTok{if.} \RegionMarkerTok{(}\FunctionTok{<}\NormalTok{name}\RegionMarkerTok{)} \FunctionTok{e.} \NormalTok{0}\FunctionTok{\{}\NormalTok{mdt }\KeywordTok{do.} \NormalTok{jdmasterr ERR0}\DecValTok{66} \KeywordTok{return.} \KeywordTok{end.}
+
+  \KeywordTok{if.} \DataTypeTok{x}\FunctionTok{=}\NormalTok{1 }\KeywordTok{do.}
+    \CommentTok{NB. attempt to create main root directory}
+    \KeywordTok{if.} \NormalTok{badrc path}\CharTok{=.} \NormalTok{mainddir path }\KeywordTok{do.} \NormalTok{path }\FunctionTok{[} \NormalTok{markmast}\OtherTok{~}\NormalTok{0 }\KeywordTok{return.} \KeywordTok{end.}
+
+    \CommentTok{NB. attempt to create standard subdirectories}
+    \NormalTok{path}\CharTok{=.} \FunctionTok{\{:} \NormalTok{path}
+    \KeywordTok{if.} \NormalTok{0}\OtherTok{&}\FunctionTok{e.} \NormalTok{uv}\CharTok{=.} \NormalTok{makedir}\OtherTok{"}\NormalTok{0 path }\FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \NormalTok{JDSDIRS }\KeywordTok{do.}
+      \NormalTok{jdmasterr ERR0}\DecValTok{67} \KeywordTok{return.} \CommentTok{NB. errmsg: unable to create subdirectories}
+    \KeywordTok{end.}
+    \NormalTok{path}\CharTok{=.} \FunctionTok{>} \NormalTok{path}
+
+    \NormalTok{dn}\CharTok{=.} \NormalTok{didnum 0   }\CommentTok{NB. unique dictionary number}
+    \NormalTok{uv}\CharTok{=.} \NormalTok{newdparms JDSDIRS}\FunctionTok{;}\NormalTok{dpt}\FunctionTok{;}\NormalTok{name}\FunctionTok{;}\NormalTok{dn}\FunctionTok{;}\NormalTok{path}
+
+    \CommentTok{NB. create empty dictionary files}
+    \NormalTok{uv}\CharTok{=.} \FunctionTok{<}\RegionMarkerTok{(}\NormalTok{doc}\FunctionTok{;}\NormalTok{uv}\RegionMarkerTok{)} \NormalTok{jwordscreate path}\FunctionTok{,>}\NormalTok{0}\FunctionTok{\{}\NormalTok{JDFILES}
+    \NormalTok{uv}\CharTok{=.} \NormalTok{uv }\FunctionTok{,} \RegionMarkerTok{(}\FunctionTok{\}.}\NormalTok{JDFILES}\RegionMarkerTok{)} \NormalTok{jdatcreate}\OtherTok{&.}\FunctionTok{>} \FunctionTok{<}\NormalTok{path}
+    \KeywordTok{if.} \NormalTok{0}\OtherTok{&}\FunctionTok{e.} \FunctionTok{;\{.}\OtherTok{&}\FunctionTok{>} \NormalTok{uv }\KeywordTok{do.}
+      \NormalTok{jdmasterr ERR0}\DecValTok{68} \KeywordTok{return.} \CommentTok{NB. errmsg: unable to setup dictionary file(s)}
+    \KeywordTok{end.}
+    \NormalTok{newmdt}\CharTok{=.} \NormalTok{mdt}\FunctionTok{,.}\NormalTok{name}\FunctionTok{;}\NormalTok{dn}\FunctionTok{;}\NormalTok{path}\FunctionTok{;}\NormalTok{0}
+    \NormalTok{okm}\CharTok{=.}\NormalTok{OK0}\DecValTok{50}
+  \KeywordTok{else.}
+    \NormalTok{path}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{-}\NormalTok{PATHDEL}\FunctionTok{=\{:}\NormalTok{path}\RegionMarkerTok{)} \FunctionTok{\}.} \NormalTok{path}\FunctionTok{,}\NormalTok{PATHDEL}
+
+    \CommentTok{NB. test existence of dictionary files}
+    \NormalTok{fn}\CharTok{=.} \NormalTok{JDFILES }\FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \FunctionTok{<}\NormalTok{IJF}
+    \KeywordTok{if.} \NormalTok{1 }\FunctionTok{e.} \NormalTok{uv}\CharTok{=.} \FunctionTok{-.} \NormalTok{fex}\OtherTok{"}\NormalTok{1 dcfiles}\CharTok{=.} \FunctionTok{<}\OtherTok{@:}\FunctionTok{;}\OtherTok{"}\NormalTok{1 }\RegionMarkerTok{(}\FunctionTok{<}\NormalTok{path}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{"}\NormalTok{0 }\OtherTok{/} \NormalTok{fn }\KeywordTok{do.}
+      \RegionMarkerTok{(}\NormalTok{jdmasterr ERR0}\DecValTok{73}\RegionMarkerTok{)}\FunctionTok{,<}\NormalTok{name }\KeywordTok{return.} \CommentTok{NB. errmsg: missing dictionary file(s)}
+    \KeywordTok{end.}
+
+    \CommentTok{NB. NIMP should run under a trap here to protect}
+    \CommentTok{NB. against files that appear to be dictionary but are not}
+
+    \CommentTok{NB. read dictionary parameter table and documentation}
+    \KeywordTok{if.} \NormalTok{badjr dat}\CharTok{=.} \NormalTok{jread }\RegionMarkerTok{(}\NormalTok{file}\CharTok{=.} \NormalTok{path}\FunctionTok{,>\{.}\NormalTok{JDFILES}\RegionMarkerTok{)}\FunctionTok{;}\NormalTok{CNPARMS}\FunctionTok{,}\NormalTok{CNDICDOC }\KeywordTok{do.}
+      \NormalTok{jdmasterr ERR0}\DecValTok{88} \KeywordTok{return.} \CommentTok{NB. errmsg: jfile read failure}
+    \KeywordTok{end.}
+
+    \CommentTok{NB. dictionary parameters and unique id}
+    \StringTok{'dpt olddoc'}\CharTok{=.} \NormalTok{dat}
+    \NormalTok{dn}\CharTok{=.} \NormalTok{1 }\FunctionTok{\{::} \NormalTok{dpt}
+
+    \CommentTok{NB. didnum's must be unique}
+    \CommentTok{NB. errmsg: duplicate dictionary id number}
+    \KeywordTok{if.} \NormalTok{dn }\FunctionTok{e.} \FunctionTok{;} \NormalTok{1}\FunctionTok{\{}\NormalTok{mdt }\KeywordTok{do.} \NormalTok{jdmasterr ERR0}\DecValTok{92} \KeywordTok{return.} \KeywordTok{end.}
+
+    \CommentTok{NB. if not a libary adjust dictionary paths, name and documentation}
+    \KeywordTok{if.} \FunctionTok{-.}\NormalTok{islib dpt }\KeywordTok{do.}
+
+      \CommentTok{NB. test dictionary file attributes - we must be able to read/write}
+      \KeywordTok{if.} \NormalTok{0 }\FunctionTok{e.} \NormalTok{iswriteable dcfiles }\KeywordTok{do.}
+        \CommentTok{NB. errmsg: dictionary file attributes do not allow read/write}
+        \NormalTok{jdmasterr ERR0}\DecValTok{95} \KeywordTok{return.}
+      \KeywordTok{end.}
+
+      \NormalTok{dpt}\CharTok{=.} \RegionMarkerTok{((}\FunctionTok{<}\NormalTok{path}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \NormalTok{JDSDIRS }\FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \NormalTok{PATHDEL}\RegionMarkerTok{)} \NormalTok{PARMDIRS}\OtherTok{\}} \NormalTok{dpt}
+      \NormalTok{dpt}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{<}\NormalTok{name}\RegionMarkerTok{)} \NormalTok{0}\OtherTok{\}} \NormalTok{dpt}
+      \NormalTok{doc}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{*#}\NormalTok{doc}\RegionMarkerTok{)}\FunctionTok{\{}\NormalTok{olddoc}\FunctionTok{;}\NormalTok{doc}
+      \KeywordTok{if.} \NormalTok{badreps }\RegionMarkerTok{(}\NormalTok{dpt}\FunctionTok{;}\NormalTok{doc}\RegionMarkerTok{)} \NormalTok{jreplace file}\FunctionTok{;}\NormalTok{CNPARMS}\FunctionTok{,}\NormalTok{CNDICDOC }\KeywordTok{do.}
+        \NormalTok{jdmasterr ERR0}\DecValTok{56}  \CommentTok{NB. errmsg: jfile replace failure}
+      \KeywordTok{end.}
+    \KeywordTok{end.}
+
+    \NormalTok{newmdt}\CharTok{=.} \NormalTok{mdt}\FunctionTok{,.}\NormalTok{name}\FunctionTok{;}\NormalTok{dn}\FunctionTok{;}\NormalTok{path}\FunctionTok{;}\NormalTok{0}
+    \NormalTok{okm}\CharTok{=.} \NormalTok{OK0}\DecValTok{58}
+  \KeywordTok{end.}
+
+  \CommentTok{NB. update master dictionary table+backup, didnum log, open status}
+  \NormalTok{uv}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{newmdt}\FunctionTok{;}\NormalTok{mdt}\FunctionTok{;}\NormalTok{dlg}\FunctionTok{,}\NormalTok{dn}\RegionMarkerTok{)} \NormalTok{jreplace mf}\FunctionTok{;}\NormalTok{CNMFTAB}\FunctionTok{,}\NormalTok{CNMFTABBCK}\FunctionTok{,}\NormalTok{CNMFDLOG}
+  \KeywordTok{if.} \NormalTok{0}\OtherTok{&}\FunctionTok{>} \FunctionTok{<.}\OtherTok{/}\NormalTok{uv }\KeywordTok{do.} \NormalTok{jdmasterr ERR0}\DecValTok{69} \KeywordTok{return.} \KeywordTok{end.} \CommentTok{NB. errmsg: error updating master}
+
+  \CommentTok{NB. free master file for other tasks}
+  \KeywordTok{if.} \NormalTok{badrc msg}\CharTok{=.} \NormalTok{markmast}\OtherTok{~}\NormalTok{0 }\KeywordTok{do.} \NormalTok{msg }\KeywordTok{return.} \KeywordTok{end.}
+
+  \NormalTok{ok okm}\FunctionTok{;}\NormalTok{name}\FunctionTok{;}\NormalTok{jpathsep path}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. names containing substring}
+\NormalTok{nlctn}\AlertTok{=:}\index{nlctn@\texttt{nlctn}}\RegionMarkerTok{(}\FunctionTok{[:} \FunctionTok{I.} \FunctionTok{[:} \FunctionTok{+.}\OtherTok{/"}\NormalTok{1 }\RegionMarkerTok{(}\FunctionTok{[:} \FunctionTok{,:} \FunctionTok{]}\RegionMarkerTok{)} \FunctionTok{E.} \FunctionTok{[:} \FunctionTok{>} \FunctionTok{[}\RegionMarkerTok{)} \FunctionTok{\{} \FunctionTok{[}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. match prefixes (explore alternatives from large name lists)}
+\NormalTok{nlpfx}\AlertTok{=:}\index{nlpfx@\texttt{nlpfx}}\FunctionTok{[} \FunctionTok{#}\OtherTok{~} \RegionMarkerTok{(}\FunctionTok{[:} \FunctionTok{<} \FunctionTok{[:} \FunctionTok{,} \FunctionTok{]}\RegionMarkerTok{)} \FunctionTok{-:}\OtherTok{&}\FunctionTok{>} \RegionMarkerTok{(}\FunctionTok{[:} \FunctionTok{#} \FunctionTok{[:} \FunctionTok{,} \FunctionTok{]}\RegionMarkerTok{)} \FunctionTok{\{.}\OtherTok{&.}\FunctionTok{>} \FunctionTok{[}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. match name suffixes}
+\NormalTok{nlsfx}\AlertTok{=:}\index{nlsfx@\texttt{nlsfx}}\FunctionTok{[} \FunctionTok{#}\OtherTok{~} \RegionMarkerTok{(}\FunctionTok{[:} \FunctionTok{<} \FunctionTok{[:} \FunctionTok{,} \FunctionTok{]}\RegionMarkerTok{)} \FunctionTok{-:}\OtherTok{&}\FunctionTok{>} \RegionMarkerTok{(}\FunctionTok{[:} \FunctionTok{-} \FunctionTok{[:} \FunctionTok{#} \FunctionTok{[:} \FunctionTok{,} \FunctionTok{]}\RegionMarkerTok{)} \FunctionTok{\{.}\OtherTok{&.}\FunctionTok{>} \FunctionTok{[}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. containing pattern in raised and nubbed}
+\NormalTok{nubnlctn}\AlertTok{=:}\index{nubnlctn@\texttt{nubnlctn}}\RegionMarkerTok{(}\FunctionTok{[:} \NormalTok{sortdnub }\FunctionTok{[}\RegionMarkerTok{)} \NormalTok{nlctn }\FunctionTok{]}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. match prefixes in raised and nubbed}
+\NormalTok{nubnlpfx}\AlertTok{=:}\index{nubnlpfx@\texttt{nubnlpfx}}\RegionMarkerTok{(}\FunctionTok{[:} \NormalTok{sortdnub }\FunctionTok{[}\RegionMarkerTok{)} \NormalTok{nlpfx }\FunctionTok{]}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. match suffixes in raised and nubbed}
+\NormalTok{nubnlsfx}\AlertTok{=:}\index{nubnlsfx@\texttt{nubnlsfx}}\RegionMarkerTok{(}\FunctionTok{[:} \NormalTok{sortdnub }\FunctionTok{[}\RegionMarkerTok{)} \NormalTok{nlsfx }\FunctionTok{]}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{opendict}\AlertTok{=:}\index{opendict@\texttt{opendict}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*opendict v-- opens dictionaries. Dictionary names and  master}
+\CommentTok{NB. table  have been  validated prior  to calling this verb.  The}
+\CommentTok{NB. dictionary  system  does  not  leave   files  open  as   this}
+\CommentTok{NB. significantly decreases crash  resistence. Instead the master}
+\CommentTok{NB. dictionay table is marked with 1 when dictionaries are opened}
+\CommentTok{NB. read/write.  Only one task can open a  dictionary read/write.}
+\CommentTok{NB. Many tasks can open the same dictionary read/only.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  blclDictionary opendict (iaOption ; btMdt)}
+\CommentTok{NB.}
+\CommentTok{NB.   ('d0';'d1') opendict 1;jread JMASTER;CNMFTAB NB. open di r/w}
+
+\CommentTok{NB. quit if open limit exceeded - limits the number of directory objects}
+\CommentTok{NB. errmsg: request exceeds open limit}
+\KeywordTok{if.} \NormalTok{DPLIMIT}\FunctionTok{<}\RegionMarkerTok{(}\FunctionTok{#}\DataTypeTok{x}\RegionMarkerTok{)}\FunctionTok{+#}\NormalTok{DPATH }\KeywordTok{do.} \NormalTok{jderr ERR0}\DecValTok{70} \KeywordTok{return.} \KeywordTok{end.}
+
+\CommentTok{NB. if any dictionary is already on the path quit with error}
+\NormalTok{uv}\CharTok{=.} \DataTypeTok{x} \FunctionTok{e.} \FunctionTok{\{.}\OtherTok{"}\NormalTok{1 DPATH}
+\KeywordTok{if.} \NormalTok{1 }\FunctionTok{e.} \NormalTok{uv }\KeywordTok{do.} \RegionMarkerTok{(}\NormalTok{jderr ERR0}\DecValTok{71}\RegionMarkerTok{)}\FunctionTok{,}\NormalTok{uv}\FunctionTok{#}\DataTypeTok{x} \KeywordTok{return.} \KeywordTok{end.} \CommentTok{NB. errmsg: already open}
+
+\CommentTok{NB. open status and master dictionary table}
+\StringTok{'os mdt'}\CharTok{=.} \DataTypeTok{y}
+
+\CommentTok{NB. get locations of dictionaries to open}
+\NormalTok{pd}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{0}\FunctionTok{\{}\NormalTok{mdt}\RegionMarkerTok{)} \FunctionTok{i.} \DataTypeTok{x}
+\NormalTok{ld}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{<}\NormalTok{2}\FunctionTok{;}\NormalTok{pd}\RegionMarkerTok{)}\FunctionTok{\{}\NormalTok{mdt}
+
+\CommentTok{NB. if any dictionary is already open read/write quit with error}
+\CommentTok{NB. note: because other tasks may have a dictionary open read/write}
+\CommentTok{NB. it does not appear on the path of this task - HARDCODE: rs code}
+\NormalTok{rs}\CharTok{=.} \NormalTok{0 }\FunctionTok{<} \FunctionTok{;} \RegionMarkerTok{(}\FunctionTok{<}\NormalTok{3}\FunctionTok{;}\NormalTok{pd}\RegionMarkerTok{)}\FunctionTok{\{}\NormalTok{mdt}
+\CommentTok{NB. errmsg: another task opened read/write}
+\KeywordTok{if.} \NormalTok{1 }\FunctionTok{e.} \NormalTok{rs }\KeywordTok{do.} \RegionMarkerTok{(}\NormalTok{jderr ERR0}\DecValTok{72}\RegionMarkerTok{)}\FunctionTok{,}\RegionMarkerTok{(}\NormalTok{1}\FunctionTok{=}\NormalTok{rs}\RegionMarkerTok{)}\FunctionTok{#}\DataTypeTok{x} \KeywordTok{return.} \KeywordTok{end.}
+
+\CommentTok{NB. standard files with extension}
+\NormalTok{fn}\CharTok{=.} \NormalTok{JDFILES }\FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \FunctionTok{<}\NormalTok{IJF}
+
+\CommentTok{NB. test existence of alleged dictionary files}
+\KeywordTok{if.} \NormalTok{1 }\FunctionTok{e.} \NormalTok{uv}\CharTok{=.} \FunctionTok{-.} \NormalTok{fex}\OtherTok{"}\NormalTok{1 dcfiles}\CharTok{=.} \FunctionTok{<}\OtherTok{@:}\FunctionTok{;}\OtherTok{"}\NormalTok{1  ld }\FunctionTok{,}\OtherTok{"}\NormalTok{0 }\OtherTok{/} \NormalTok{fn }\KeywordTok{do.}
+  \RegionMarkerTok{(}\NormalTok{jderr ERR0}\DecValTok{73}\RegionMarkerTok{)}\FunctionTok{,}\NormalTok{uv}\FunctionTok{#}\DataTypeTok{x} \KeywordTok{return.} \CommentTok{NB. errmsg: missing dictionary file(s)}
+\KeywordTok{end.}
+
+\CommentTok{NB. open request seems valid - mark master}
+\KeywordTok{if.} \NormalTok{badrc msg}\CharTok{=.} \NormalTok{markmast 1 }\KeywordTok{do.} \NormalTok{msg }\KeywordTok{return.} \KeywordTok{end.}
+
+\NormalTok{dpath}\CharTok{=.} \NormalTok{DPATH}
+\NormalTok{libstatus}\CharTok{=.} \FunctionTok{i.}\NormalTok{0}
+
+\KeywordTok{for_dp.} \NormalTok{ld }\KeywordTok{do.}  \CommentTok{NB. depends on (#x)=(#pd)=#ld}
+
+   \CommentTok{NB. get dictionary parameters}
+   \KeywordTok{if.} \NormalTok{badjr pdp}\CharTok{=.} \NormalTok{jread }\RegionMarkerTok{(}\FunctionTok{;}\NormalTok{dp}\FunctionTok{,\{.}\NormalTok{fn}\RegionMarkerTok{)}\FunctionTok{;}\NormalTok{CNPARMS }\KeywordTok{do.}
+     \CommentTok{NB. errmsg: cannot read dictionary parameters}
+     \RegionMarkerTok{(}\NormalTok{jdmasterr ERR0}\DecValTok{74}\RegionMarkerTok{)}\FunctionTok{,}\NormalTok{dp_index}\FunctionTok{\{}\DataTypeTok{x} \KeywordTok{return.}
+   \KeywordTok{end.}
+
+   \CommentTok{NB. master table didnum must match current dictionary didnum}
+   \KeywordTok{if.} \RegionMarkerTok{((}\FunctionTok{<}\NormalTok{1}\FunctionTok{;}\NormalTok{dp_index}\FunctionTok{\{}\NormalTok{pd}\RegionMarkerTok{)}\FunctionTok{\{}\NormalTok{mdt}\RegionMarkerTok{)} \FunctionTok{-:} \NormalTok{1}\FunctionTok{\{>}\NormalTok{pdp }\KeywordTok{do.}
+
+     \CommentTok{NB. is the master path a prefix of stored dictionary paths?}
+     \CommentTok{NB. assumes: all subdir path prefixes are the same - this}
+     \CommentTok{NB. is true for dictionaries created by (newd)}
+     \NormalTok{nppfx}\CharTok{=.} \FunctionTok{-.}\NormalTok{0}\FunctionTok{\{}\RegionMarkerTok{(}\FunctionTok{;}\NormalTok{dp}\RegionMarkerTok{)} \FunctionTok{E.} \FunctionTok{;}\RegionMarkerTok{(}\NormalTok{0}\FunctionTok{\{}\NormalTok{PARMDIRS}\RegionMarkerTok{)}\FunctionTok{\{>}\NormalTok{pdp}
+
+     \KeywordTok{if.} \NormalTok{nppfx }\FunctionTok{*.} \NormalTok{islib }\FunctionTok{>}\NormalTok{pdp }\KeywordTok{do.}
+       \CommentTok{NB. remap paths for libraries if necessary - allows LAN file sharing}
+       \CommentTok{NB. of libraries for many users/tasks with different access paths}
+       \CommentTok{NB. WARNING: if these directories are on locked down LAN volumes}
+       \CommentTok{NB. JOD commands like: make'' may return cannot write errors}
+       \NormalTok{pdp}\CharTok{=.} \FunctionTok{>}\NormalTok{pdp}
+       \NormalTok{npth}\CharTok{=.} \NormalTok{PATHDEL }\FunctionTok{,}\OtherTok{&.}\FunctionTok{>}\OtherTok{~} \NormalTok{dp }\FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \NormalTok{PATHDEL}\OtherTok{&}\NormalTok{afterlaststr}\OtherTok{&.}\FunctionTok{>} \NormalTok{rpdtrim}\OtherTok{&.}\FunctionTok{>} \NormalTok{PARMDIRS}\FunctionTok{\{}\NormalTok{pdp}
+       \NormalTok{pdp}\CharTok{=.} \FunctionTok{<}\NormalTok{npth PARMDIRS}\OtherTok{\}}\NormalTok{pdp}
+     \KeywordTok{else.}
+       \CommentTok{NB. master/stored dictionary paths must match for read/write}
+       \KeywordTok{if.} \NormalTok{nppfx }\KeywordTok{do.}
+         \KeywordTok{if.} \FunctionTok{#}\NormalTok{dpath}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{\{:}\OtherTok{"}\NormalTok{1 dpath}\RegionMarkerTok{)} \FunctionTok{-.} \FunctionTok{\{:}\OtherTok{"}\NormalTok{1 DPATH }\KeywordTok{do.} \NormalTok{coerase}\OtherTok{"}\NormalTok{0 dpath }\KeywordTok{end.}
+         \CommentTok{NB. errmsg: master/dictionary file path mismatch - have owner set READONLY name/DIDNUM ->}
+         \RegionMarkerTok{(}\NormalTok{jdmasterr ERR0}\DecValTok{98}\RegionMarkerTok{)}\FunctionTok{,}\NormalTok{0 1}\FunctionTok{\{>}\NormalTok{pdp }\KeywordTok{return.}
+       \KeywordTok{end.}
+
+       \CommentTok{NB. for read/write dictionaries (not-libraries) insure}
+       \CommentTok{NB. the dictionary file permissions/attributes allow writing}
+       \KeywordTok{if.} \NormalTok{0 }\FunctionTok{e.} \NormalTok{iswriteable dp_index}\FunctionTok{\{}\NormalTok{dcfiles }\KeywordTok{do.}
+         \KeywordTok{if.} \FunctionTok{#}\NormalTok{dpath}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{\{:}\OtherTok{"}\NormalTok{1 dpath}\RegionMarkerTok{)} \FunctionTok{-.} \FunctionTok{\{:}\OtherTok{"}\NormalTok{1 DPATH }\KeywordTok{do.} \NormalTok{coerase}\OtherTok{"}\NormalTok{0 dpath }\KeywordTok{end.}
+         \CommentTok{NB. errmsg: dictionary file attributes do not allow read/write ->}
+         \RegionMarkerTok{(}\NormalTok{jdmasterr ERR0}\DecValTok{95}\RegionMarkerTok{)}\FunctionTok{,}\NormalTok{dp_index}\FunctionTok{\{}\DataTypeTok{x} \KeywordTok{return.}
+       \KeywordTok{end.}
+     \KeywordTok{end.}
+
+     \CommentTok{NB. create new directory object}
+     \NormalTok{DL}\CharTok{=.} \NormalTok{conew }\StringTok{'ajoddob'}
+     \NormalTok{name}\CharTok{=.} \NormalTok{dp_index}\FunctionTok{\{}\DataTypeTok{x}
+     \KeywordTok{if.} \NormalTok{createdl_}\DecValTok{_}\NormalTok{DL nppfx}\FunctionTok{;}\NormalTok{name}\FunctionTok{;}\NormalTok{dp}\FunctionTok{;}\NormalTok{os}\FunctionTok{;}\NormalTok{pdp }\KeywordTok{do.}
+       \CommentTok{NB. append to path copy}
+       \NormalTok{dpath}\CharTok{=.} \NormalTok{dpath }\FunctionTok{,} \RegionMarkerTok{(}\FunctionTok{a:} \FunctionTok{,}\OtherTok{~} \NormalTok{name }\FunctionTok{,} \NormalTok{1}\FunctionTok{\{>}\NormalTok{pdp}\RegionMarkerTok{)}\FunctionTok{,}\NormalTok{DL}
+       \CommentTok{NB. are we a read only library?}
+       \NormalTok{libstatus}\CharTok{=.} \NormalTok{libstatus}\FunctionTok{,}\NormalTok{LIBSTATUS_}\DecValTok{_}\NormalTok{DL}
+     \KeywordTok{else.}
+       \KeywordTok{if.} \FunctionTok{#}\NormalTok{dpath}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{\{:}\OtherTok{"}\NormalTok{1 dpath}\RegionMarkerTok{)} \FunctionTok{-.} \FunctionTok{\{:}\OtherTok{"}\NormalTok{1 DPATH }\KeywordTok{do.} \NormalTok{coerase}\OtherTok{"}\NormalTok{0 dpath }\KeywordTok{end.}
+       \RegionMarkerTok{(}\NormalTok{jdmasterr ERR0}\DecValTok{75}\RegionMarkerTok{)}\FunctionTok{,}\NormalTok{dp_index}\FunctionTok{\{}\DataTypeTok{x} \CommentTok{NB. errmsg: unable to open directory}
+       \KeywordTok{return.}
+     \KeywordTok{end.}
+
+   \KeywordTok{else.}
+
+     \CommentTok{NB. destroy any directory objects opened before inconsistency}
+     \KeywordTok{if.} \FunctionTok{#}\NormalTok{dpath}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{\{:}\OtherTok{"}\NormalTok{1 dpath}\RegionMarkerTok{)} \FunctionTok{-.} \FunctionTok{\{:}\OtherTok{"}\NormalTok{1 DPATH }\KeywordTok{do.} \NormalTok{coerase}\OtherTok{"}\NormalTok{0 dpath }\KeywordTok{end.}
+     \RegionMarkerTok{(}\NormalTok{jdmasterr ERR0}\DecValTok{76}\RegionMarkerTok{)}\FunctionTok{,}\NormalTok{dp_index}\FunctionTok{\{}\DataTypeTok{x}   \CommentTok{NB. errmsg: master-dictionary inconsistency}
+     \KeywordTok{return.}
+
+   \KeywordTok{end.}
+\KeywordTok{end.}
+
+\CommentTok{NB. update master read/write status and release}
+\CommentTok{NB. read/write dictionaries are marked with unique}
+\CommentTok{NB. id and read/only dictionaries are marked with 0}
+\NormalTok{DPATH}\AlertTok{=:}\index{DPATH@\texttt{DPATH}} \NormalTok{dpath}
+\CommentTok{NB. do not mark any library (read/only) dictionaries open}
+\NormalTok{pd}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{-.}\NormalTok{libstatus}\RegionMarkerTok{)}\FunctionTok{#}\NormalTok{pd}
+\NormalTok{mdt}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{<}\NormalTok{JODOBID }\FunctionTok{*} \NormalTok{1}\FunctionTok{=}\NormalTok{os}\RegionMarkerTok{)} \RegionMarkerTok{(}\FunctionTok{<}\NormalTok{3}\FunctionTok{;}\NormalTok{pd}\RegionMarkerTok{)}\OtherTok{\}} \NormalTok{mdt     }\CommentTok{NB. object noun !(*)=. JODOBID}
+\KeywordTok{if.} \NormalTok{badreps }\RegionMarkerTok{(}\FunctionTok{<}\NormalTok{mdt}\RegionMarkerTok{)} \NormalTok{jreplace JMASTER}\FunctionTok{;}\NormalTok{CNMFTAB }\KeywordTok{do.}
+  \NormalTok{jdmasterr ERR0}\DecValTok{77} \CommentTok{NB. errmsg: unable to update master}
+\KeywordTok{elseif.} \NormalTok{badrc msg}\CharTok{=.} \NormalTok{markmast}\OtherTok{~}\NormalTok{0  }\KeywordTok{do.} \NormalTok{msg  }\CommentTok{NB. HARDCODE: r/w codes}
+\KeywordTok{elseif.} \NormalTok{os }\FunctionTok{e.} \NormalTok{1 2 }\KeywordTok{do.}
+  \NormalTok{uv}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{1}\FunctionTok{=}\NormalTok{os}\RegionMarkerTok{)}\FunctionTok{\{}\NormalTok{rs}\CharTok{=.} \StringTok{'/'} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \NormalTok{READSTATS    }\CommentTok{NB. read/only and read/write strings}
+  \RegionMarkerTok{(}\NormalTok{ok OK0}\DecValTok{52}\FunctionTok{,}\RegionMarkerTok{(}\FunctionTok{\}.;}\NormalTok{libstatus}\FunctionTok{\{}\RegionMarkerTok{(}\NormalTok{uv}\FunctionTok{,}\NormalTok{0}\FunctionTok{\{}\NormalTok{rs}\RegionMarkerTok{))}\FunctionTok{,}\StringTok{') ->'}\RegionMarkerTok{)}\FunctionTok{,}\DataTypeTok{x}
+\KeywordTok{elseif.do.} \NormalTok{jderr ERR0}\DecValTok{01}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{pathnl}\AlertTok{=:}\index{pathnl@\texttt{pathnl}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*pathnl v-- returns a complete path order list of objects (y).}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  pathnl iaObject}
+\CommentTok{NB.}
+\CommentTok{NB.   pathnl WORD  NB. all words on current path}
+
+\NormalTok{pob}\CharTok{=.} \FunctionTok{\{:}\OtherTok{"}\NormalTok{1 DPATH}
+\KeywordTok{if.} \NormalTok{badrc uv}\CharTok{=.} \DataTypeTok{y} \NormalTok{loadalldirs pob }\KeywordTok{do.} \NormalTok{uv }\KeywordTok{return.} \KeywordTok{end.}
+\NormalTok{ok }\RegionMarkerTok{(}\FunctionTok{>}\NormalTok{dnix__uv }\DataTypeTok{y}\RegionMarkerTok{)} \NormalTok{fullmonty pob }\FunctionTok{[} \NormalTok{uv}\CharTok{=.} \FunctionTok{\{.}\NormalTok{pob}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{pathref}\AlertTok{=:}\index{pathref@\texttt{pathref}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*pathref  v-- returns a complete path  order list  of  objects}
+\CommentTok{NB. with reference lists.  Currently only words have stored}
+\CommentTok{NB. references but more may be added as the need arises.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  pathref iaObject}
+\CommentTok{NB.}
+\CommentTok{NB.   pathref WORD  NB. all words on current path with stored references}
+
+\NormalTok{pob}\CharTok{=.} \FunctionTok{\{:}\OtherTok{"}\NormalTok{1 DPATH}
+\KeywordTok{if.} \NormalTok{badrc uv}\CharTok{=.} \DataTypeTok{y} \NormalTok{loadallrefs pob }\KeywordTok{do.} \NormalTok{uv }\KeywordTok{return.} \KeywordTok{end.}
+\NormalTok{ok }\RegionMarkerTok{(}\FunctionTok{>}\NormalTok{dnrn__uv }\DataTypeTok{y}\RegionMarkerTok{)} \NormalTok{fullmonty pob }\FunctionTok{[} \NormalTok{uv}\CharTok{=.} \FunctionTok{\{.}\NormalTok{pob}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{putdicdoc}\AlertTok{=:}\index{putdicdoc@\texttt{putdicdoc}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*putdicdoc v-- writes put dictionary documentation.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  putdicdoc clDoc}
+
+\CommentTok{NB. assumes a put dictionary is open}
+\KeywordTok{if.} \NormalTok{badcl }\DataTypeTok{y} \KeywordTok{do.} \NormalTok{jderr ERR0}\DecValTok{97} \CommentTok{NB. errmsg: invalid dictionary document must be character list}
+\KeywordTok{else.}
+  \NormalTok{DL}\CharTok{=.} \FunctionTok{\{:\{.}\NormalTok{DPATH  }\CommentTok{NB. directory object !(*)=. DL}
+
+  \CommentTok{NB. Whether the put dictionary document is stored depends on the}
+  \CommentTok{NB. value of the "new" dictionary parameter DOCUMENTDICT.}
+  \NormalTok{dictdoc}\CharTok{=.} \NormalTok{1}
+  \KeywordTok{if.} \NormalTok{0}\FunctionTok{=}\NormalTok{nc}\FunctionTok{<}\StringTok{'DOCUMENTDICT'}   \KeywordTok{do.} \NormalTok{dictdoc}\CharTok{=.} \NormalTok{1}\FunctionTok{=}\NormalTok{DOCUMENTDICT}
+  \KeywordTok{elseif.}
+    \CommentTok{NB. if setting exists in put dictionary directory use it}
+    \NormalTok{0}\FunctionTok{=}\NormalTok{nc}\FunctionTok{<}\StringTok{'DOCUMENTDICT__DL'} \KeywordTok{do.} \NormalTok{dictdoc}\CharTok{=.} \NormalTok{1}\FunctionTok{=}\NormalTok{DOCUMENTDICT_}\DecValTok{_}\NormalTok{DL}
+  \KeywordTok{end.}
+
+  \CommentTok{NB. remind user DOCUMENTDICT is off}
+  \KeywordTok{if.} \FunctionTok{-.}\NormalTok{dictdoc }\KeywordTok{do.} \NormalTok{ok OK0}\DecValTok{63}\FunctionTok{;}\NormalTok{DNAME_}\DecValTok{_}\NormalTok{DL }\KeywordTok{return.} \KeywordTok{end.}
+
+  \KeywordTok{if.} \NormalTok{badreps }\RegionMarkerTok{(}\FunctionTok{<}\DataTypeTok{y}\RegionMarkerTok{)} \NormalTok{jreplace WP_}\DecValTok{_}\NormalTok{DL}\FunctionTok{;}\NormalTok{CNDICDOC }\KeywordTok{do.} \NormalTok{jderr ERR0}\DecValTok{56} \CommentTok{NB. errmsg: replace failure}
+  \KeywordTok{else.}
+    \NormalTok{ok OK0}\DecValTok{62}\FunctionTok{;}\NormalTok{DNAME_}\DecValTok{_}\NormalTok{DL}
+  \KeywordTok{end.}
+
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{putexplain}\AlertTok{=:}\index{putexplain@\texttt{putexplain}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*putexplain v-- stores short object explanation text.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  (iaObject ;< ba) putexplain bt\textbar{}blcl}
+
+\CommentTok{NB. validate explain texts}
+\KeywordTok{if.} \NormalTok{badrc }\DataTypeTok{y}\CharTok{=.} \NormalTok{checknttab }\DataTypeTok{y} \KeywordTok{do.} \DataTypeTok{y} \KeywordTok{return.} \KeywordTok{else.} \DataTypeTok{y}\CharTok{=.} \NormalTok{rv }\DataTypeTok{y} \KeywordTok{end.}
+\KeywordTok{if.} \FunctionTok{+}\OtherTok{/.}\NormalTok{MAXEXPLAIN }\FunctionTok{<} \FunctionTok{#}\OtherTok{&}\FunctionTok{>} \FunctionTok{\{:}\OtherTok{"}\NormalTok{1 }\DataTypeTok{y} \KeywordTok{do.} \NormalTok{jderr ERR0}\DecValTok{89} \KeywordTok{return.} \KeywordTok{end.}  \CommentTok{NB. errmsg: text(s) to long}
+
+\StringTok{'obj DL'}\CharTok{=.} \DataTypeTok{x}  \CommentTok{NB. directory object !(*)=. DL}
+
+\KeywordTok{if.} \NormalTok{badrc uv}\CharTok{=.} \DataTypeTok{x} \NormalTok{inputdict }\FunctionTok{\{.}\OtherTok{"}\NormalTok{1 }\DataTypeTok{y} \KeywordTok{do.} \NormalTok{uv}
+\KeywordTok{else.}
+
+  \NormalTok{ix}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{>}\NormalTok{dnix_}\DecValTok{_}\NormalTok{DL obj}\RegionMarkerTok{)}\FunctionTok{,}\StringTok{'__DL'}      \CommentTok{NB. directory object noun name}
+  \NormalTok{fp}\CharTok{=.} \FunctionTok{".}\RegionMarkerTok{(}\FunctionTok{\{.>}\NormalTok{dncn_}\DecValTok{_}\NormalTok{DL obj}\RegionMarkerTok{)}\FunctionTok{,}\StringTok{'P__DL'} \CommentTok{NB. file pointer}
+
+  \NormalTok{pos}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{".}\NormalTok{ix}\RegionMarkerTok{)} \FunctionTok{i.} \FunctionTok{\{.}\OtherTok{"}\NormalTok{1 }\DataTypeTok{y}           \CommentTok{NB. inverted list replacement positions}
+
+  \CommentTok{NB. objects exist in put dictionary update explain text}
+  \KeywordTok{if.} \NormalTok{badrc uv}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{pos}\FunctionTok{;<<\{:}\OtherTok{"}\NormalTok{1 }\DataTypeTok{y}\RegionMarkerTok{)} \NormalTok{invreplace fp}\FunctionTok{;}\NormalTok{CNEXPLAIN }\KeywordTok{do.} \NormalTok{uv }\KeywordTok{return.} \KeywordTok{end.}
+
+  \NormalTok{uv}\CharTok{=.} \StringTok{' '}\FunctionTok{,>}\NormalTok{dnnm_}\DecValTok{_}\NormalTok{DL obj}
+  \NormalTok{ok }\RegionMarkerTok{((}\FunctionTok{":#}\NormalTok{pos}\RegionMarkerTok{)}\FunctionTok{,}\NormalTok{uv}\FunctionTok{,}\NormalTok{OK0}\DecValTok{55}\RegionMarkerTok{)} \FunctionTok{;} \NormalTok{DNAME_}\DecValTok{_}\NormalTok{DL}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{putgs}\AlertTok{=:}\index{putgs@\texttt{putgs}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*putgs  v--  stores  dictionary groups  and  suites.  Prior to}
+\CommentTok{NB. calling this verb  names, path and put dictionary status have}
+\CommentTok{NB. been validated.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  (bacl ; ia ; ia) putgs blcl}
+\CommentTok{NB.}
+\CommentTok{NB.   ((<'6');WORD;GROUP) putgs ;: 'group and members'}
+
+\StringTok{'DL code gtype'}\CharTok{=.} \DataTypeTok{x}  \CommentTok{NB. directory object !(*)=. DL}
+
+\KeywordTok{if.} \NormalTok{badrc msg}\CharTok{=.} \NormalTok{pathnl code }\KeywordTok{do.} \NormalTok{msg }\KeywordTok{return.} \KeywordTok{end.}
+\DataTypeTok{y}\CharTok{=.} \FunctionTok{/:}\OtherTok{~} \FunctionTok{~.} \FunctionTok{\}.} \DataTypeTok{y} \FunctionTok{[} \NormalTok{gn}\CharTok{=.} \FunctionTok{\{.} \DataTypeTok{y}
+\KeywordTok{if.} \FunctionTok{*.}\OtherTok{/}\NormalTok{b}\CharTok{=.} \DataTypeTok{y} \FunctionTok{e.} \FunctionTok{;} \FunctionTok{\}.} \NormalTok{msg }\KeywordTok{do.}
+
+  \CommentTok{NB. change/create group -- insure group directory is ready}
+  \KeywordTok{if.} \NormalTok{loaddir_}\DecValTok{_}\NormalTok{DL gtype }\KeywordTok{do.}
+    \NormalTok{jderr ERR0}\DecValTok{54}  \CommentTok{NB. errmsg: unable to load directory}
+  \KeywordTok{elseif.} \KeywordTok{do.}
+
+    \CommentTok{NB. depends on first char of index list matching (cP_DL) nouns}
+    \NormalTok{fc}\CharTok{=.} \FunctionTok{\{.} \NormalTok{ix}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{>}\NormalTok{dnix_}\DecValTok{_}\NormalTok{DL gtype}\RegionMarkerTok{)}\FunctionTok{,}\StringTok{'__DL'}
+    \NormalTok{cn}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{>}\NormalTok{dncn_}\DecValTok{_}\NormalTok{DL gtype}\RegionMarkerTok{)}\FunctionTok{,}\StringTok{'__DL'}
+
+    \CommentTok{NB. groups/suites are either new or replacements}
+    \NormalTok{uv}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{".}\NormalTok{ix}\RegionMarkerTok{)} \FunctionTok{i.} \NormalTok{gn}
+    \NormalTok{dfopen_}\DecValTok{_}\NormalTok{DL fc}
+    \NormalTok{gp}\CharTok{=.} \FunctionTok{".}\NormalTok{fc}\FunctionTok{,}\StringTok{'P__DL'}
+
+    \KeywordTok{if.} \NormalTok{uv}\FunctionTok{=#".}\NormalTok{ix }\KeywordTok{do.}
+
+      \CommentTok{NB. group is new - create}
+
+      \CommentTok{NB. EDGE CONDITION?? if another group with the same}
+      \CommentTok{NB. name exists on the path copy the group/suite text}
+      \CommentTok{NB. of that group to this new group.  Use of this system has shown}
+      \CommentTok{NB. that this is desirable behaviour because of the common}
+      \CommentTok{NB. practice of "regrouping" in the put dictionary new versions}
+      \CommentTok{NB. of the same group that are deeper on the path.}
+      \KeywordTok{if.} \FunctionTok{+.}\OtherTok{/}\NormalTok{uv}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{<}\NormalTok{gn}\RegionMarkerTok{)} \FunctionTok{e.}\OtherTok{&}\FunctionTok{>} \FunctionTok{\}.} \NormalTok{pathnl gtype }\KeywordTok{do.}
+        \KeywordTok{if.} \NormalTok{badrc uv2}\CharTok{=.} \NormalTok{gtype getgstext gn }\KeywordTok{do.} \NormalTok{uv2 }\KeywordTok{return.} \KeywordTok{else.} \NormalTok{uv}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{1}\FunctionTok{;}\NormalTok{0 1}\RegionMarkerTok{)}\FunctionTok{\{::}\NormalTok{uv2 }\KeywordTok{end.}
+      \KeywordTok{else.}
+        \NormalTok{uv}\CharTok{=.} \StringTok{''} \CommentTok{NB. default script is empty}
+      \KeywordTok{end.}
+
+      \NormalTok{gdat}\CharTok{=.} \FunctionTok{<}\NormalTok{gn }\FunctionTok{,} \NormalTok{uv }\FunctionTok{;} \FunctionTok{<} \DataTypeTok{y}       \CommentTok{NB. (cn)   name, script, contents}
+      \NormalTok{gdat}\CharTok{=.} \NormalTok{gdat }\FunctionTok{,} \FunctionTok{<}\NormalTok{gn }\FunctionTok{,} \NormalTok{3}\FunctionTok{$<}\StringTok{''}   \CommentTok{NB. (cn+1) name, latex, html, text, et cetera}
+
+      \CommentTok{NB. append group}
+      \KeywordTok{if.} \NormalTok{badappend apcn }\CharTok{=.} \NormalTok{gdat jappend gp }\KeywordTok{do.}
+        \NormalTok{jderr ERR0}\DecValTok{58} \FunctionTok{[} \NormalTok{dfclose_}\DecValTok{_}\NormalTok{DL fc }\KeywordTok{return.}  \CommentTok{NB. errmsg: append failure}
+      \KeywordTok{end.}
+
+      \NormalTok{stamp}\CharTok{=.} \NormalTok{nowfd now }\StringTok{''}
+      \NormalTok{uv}\CharTok{=.}  \NormalTok{stamp}\FunctionTok{;}\NormalTok{stamp}\FunctionTok{;<a:}
+      \NormalTok{uv2}\CharTok{=.} \NormalTok{CNPUTDATE}\FunctionTok{,}\NormalTok{CNCREATION}\FunctionTok{,}\NormalTok{CNEXPLAIN }\CommentTok{NB. NIMP group append}
+      \KeywordTok{if.} \NormalTok{badrc msg}\CharTok{=.}\NormalTok{uv invappend gp}\FunctionTok{;}\NormalTok{uv2 }\KeywordTok{do.} \NormalTok{msg}
+      \KeywordTok{else.}
+        \CommentTok{NB. update directory}
+        \NormalTok{uv}\CharTok{=.}  \RegionMarkerTok{(}\FunctionTok{".}\NormalTok{ix}\RegionMarkerTok{)} \FunctionTok{,} \NormalTok{gn}
+        \NormalTok{uv2}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{".}\NormalTok{cn}\RegionMarkerTok{)} \FunctionTok{,} \FunctionTok{\{.} \NormalTok{apcn}
+        \KeywordTok{if.} \NormalTok{badrc }\RegionMarkerTok{(}\NormalTok{gtype}\FunctionTok{,}\NormalTok{gp}\RegionMarkerTok{)} \NormalTok{savedir_}\DecValTok{_}\NormalTok{DL uv}\FunctionTok{;}\NormalTok{uv2 }\KeywordTok{do.}
+          \NormalTok{jderr msg }\FunctionTok{[} \NormalTok{dfclose_}\DecValTok{_}\NormalTok{DL fc }\KeywordTok{return.}
+        \KeywordTok{else.}
+
+          \CommentTok{NB. stamp good directory change}
+          \RegionMarkerTok{(}\FunctionTok{<}\RegionMarkerTok{(}\FunctionTok{#".}\NormalTok{ix}\RegionMarkerTok{)}\FunctionTok{;}\NormalTok{now }\StringTok{''}\RegionMarkerTok{)} \NormalTok{jreplace gp}\FunctionTok{;}\NormalTok{CNMARK}
+        \KeywordTok{end.}
+      \KeywordTok{end.}
+
+    \KeywordTok{else.}
+
+      \CommentTok{NB. group exists - update}
+      \NormalTok{apcn}\CharTok{=.} \NormalTok{uv }\FunctionTok{\{} \FunctionTok{".}\NormalTok{cn}
+      \KeywordTok{if.} \NormalTok{badjr uv2}\CharTok{=.} \NormalTok{jread gp}\FunctionTok{;}\NormalTok{apcn }\KeywordTok{do.}
+        \NormalTok{jderr ERR0}\DecValTok{88} \FunctionTok{[} \NormalTok{dfclose_}\DecValTok{_}\NormalTok{DL fc }\KeywordTok{return.}  \CommentTok{NB. errmsg: read failure}
+      \KeywordTok{elseif.} \NormalTok{gn }\FunctionTok{-:} \NormalTok{0 }\FunctionTok{\{>}\NormalTok{uv2 }\KeywordTok{do.}
+
+        \CommentTok{NB. update group list - group script is not changed}
+        \KeywordTok{if.} \NormalTok{badreps }\RegionMarkerTok{(}\FunctionTok{<}\RegionMarkerTok{(}\FunctionTok{\}:>}\NormalTok{uv2}\RegionMarkerTok{)}\FunctionTok{,<}\DataTypeTok{y}\RegionMarkerTok{)} \NormalTok{jreplace gp}\FunctionTok{;}\NormalTok{apcn }\KeywordTok{do.}
+          \NormalTok{jderr ERR0}\DecValTok{56} \FunctionTok{[} \NormalTok{dfclose_}\DecValTok{_}\NormalTok{DL fc }\KeywordTok{return.}  \CommentTok{NB. errmsg: replace failure}
+        \KeywordTok{end.}
+
+        \NormalTok{uv2}\CharTok{=.} \NormalTok{uv}\FunctionTok{;}\NormalTok{nowfd now }\StringTok{''}
+        \KeywordTok{if.} \NormalTok{badrc msg}\CharTok{=.}\NormalTok{uv2 invreplace gp}\FunctionTok{;}\NormalTok{CNPUTDATE }\KeywordTok{do.} \NormalTok{msg }\KeywordTok{return.} \KeywordTok{end.}
+
+      \KeywordTok{elseif.do.}
+        \NormalTok{jderr ERR0}\DecValTok{55} \KeywordTok{return.} \CommentTok{NB. errmsg: directory-data inconsistency}
+      \KeywordTok{end.}
+    \KeywordTok{end.}
+
+    \NormalTok{dfclose_}\DecValTok{_}\NormalTok{DL fc}
+    \NormalTok{uv}\CharTok{=.} \FunctionTok{,>}\NormalTok{dnnm_}\DecValTok{_}\NormalTok{DL gtype}
+    \NormalTok{ok}\RegionMarkerTok{(}\NormalTok{uv}\FunctionTok{,}\StringTok{' <'}\FunctionTok{,}\RegionMarkerTok{(}\FunctionTok{>}\NormalTok{gn}\RegionMarkerTok{)}\FunctionTok{,}\StringTok{'> '}\FunctionTok{,}\NormalTok{OK0}\DecValTok{59}\RegionMarkerTok{)}\FunctionTok{;}\NormalTok{DNAME_}\DecValTok{_}\NormalTok{DL}
+  \KeywordTok{end.}
+
+\KeywordTok{else.}
+  \RegionMarkerTok{(}\NormalTok{jderr ERR0}\DecValTok{83}\RegionMarkerTok{)}\FunctionTok{,}\DataTypeTok{y} \FunctionTok{#}\OtherTok{~} \FunctionTok{-.} \NormalTok{b  }\CommentTok{NB. errmsg: not on path}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{puttable}\AlertTok{=:}\index{puttable@\texttt{puttable}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*puttable v-- stores (name,text) and (name,type,value) tables.}
+\CommentTok{NB. Used  to  store tests,  macros, and word tables. Result  is a}
+\CommentTok{NB. return code and message. Note: the directory object reference}
+\CommentTok{NB. (DL) has been set before calling this verb.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  (iaObj ; bacl) puttexts btNameScript\textbar{}btNameTypeValue}
+\CommentTok{NB.}
+\CommentTok{NB.   (TEST;<DL) puttable ('name1';'name2') ,. 'script...';'script...'}
+
+\StringTok{'code DL'} \CharTok{=.} \DataTypeTok{x}  \CommentTok{NB. directory object !(*)=. DL}
+
+\KeywordTok{if.} \NormalTok{loaddir_}\DecValTok{_}\NormalTok{DL code }\KeywordTok{do.}
+  \NormalTok{jderr ERR0}\DecValTok{54}  \CommentTok{NB. errmsg: unable to load directory}
+\KeywordTok{else.}
+  \DataTypeTok{y}\CharTok{=.} \FunctionTok{>\{:}\DataTypeTok{y}
+
+  \CommentTok{NB. depends on first char of index list matching (cP_DL) nouns}
+  \NormalTok{fc}\CharTok{=.} \FunctionTok{\{.} \NormalTok{ixn }\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{>}\NormalTok{dnix_}\DecValTok{_}\NormalTok{DL code}\RegionMarkerTok{)}\FunctionTok{,}\StringTok{'__DL'}
+  \NormalTok{cnn}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{>}\NormalTok{dncn_}\DecValTok{_}\NormalTok{DL code}\RegionMarkerTok{)}\FunctionTok{,}\StringTok{'__DL'}
+
+  \CommentTok{NB. either new or replacements}
+  \NormalTok{uv}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{".}\NormalTok{ixn}\RegionMarkerTok{)} \FunctionTok{i.} \FunctionTok{\{.}\OtherTok{"}\NormalTok{1 }\DataTypeTok{y}
+  \NormalTok{b}\CharTok{=.}  \NormalTok{uv }\FunctionTok{=} \FunctionTok{#".}\NormalTok{ixn}
+  \NormalTok{pc}\CharTok{=.} \NormalTok{0}
+
+  \CommentTok{NB. replace (will not change key directory lists)}
+  \NormalTok{dfopen_}\DecValTok{_}\NormalTok{DL fc}
+  \NormalTok{fp}\CharTok{=.} \FunctionTok{".}\NormalTok{fc}\FunctionTok{,}\StringTok{'P__DL'}
+
+  \KeywordTok{if.} \NormalTok{0 }\FunctionTok{e.} \NormalTok{b }\KeywordTok{do.}
+    \KeywordTok{if.} \NormalTok{badrc msg}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{code}\FunctionTok{;}\NormalTok{ixn}\FunctionTok{;}\NormalTok{cnn}\FunctionTok{;}\NormalTok{fp}\FunctionTok{;<}\NormalTok{DL}\RegionMarkerTok{)} \NormalTok{rplctable }\RegionMarkerTok{(}\FunctionTok{<}\RegionMarkerTok{(}\FunctionTok{-.}\NormalTok{b}\RegionMarkerTok{)}\FunctionTok{#}\DataTypeTok{y}\RegionMarkerTok{)}\FunctionTok{,<}\RegionMarkerTok{(}\FunctionTok{-.}\NormalTok{b}\RegionMarkerTok{)}\FunctionTok{#}\NormalTok{uv }\KeywordTok{do.}
+      \NormalTok{msg }\FunctionTok{[} \NormalTok{dfclose_}\DecValTok{_}\NormalTok{DL fc }\KeywordTok{return.}
+    \KeywordTok{end.}
+    \NormalTok{pc}\CharTok{=.} \NormalTok{pc }\FunctionTok{+} \NormalTok{rv msg}
+  \KeywordTok{end.}
+
+  \CommentTok{NB. append (always appends to key directory lists)}
+  \KeywordTok{if.} \NormalTok{1 }\FunctionTok{e.} \NormalTok{b }\KeywordTok{do.}
+    \KeywordTok{if.} \NormalTok{badrc msg}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{code}\FunctionTok{;}\NormalTok{ixn}\FunctionTok{;}\NormalTok{cnn}\FunctionTok{;}\NormalTok{fp}\FunctionTok{;<}\NormalTok{DL}\RegionMarkerTok{)} \NormalTok{apptable b}\FunctionTok{#}\DataTypeTok{y} \KeywordTok{do.}
+      \NormalTok{msg }\FunctionTok{[} \NormalTok{dfclose_}\DecValTok{_}\NormalTok{DL fc }\KeywordTok{return.}
+    \KeywordTok{end.}
+    \NormalTok{pc}\CharTok{=.} \NormalTok{pc }\FunctionTok{+} \NormalTok{rv msg}
+
+    \CommentTok{NB. stamp good directory change}
+    \RegionMarkerTok{(}\FunctionTok{<}\RegionMarkerTok{(}\FunctionTok{#".}\NormalTok{ixn}\RegionMarkerTok{)}\FunctionTok{;}\NormalTok{now }\StringTok{''}\RegionMarkerTok{)} \NormalTok{jreplace fp}\FunctionTok{;}\NormalTok{CNMARK}
+  \KeywordTok{end.}
+  \NormalTok{dfclose_}\DecValTok{_}\NormalTok{DL fc}
+
+  \NormalTok{uv}\CharTok{=.} \StringTok{' '}\FunctionTok{,,>}\NormalTok{dnnm_}\DecValTok{_}\NormalTok{DL code}
+  \NormalTok{ok }\RegionMarkerTok{((}\FunctionTok{":}\NormalTok{pc}\RegionMarkerTok{)}\FunctionTok{,}\NormalTok{uv}\FunctionTok{,}\NormalTok{OK0}\DecValTok{57}\RegionMarkerTok{)} \FunctionTok{;} \NormalTok{DNAME_}\DecValTok{_}\NormalTok{DL}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{puttexts}\AlertTok{=:}\index{puttexts@\texttt{puttexts}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*puttexts  v--  stores  object  documentation and  group/suite}
+\CommentTok{NB. texts.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  (iaObject ; iaOffset ;< ba) puttexts bt\textbar{}blcl}
+
+\CommentTok{NB. validate texts}
+\KeywordTok{if.} \NormalTok{badrc }\DataTypeTok{y}\CharTok{=.} \NormalTok{checknttab }\DataTypeTok{y} \KeywordTok{do.} \DataTypeTok{y} \KeywordTok{return.} \KeywordTok{else.} \DataTypeTok{y}\CharTok{=.} \NormalTok{rv }\DataTypeTok{y} \KeywordTok{end.}
+
+\StringTok{'obj offset DL'}\CharTok{=.} \DataTypeTok{x}  \CommentTok{NB. directory object !(*)=. DL}
+
+\KeywordTok{if.} \FunctionTok{-.}\NormalTok{offset }\FunctionTok{e.} \NormalTok{0 1 }\KeywordTok{do.} \NormalTok{jderr ERR0}\DecValTok{90}  \CommentTok{NB. errmsg: file offset invalid}
+\KeywordTok{elseif.} \NormalTok{badrc uv}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{obj}\FunctionTok{;<}\NormalTok{DL}\RegionMarkerTok{)} \NormalTok{inputdict }\FunctionTok{\{.}\OtherTok{"}\NormalTok{1 }\DataTypeTok{y} \KeywordTok{do.} \NormalTok{uv}
+\KeywordTok{elseif.do.}
+
+  \NormalTok{ix}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{>}\NormalTok{dnix_}\DecValTok{_}\NormalTok{DL obj}\RegionMarkerTok{)}\FunctionTok{,}\StringTok{'__DL'}   \CommentTok{NB. directory object index noun}
+  \NormalTok{cn}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{>}\NormalTok{dncn_}\DecValTok{_}\NormalTok{DL obj}\RegionMarkerTok{)}\FunctionTok{,}\StringTok{'__DL'}   \CommentTok{NB. directory object component name}
+  \NormalTok{fp}\CharTok{=.} \FunctionTok{".}\RegionMarkerTok{(}\FunctionTok{\{.}\NormalTok{cn}\RegionMarkerTok{)}\FunctionTok{,}\StringTok{'P__DL'}         \CommentTok{NB. file pointer}
+
+  \CommentTok{NB. text components}
+  \NormalTok{rcn}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{".}\NormalTok{ix}\RegionMarkerTok{)} \FunctionTok{i.} \NormalTok{uv}\CharTok{=.} \FunctionTok{\{.}\OtherTok{"}\NormalTok{1 }\DataTypeTok{y}
+  \NormalTok{rcn}\CharTok{=.} \NormalTok{offset }\FunctionTok{+} \NormalTok{rcn}\FunctionTok{\{".}\NormalTok{cn}
+
+  \CommentTok{NB. read components and test contents}
+  \NormalTok{dat}\CharTok{=.} \NormalTok{jread fp}\FunctionTok{;}\NormalTok{rcn}
+  \KeywordTok{if.} \NormalTok{uv badcn dat }\KeywordTok{do.}
+    \NormalTok{jderr ERR0}\DecValTok{55} \KeywordTok{return.}  \CommentTok{NB. errmsg: directory-data inconsistency}
+  \KeywordTok{end.}
+
+  \NormalTok{dat}\CharTok{=.} \FunctionTok{>}\NormalTok{dat  }\CommentTok{NB. HARDCODE: group/suite index 1, document index 3}
+  \NormalTok{dat}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{\{:}\OtherTok{"}\NormalTok{1 }\DataTypeTok{y}\RegionMarkerTok{)} \RegionMarkerTok{(}\FunctionTok{<a:;}\NormalTok{offset}\FunctionTok{\{}\NormalTok{1 3}\RegionMarkerTok{)}\OtherTok{\}} \NormalTok{dat}
+
+  \KeywordTok{if.} \NormalTok{badreps }\RegionMarkerTok{(}\FunctionTok{<}\OtherTok{"}\NormalTok{1 dat}\RegionMarkerTok{)} \NormalTok{jreplace fp}\FunctionTok{;}\NormalTok{rcn }\KeywordTok{do.}
+    \NormalTok{jderr ERR0}\DecValTok{56} \KeywordTok{return.}  \CommentTok{NB. errmsg: replace failure}
+  \KeywordTok{end.}
+
+  \NormalTok{uv}\CharTok{=.} \StringTok{' '}\FunctionTok{,}\RegionMarkerTok{(}\FunctionTok{>}\NormalTok{dnnm_}\DecValTok{_}\NormalTok{DL obj}\RegionMarkerTok{)}\FunctionTok{,}\StringTok{' '}
+  \NormalTok{ok }\RegionMarkerTok{((}\FunctionTok{":#}\NormalTok{rcn}\RegionMarkerTok{)}\FunctionTok{,}\NormalTok{uv}\FunctionTok{,}\RegionMarkerTok{(}\FunctionTok{>}\NormalTok{offset}\FunctionTok{\{}\StringTok{'text'}\FunctionTok{;}\StringTok{'document'}\RegionMarkerTok{)}\FunctionTok{,}\NormalTok{OK0}\DecValTok{57}\RegionMarkerTok{)} \FunctionTok{;} \NormalTok{DNAME_}\DecValTok{_}\NormalTok{DL}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{putwords}\AlertTok{=:}\index{putwords@\texttt{putwords}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*putwords v-- stores  words  in the  words  file.  Result is a}
+\CommentTok{NB. return code and message.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  (cl ; baObj) putwords blclWords}
+\CommentTok{NB.}
+\CommentTok{NB.   ('locale';<<'2') putwords 'words';'are';'us'}
+
+\KeywordTok{if.}     \NormalTok{badrc uv}\CharTok{=.} \NormalTok{checknames }\DataTypeTok{y}  \KeywordTok{do.} \NormalTok{uv}
+\KeywordTok{elseif.} \DataTypeTok{y}\CharTok{=.} \FunctionTok{~.\}.}\NormalTok{uv      }\CommentTok{NB. unique deblanked names}
+        \StringTok{'loc DL'}\CharTok{=.} \DataTypeTok{x}    \CommentTok{NB. source locale and directory object !(*)=. DL}
+        \NormalTok{b}\CharTok{=.} \NormalTok{wex uv}\CharTok{=.} \DataTypeTok{y} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \NormalTok{locsfx loc  }\CommentTok{NB. do words exist}
+        \NormalTok{0 }\FunctionTok{e.} \NormalTok{b  }\KeywordTok{do.} \RegionMarkerTok{(}\NormalTok{jderr ERR0}\DecValTok{53}\RegionMarkerTok{)} \FunctionTok{,} \RegionMarkerTok{(}\FunctionTok{-.}\NormalTok{b}\RegionMarkerTok{)}\FunctionTok{#}\NormalTok{uv  }\CommentTok{NB. errmsg: word(s) do not exist}
+\CommentTok{NB. insure word directory is ready}
+\KeywordTok{elseif.} \NormalTok{loaddir_}\DecValTok{_}\NormalTok{DL  WORD }\KeywordTok{do.}
+  \NormalTok{jderr ERR0}\DecValTok{54} \CommentTok{NB. errmsg: unable to load directory}
+\KeywordTok{elseif.} \KeywordTok{do.}
+
+  \CommentTok{NB. words are either new or replacements}
+  \NormalTok{uv}\CharTok{=.} \NormalTok{WORDIX_}\DecValTok{_}\NormalTok{DL }\FunctionTok{i.} \DataTypeTok{y}
+  \NormalTok{b}\CharTok{=.}  \NormalTok{uv }\FunctionTok{=} \FunctionTok{#}\NormalTok{WORDIX_}\DecValTok{_}\NormalTok{DL}
+  \NormalTok{pc}\CharTok{=.} \NormalTok{0}
+
+  \NormalTok{dfopen_}\DecValTok{_}\NormalTok{DL }\StringTok{'W'}
+  \CommentTok{NB. replace words (will not change key directory lists)}
+  \KeywordTok{if.} \NormalTok{0 }\FunctionTok{e.} \NormalTok{b }\KeywordTok{do.}
+    \NormalTok{dropnc_}\DecValTok{_}\NormalTok{DL WORD  }\CommentTok{NB. replacements can change word class}
+    \KeywordTok{if.} \NormalTok{badrc msg}\CharTok{=.} \DataTypeTok{x} \NormalTok{rplcwords }\RegionMarkerTok{(}\FunctionTok{<}\RegionMarkerTok{(}\FunctionTok{-.}\NormalTok{b}\RegionMarkerTok{)}\FunctionTok{#}\DataTypeTok{y}\RegionMarkerTok{)}\FunctionTok{,<}\RegionMarkerTok{(}\FunctionTok{-.}\NormalTok{b}\RegionMarkerTok{)}\FunctionTok{#}\NormalTok{uv }\KeywordTok{do.}
+      \NormalTok{msg }\FunctionTok{[} \NormalTok{dfclose_}\DecValTok{_}\NormalTok{DL }\StringTok{'W'} \KeywordTok{return.}
+    \KeywordTok{end.}
+    \NormalTok{pc }\CharTok{=.} \NormalTok{pc }\FunctionTok{+} \NormalTok{rv msg}
+  \KeywordTok{end.}
+
+  \CommentTok{NB. append new words (always appends to key directory lists)}
+  \KeywordTok{if.} \NormalTok{1 }\FunctionTok{e.} \NormalTok{b }\KeywordTok{do.}
+    \NormalTok{dropnc_}\DecValTok{_}\NormalTok{DL WORD  }\CommentTok{NB. new words - force reload of name class if necessary}
+    \KeywordTok{if.} \NormalTok{badrc msg}\CharTok{=.} \DataTypeTok{x} \NormalTok{appwords b}\FunctionTok{#}\DataTypeTok{y} \KeywordTok{do.} \NormalTok{msg }\FunctionTok{[} \NormalTok{dfclose_}\DecValTok{_}\NormalTok{DL }\StringTok{'W'} \KeywordTok{return.} \KeywordTok{end.}
+    \NormalTok{pc}\CharTok{=.} \NormalTok{pc }\FunctionTok{+} \NormalTok{rv msg}
+
+    \CommentTok{NB. stamp good directory change}
+    \RegionMarkerTok{(}\FunctionTok{<}\RegionMarkerTok{(}\FunctionTok{#}\NormalTok{WORDIX_}\DecValTok{_}\NormalTok{DL}\RegionMarkerTok{)}\FunctionTok{;}\NormalTok{now }\StringTok{''}\RegionMarkerTok{)} \NormalTok{jreplace WP_}\DecValTok{_}\NormalTok{DL}\FunctionTok{;}\NormalTok{CNMARK}
+  \KeywordTok{end.}
+  \NormalTok{dfclose_}\DecValTok{_}\NormalTok{DL }\StringTok{'W'}
+
+  \NormalTok{ok }\RegionMarkerTok{((}\FunctionTok{":}\NormalTok{pc}\RegionMarkerTok{)}\FunctionTok{,}\NormalTok{OK0}\DecValTok{51}\RegionMarkerTok{)} \FunctionTok{;} \NormalTok{DNAME_}\DecValTok{_}\NormalTok{DL}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{putwordxrs}\AlertTok{=:}\index{putwordxrs@\texttt{putwordxrs}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*putwordxrs v-- stores global word references}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  (cl ;< ba) putwordxrs blcl}
+
+\StringTok{'name DL'}\CharTok{=.} \DataTypeTok{x} \CommentTok{NB. directory object !(*)=. DL}
+
+\CommentTok{NB. check path prior to storing or changing references}
+\KeywordTok{if.} \NormalTok{badrc msg}\CharTok{=.} \NormalTok{checkpath DL }\KeywordTok{do.} \NormalTok{msg}
+\KeywordTok{elseif.} \NormalTok{loadref_}\DecValTok{_}\NormalTok{DL WORD }\KeywordTok{do.} \NormalTok{jderr ERR0}\DecValTok{79}  \CommentTok{NB. errmsg: unable to load references}
+\KeywordTok{elseif.do.}
+
+  \CommentTok{NB. word references are either new or replacements}
+  \NormalTok{pos}\CharTok{=.} \NormalTok{WORDREFIX_}\DecValTok{_}\NormalTok{DL }\FunctionTok{i.} \FunctionTok{<}\NormalTok{name}
+  \NormalTok{b}\CharTok{=.} \NormalTok{pos }\FunctionTok{=} \FunctionTok{#}\NormalTok{WORDREFIX_}\DecValTok{_}\NormalTok{DL}
+
+  \CommentTok{NB. categorize references and test for path existence}
+  \KeywordTok{if.} \FunctionTok{#}\DataTypeTok{y}\CharTok{=.}\NormalTok{catrefs }\DataTypeTok{y} \KeywordTok{do.}
+    \KeywordTok{if.} \NormalTok{badrc uv3}\CharTok{=.} \NormalTok{pathnl WORD }\KeywordTok{do.} \NormalTok{uv3 }\KeywordTok{return.} \KeywordTok{end.}
+    \KeywordTok{if.} \NormalTok{0 }\FunctionTok{e.} \NormalTok{uv2}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{uv}\CharTok{=.} \NormalTok{0}\FunctionTok{\{::}\DataTypeTok{y}\RegionMarkerTok{)} \FunctionTok{e.} \FunctionTok{;\}.}\NormalTok{uv3 }\KeywordTok{do.}
+      \RegionMarkerTok{(}\NormalTok{jderr ERR0}\DecValTok{83}\RegionMarkerTok{)}\FunctionTok{,}\NormalTok{uv }\FunctionTok{#}\OtherTok{~} \FunctionTok{-.}\NormalTok{uv2 }\KeywordTok{return.}  \CommentTok{NB. errmsg: not on path}
+    \KeywordTok{end.}
+  \KeywordTok{end.}
+
+  \NormalTok{dfopen_}\DecValTok{_}\NormalTok{DL }\StringTok{'U'}
+  \NormalTok{fp}\CharTok{=.} \NormalTok{UP_}\DecValTok{_}\NormalTok{DL}
+
+  \NormalTok{uv3}\CharTok{=.} \NormalTok{0}
+  \KeywordTok{if.} \NormalTok{b }\KeywordTok{do.}
+    \CommentTok{NB. append new references}
+    \CommentTok{NB. append only non-null lists}
+    \KeywordTok{if.} \FunctionTok{#}\DataTypeTok{y} \KeywordTok{do.}
+      \CommentTok{NB. append reference list}
+      \DataTypeTok{y}\CharTok{=.} \FunctionTok{<}\NormalTok{name}\FunctionTok{;}\NormalTok{WORD}\FunctionTok{;<}\DataTypeTok{y}
+      \KeywordTok{if.} \NormalTok{badappend cn}\CharTok{=.} \DataTypeTok{y} \NormalTok{jappend fp }\KeywordTok{do.}
+        \NormalTok{jderr ERR0}\DecValTok{58} \FunctionTok{[} \NormalTok{dfclose_}\DecValTok{_}\NormalTok{DL }\StringTok{'U'} \KeywordTok{return.}  \CommentTok{NB. errmsg: append failure}
+      \KeywordTok{end.}
+      \NormalTok{uv}\CharTok{=.}  \NormalTok{WORDREFIX_}\DecValTok{_}\NormalTok{DL }\FunctionTok{,} \FunctionTok{<}\NormalTok{name}
+      \NormalTok{uv2}\CharTok{=.} \NormalTok{WORDREFCN_}\DecValTok{_}\NormalTok{DL }\FunctionTok{,} \NormalTok{cn}
+      \NormalTok{uv3}\CharTok{=.} \NormalTok{1}
+    \KeywordTok{end.}
+  \KeywordTok{else.}
+    \CommentTok{NB. replace references (removing nulls if necessary)}
+    \CommentTok{NB. NIMP directory-data consistency check}
+    \KeywordTok{if.} \FunctionTok{#}\DataTypeTok{y} \KeywordTok{do.}
+      \CommentTok{NB. non-null replacement list}
+      \DataTypeTok{y}\CharTok{=.} \FunctionTok{<}\NormalTok{name}\FunctionTok{;}\NormalTok{WORD}\FunctionTok{;<}\DataTypeTok{y}
+      \KeywordTok{if.} \NormalTok{badreps }\DataTypeTok{y} \NormalTok{jreplace fp}\FunctionTok{;}\NormalTok{pos}\FunctionTok{\{}\NormalTok{WORDREFCN_}\DecValTok{_}\NormalTok{DL }\KeywordTok{do.}
+        \NormalTok{jderr ERR0}\DecValTok{56} \FunctionTok{[} \NormalTok{dfclose_}\DecValTok{_}\NormalTok{DL }\StringTok{'U'} \KeywordTok{return.}  \CommentTok{NB. errmsg: replace failure}
+      \KeywordTok{end.}
+    \KeywordTok{else.}
+      \CommentTok{NB. replacement has no references remove from directory}
+      \NormalTok{uv3}\CharTok{=.} \NormalTok{0 pos}\OtherTok{\}} \RegionMarkerTok{(}\FunctionTok{#}\NormalTok{WORDREFIX_}\DecValTok{_}\NormalTok{DL}\RegionMarkerTok{)}\FunctionTok{#}\NormalTok{1}
+      \NormalTok{uv}\CharTok{=.}  \NormalTok{uv3}\FunctionTok{#}\NormalTok{WORDREFIX_}\DecValTok{_}\NormalTok{DL}
+      \NormalTok{uv2}\CharTok{=.} \NormalTok{uv3}\FunctionTok{#}\NormalTok{WORDREFCN_}\DecValTok{_}\NormalTok{DL}
+      \NormalTok{uv3}\CharTok{=.} \NormalTok{1}
+    \KeywordTok{end.}
+  \KeywordTok{end.}
+
+  \CommentTok{NB. update reference directory and close}
+  \KeywordTok{if.} \NormalTok{uv3 }\KeywordTok{do.}
+    \KeywordTok{if.} \NormalTok{badrc msg}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{WORD}\FunctionTok{,}\NormalTok{fp}\RegionMarkerTok{)} \NormalTok{saveref_}\DecValTok{_}\NormalTok{DL uv}\FunctionTok{;}\NormalTok{uv2 }\KeywordTok{do.} \NormalTok{msg }\FunctionTok{[} \NormalTok{dfclose_}\DecValTok{_}\NormalTok{DL }\StringTok{'U'} \KeywordTok{return.} \KeywordTok{end.}
+  \KeywordTok{end.}
+  \NormalTok{dfclose_}\DecValTok{_}\NormalTok{DL }\StringTok{'U'}
+
+  \NormalTok{ok }\RegionMarkerTok{(}\StringTok{'<'}\FunctionTok{,}\NormalTok{name}\FunctionTok{,}\StringTok{'>'}\FunctionTok{,}\NormalTok{OK0}\DecValTok{56}\RegionMarkerTok{)} \FunctionTok{;} \NormalTok{DNAME_}\DecValTok{_}\NormalTok{DL}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{rplctable}\AlertTok{=:}\index{rplctable@\texttt{rplctable}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*rplctable v-- replaces (name,text) and (name,type,value) tables to file.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  bl rplctable (btTable ,< ilPositions)}
+
+\StringTok{'ttype ixn cnn fp DL'}\CharTok{=.} \DataTypeTok{x}  \CommentTok{NB. directory object !(*)=. DL}
+\DataTypeTok{y}\CharTok{=.} \NormalTok{0 }\FunctionTok{[} \StringTok{'tab pos'}\CharTok{=.} \DataTypeTok{y}
+
+\NormalTok{sizes}\CharTok{=.} \FunctionTok{#}\OtherTok{&}\FunctionTok{>} \FunctionTok{\{:}\OtherTok{"}\NormalTok{1 tab}
+\NormalTok{tc}\CharTok{=.} \FunctionTok{#}\NormalTok{tab }\FunctionTok{[} \NormalTok{cn}\CharTok{=.} \NormalTok{pos}\FunctionTok{\{".}\NormalTok{cnn}
+\NormalTok{pf}\CharTok{=.} \NormalTok{PUTFACTOR_}\DecValTok{_}\NormalTok{DL}
+
+\CommentTok{NB. for words and macros record class/type}
+\KeywordTok{if.} \NormalTok{wmt}\CharTok{=.} \NormalTok{ttype }\FunctionTok{e.} \NormalTok{WORD}\FunctionTok{,}\NormalTok{MACRO }\KeywordTok{do.}
+  \NormalTok{class}\CharTok{=.} \FunctionTok{;} \NormalTok{1 }\FunctionTok{\{}\OtherTok{"}\NormalTok{1 tab}
+\KeywordTok{end.}
+
+\KeywordTok{while.} \FunctionTok{#}\NormalTok{tab }\KeywordTok{do.}
+  \NormalTok{cnt}\CharTok{=.} \NormalTok{pf }\FunctionTok{<.} \FunctionTok{#}\NormalTok{tab}
+  \NormalTok{tn}\CharTok{=.}  \NormalTok{cnt}\FunctionTok{\{.}\NormalTok{tab }\FunctionTok{[} \NormalTok{rcn}\CharTok{=.} \NormalTok{cnt}\FunctionTok{\{.}\NormalTok{cn}
+
+  \CommentTok{NB. read components and test contents}
+  \NormalTok{dat}\CharTok{=.} \NormalTok{jread fp}\FunctionTok{;}\NormalTok{rcn}
+  \KeywordTok{if.} \RegionMarkerTok{(}\FunctionTok{\{.}\OtherTok{"}\NormalTok{1 tn}\RegionMarkerTok{)} \NormalTok{badcn dat }\KeywordTok{do.}
+    \NormalTok{jderr ERR0}\DecValTok{55} \KeywordTok{return.}  \CommentTok{NB. errmsg: directory-data inconsistency}
+  \KeywordTok{end.}
+
+  \CommentTok{NB. replace}
+  \KeywordTok{if.} \NormalTok{badreps }\RegionMarkerTok{(}\FunctionTok{<}\OtherTok{"}\NormalTok{1 tn}\RegionMarkerTok{)} \NormalTok{jreplace fp}\FunctionTok{;}\NormalTok{rcn }\KeywordTok{do.}
+    \NormalTok{jderr ERR0}\DecValTok{56} \KeywordTok{return.}  \CommentTok{NB. errmsg: replace failure}
+  \KeywordTok{end.}
+
+  \NormalTok{tab}\CharTok{=.} \NormalTok{cnt}\FunctionTok{\}.}\NormalTok{tab }\FunctionTok{[} \NormalTok{cn}\CharTok{=.} \NormalTok{cnt}\FunctionTok{\}.}\NormalTok{cn}
+\KeywordTok{end.}
+
+\CommentTok{NB. set up replacements}
+\KeywordTok{if.} \NormalTok{wmt }\KeywordTok{do.}
+  \NormalTok{dropnc_}\DecValTok{_}\NormalTok{DL ttype }\CommentTok{NB. replacements can change class/type}
+  \NormalTok{invcmps}\CharTok{=.} \NormalTok{CNCLASS}\FunctionTok{,}\NormalTok{CNPUTDATE}\FunctionTok{,}\NormalTok{CNSIZE}
+  \NormalTok{reps}\CharTok{=.} \NormalTok{pos}\FunctionTok{;<}\NormalTok{class}\FunctionTok{;}\RegionMarkerTok{(}\NormalTok{tc}\FunctionTok{#}\NormalTok{nowfd now }\StringTok{''}\RegionMarkerTok{)}\FunctionTok{;}\NormalTok{sizes}
+\KeywordTok{else.}
+  \NormalTok{invcmps}\CharTok{=.} \NormalTok{CNPUTDATE}\FunctionTok{,}\NormalTok{CNSIZE}
+  \NormalTok{reps}\CharTok{=.} \NormalTok{pos}\FunctionTok{;<}\RegionMarkerTok{(}\NormalTok{tc}\FunctionTok{#}\NormalTok{nowfd now }\StringTok{''}\RegionMarkerTok{)}\FunctionTok{;}\NormalTok{sizes}
+\KeywordTok{end.}
+
+\KeywordTok{if.} \NormalTok{badrc msg}\CharTok{=.} \NormalTok{reps invreplace fp}\FunctionTok{;}\NormalTok{invcmps }\KeywordTok{do.} \NormalTok{msg }\KeywordTok{else.} \NormalTok{ok tc }\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{rplcwords}\AlertTok{=:}\index{rplcwords@\texttt{rplcwords}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*rplcwords v-- replaces extant words.}
+
+\StringTok{'loc DL'}\CharTok{=.} \DataTypeTok{x}  \CommentTok{NB. directory object !(*)=. DL}
+\StringTok{'names pos'}\CharTok{=.} \DataTypeTok{y}
+\NormalTok{cn}\CharTok{=.} \NormalTok{pos}\FunctionTok{\{}\NormalTok{WORDCN_}\DecValTok{_}\NormalTok{DL}
+\NormalTok{wc}\CharTok{=.} \FunctionTok{#}\NormalTok{pos}
+
+\NormalTok{wp}\CharTok{=.} \NormalTok{WP_}\DecValTok{_}\NormalTok{DL }\FunctionTok{[} \NormalTok{pf}\CharTok{=.} \NormalTok{PUTFACTOR_}\DecValTok{_}\NormalTok{DL}
+\NormalTok{lnames}\CharTok{=.} \NormalTok{names }\FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \NormalTok{locsfx loc}
+\NormalTok{size}\CharTok{=.} \NormalTok{class}\CharTok{=.} \FunctionTok{i.}\NormalTok{0}
+
+\KeywordTok{while.} \FunctionTok{#}\NormalTok{names }\KeywordTok{do.}
+  \NormalTok{cnt}\CharTok{=.} \NormalTok{pf }\FunctionTok{<.} \FunctionTok{#}\NormalTok{names}
+  \NormalTok{wn}\CharTok{=.} \NormalTok{cnt}\FunctionTok{\{.}\NormalTok{names }\FunctionTok{[} \NormalTok{lwn}\CharTok{=.} \NormalTok{cnt}\FunctionTok{\{.}\NormalTok{lnames }\FunctionTok{[} \NormalTok{rcn}\CharTok{=.} \NormalTok{cnt}\FunctionTok{\{.}\NormalTok{cn}
+
+  \CommentTok{NB. read components and test contents - this slows things}
+  \CommentTok{NB. down but significantly improves database hygiene}
+  \NormalTok{dat}\CharTok{=.} \NormalTok{jread WP_}\DecValTok{_}\NormalTok{DL}\FunctionTok{;}\NormalTok{rcn}
+  \KeywordTok{if.} \NormalTok{wn badcn dat }\KeywordTok{do.}
+    \NormalTok{jderr ERR0}\DecValTok{55}  \CommentTok{NB. errmsg: directory-data inconsistency}
+  \KeywordTok{end.}
+
+  \NormalTok{val}\CharTok{=.} \NormalTok{wrep}\OtherTok{&.}\FunctionTok{>} \NormalTok{lwn   }\CommentTok{NB. word values}
+  \NormalTok{bsz}\CharTok{=.} \FunctionTok{#}\OtherTok{&}\FunctionTok{>} \NormalTok{val       }\CommentTok{NB. NIMP word byte sizes (size test)}
+  \NormalTok{bnc}\CharTok{=.} \NormalTok{nc lwn        }\CommentTok{NB. word name class}
+  \NormalTok{val}\CharTok{=.} \FunctionTok{,} \FunctionTok{<}\OtherTok{"}\NormalTok{1 wn }\FunctionTok{,.} \RegionMarkerTok{(}\FunctionTok{<}\OtherTok{"}\NormalTok{0 bnc}\RegionMarkerTok{)} \FunctionTok{,.} \NormalTok{val}
+
+  \CommentTok{NB. replace words}
+  \KeywordTok{if.} \NormalTok{badreps val jreplace wp}\FunctionTok{;}\NormalTok{rcn }\KeywordTok{do.}
+    \NormalTok{jderr ERR0}\DecValTok{56}  \CommentTok{NB. errmsg: replace failure}
+  \KeywordTok{else.}
+    \NormalTok{size}\CharTok{=.} \NormalTok{size }\FunctionTok{,} \NormalTok{bsz}
+    \NormalTok{class}\CharTok{=.} \NormalTok{class }\FunctionTok{,} \NormalTok{bnc}
+  \KeywordTok{end.}
+
+  \NormalTok{names}\CharTok{=.} \NormalTok{cnt}\FunctionTok{\}.}\NormalTok{names }\FunctionTok{[} \NormalTok{lnames}\CharTok{=.} \NormalTok{cnt}\FunctionTok{\}.}\NormalTok{lnames }\FunctionTok{[} \NormalTok{cn}\CharTok{=.} \NormalTok{cnt}\FunctionTok{\}.}\NormalTok{cn}
+\KeywordTok{end.}
+
+\NormalTok{msg}\CharTok{=.} \NormalTok{ERR0}\DecValTok{57}  \CommentTok{NB. errmsg: directory update failure}
+\KeywordTok{if.} \NormalTok{wc }\FunctionTok{~:} \FunctionTok{#}\NormalTok{size }\KeywordTok{do.} \NormalTok{jderr msg }\KeywordTok{return.} \KeywordTok{end.}
+
+\NormalTok{reps}\CharTok{=.} \NormalTok{pos}\FunctionTok{;<}\NormalTok{class}\FunctionTok{;}\RegionMarkerTok{(}\NormalTok{wc}\FunctionTok{#}\NormalTok{nowfd now }\StringTok{''}\RegionMarkerTok{)}\FunctionTok{;}\NormalTok{size}
+\KeywordTok{if.} \NormalTok{badrc msg}\CharTok{=.}\NormalTok{reps invreplace wp}\FunctionTok{;}\NormalTok{CNCLASS}\FunctionTok{,}\NormalTok{CNPUTDATE}\FunctionTok{,}\NormalTok{CNSIZE }\KeywordTok{do.} \NormalTok{msg }\KeywordTok{else.} \NormalTok{ok wc }\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. raise, nub and sort blblcl name lists}
+\NormalTok{sortdnub}\AlertTok{=:}\index{sortdnub@\texttt{sortdnub}}\FunctionTok{[:} \FunctionTok{/:}\OtherTok{~} \FunctionTok{[:} \FunctionTok{~.} \FunctionTok{;}
+\end{Highlighting}
+\end{Shaded}
+

@@ -317,20 +317,32 @@ list when successful and the standard boxed \verb|(paRc;clMessage)| when reporti
   NB. generate and display a group 
   2 disp 'group' 
 
-  NB. display the group text or header 
-  2 1 disp 'groupheader'     
+  NB. display group header 
+  2 1 disp 'group' 
+  
+  NB. display group documentation 
+  2 9 disp 'group' 
+  
+  NB. display all short group explanations
+  2 8 disp }. grp ''    
 
   NB. generate and display a suite 
   3 disp 'suite' 
 
-  NB. display the suite text or header 
-  3 1 disp 'suiteheader'     
+  NB. display suite header 
+  3 1 disp 'suite'  
+  
+  NB. display suite documentation 
+  3 9 disp 'suite'     
 
   NB. display one macro
   4 disp 'macro' 
   
   NB. display many macros           
-  4 disp 'macro';'byebye'    
+  4 disp 'macro';'byebye' 
+  
+  NB. display put dictionary documentation
+  5 disp ''      
 \end{lstlisting}
   
 \subsection{\texttt{dnl} --- dictionary name lists}\label{ss:dnl}\index{search!names!\texttt{dnl}}
@@ -1057,35 +1069,34 @@ JOD times are derived from \emph{local} computer clock times. \texttt{UTC} is no
 The monad returns help for specific words and displays an index.  
 The dyad displays \verb|jod.pdf| and lists all words that have online help.
 
-\verb|jod.pdf| is omitted from the JOD addon \texttt{JAL} package to
-reduce download size. \texttt{jodhelp} will browse an online 
-version of \verb|jod.pdf| if it doesn't find it in the directory.
+\verb|jod.pdf| is omitted from the core JOD addon \texttt{JAL} package to
+reduce download size. Installing the addon \texttt{general/joddocument} 
+saves \verb|jod.pdf| in the directory searched by \texttt{jodhelp}.
 \begin{lstlisting}[frame=single,framerule=0pt]
   NB. JOD addon PDF document directory
-  ~addons/general/jod/joddoc/pdfdoc
+  ~addons/general/joddocument/pdfdoc
 \end{lstlisting}
-If you download \verb|jod.pdf| and place it in this directory
-\texttt{jodhelp} will use the local copy.
 
 \begin{wordhead}
 \monad & jodhelp clWord \\
 \end{wordhead}
 \begin{lstlisting}[frame=single,framerule=0pt] 
-  NB. show (put) help
+  NB. show online (put) help
   jodhelp 'put'   
 
-  NB. display help index 
+  NB. display online help index 
   jodhelp '' 
 \end{lstlisting}  
 
 \begin{wordhead}
-\dyad & uuIgnore \argsep clPDF jodhelp uuIgnore 
+\dyad & uuIgnore \argsep clPDF jodhelp uuIgnore \\
 \end{wordhead}
 \begin{lstlisting}[frame=single,framerule=0pt] 
   NB. list help topics - ignores arguments 
   jodhelp~ 0    
   
   NB. open PDF documentation 
+  NB. requires install of general/joddocument 
   'PDF' jodhelp ''
   
   NB. handy idiom
@@ -1100,7 +1111,7 @@ and loads JOD group\index{group!\texttt{lg}} scripts.  The monad loads without t
 script and the dyad loads with the postprocessor.
 
 The postprocessor\index{postprocessor} is a JOD macro script that is associated with a group.
-If a group\index{group!\texttt{locgrp}} is named \texttt{numtutils} the associated postprocessor 
+If a group\index{group!\texttt{lg}} is named \texttt{numtutils} the associated postprocessor 
 is named \verb|POST_numutils|. The prefix \verb|POST_| labels J macro scripts as postprocessors.\footnote{
 A macro must be coded as a J script, (code 21), to be used as a postprocessor.
 } The postprocessor is appended to generated group scripts and is often used to start systems.
@@ -1131,7 +1142,7 @@ A macro must be coded as a J script, (code 21), to be used as a postprocessor.
 
 \subsection{\texttt{locgrp} --- list groups/suites with word/test}\label{ss:locgrp}\index{search!groups!\texttt{locgrp}}
 
-\texttt{locgrp} lists groups and suites with word or test \texttt{(y)}.   
+\texttt{locgrp} lists groups\index{group!\texttt{locgrp}} and suites with word or test \texttt{(y)}.   
 A word or test can belong to many groups or suites. 
 
 \begin{wordhead}
@@ -1179,7 +1190,7 @@ This can be overridden with a negative option code.
   NB. dump to specified Windows file
   make 'c:/dump/on/me.ijs'
   
-  NB. linux paths must begin with /
+  NB. linux and mac paths must begin with /
   make '/home/john/temp/joddumps/metoo.ijs'
 \end{lstlisting}
 
@@ -1409,9 +1420,9 @@ custom script formats.
   NB. 
   NB. This is my custom test script header.
   NB. The {~T~} strings are replaced with test
-  NB. name and creation time
+  NB. name and creation time {~D~}
   NB.
-  NB. created: {~created~}
+  NB. created: {~D~}
   ) 
 
   NB. save custom header in put dictionary
@@ -1501,7 +1512,12 @@ A \texttt{packd} operation can be reversed with \hyperlink{il:restd}{\texttt{res
 no JOD facility for deleting  backup files. To erase backup files use OS facilities. 
 
 The read/write status of a dictionary is recorded in 
-the master file. JOD assumes all tasks point to the same master file. 
+the master file. JOD assumes all tasks point to the same master file.\footnote{
+There is one important exception to the single \texttt{jmaster.ijf} rule. \texttt{READONLY}
+dictionaries can be safely registered in different master files. This allows 
+easy sharing of \texttt{READONLY} library dictionaries on network drives with
+the standard JOD/JAL setup.
+} 
 
 \begin{wordhead}
 \monad & packd clDictionary \\
@@ -1597,7 +1613,7 @@ that preceeds the code generated by \hyperlink{il:make}{\texttt{make}} on page~\
   4 put (;:'m0 m1'),.(21;21),.('text ...';'...') 
 \end{lstlisting}
  
-The text types \texttt{LaTeX, HTML, XML, ASCII,  BYTE, UTF8}
+The text types \texttt{LaTeX, HTML, XML, ASCII, BYTE, MARKDOWN, UTF8}
 are stored as J character lists. 
 
 \begin{lstlisting}[frame=single,framerule=0pt]   
@@ -1625,6 +1641,11 @@ are stored as J character lists.
   
   NB. update dictionary documentation text
   5 put 'go ahead document this dictionary'
+  
+  NB. dictionary documentation is controlled 
+  NB. by DOCUMENTDICT with default 1
+  dpset 'DOCUMENTDICT';0
+  5 put 'this will not be stored' 
 \end{lstlisting}                  
 
 

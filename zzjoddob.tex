@@ -1,0 +1,1180 @@
+\section{\texttt{joddob} Source Code}
+
+\begin{JODGroupHeader}
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. joddob.ijs -- directory object class: extension of (jodstore)}
+\CommentTok{NB.}
+\CommentTok{NB. Directory objects are created when dictionaries are opened}
+\CommentTok{NB. and destroyed when they are closed.  Directory objects contain}
+\CommentTok{NB. a set of nouns and verbs that manage *.ijf file directories.}
+\CommentTok{NB.}
+\CommentTok{NB. Interface nouns & verbs:}
+\CommentTok{NB.   (many nouns are indirectly __ referenced)}
+\CommentTok{NB.   dfclose     close dictionary file}
+\CommentTok{NB.   dfopen      open dictionary file}
+\CommentTok{NB.   dfp         directory file paths}
+\CommentTok{NB.   dncn        name of main directory component noun}
+\CommentTok{NB.   dnix        name of main directory index noun}
+\CommentTok{NB.   dnnc        name of class noun}
+\CommentTok{NB.   dnnm        visible object names}
+\CommentTok{NB.   dropdir     erase directory nouns}
+\CommentTok{NB.   dropnc      erase class/type nouns}
+\CommentTok{NB.   dropref     erase reference nouns}
+\CommentTok{NB.   loaddir     load directory}
+\CommentTok{NB.   loadnc      load word and macro class/types}
+\CommentTok{NB.   loadref     load references}
+\CommentTok{NB.   loadstamps  load time stamps}
+\CommentTok{NB.   packdict    packs dictionary and saves old files as a backup}
+\CommentTok{NB.   packspace   tests for sufficient backup space}
+\CommentTok{NB.   restdict    restores most recent backup created by (packdict)}
+\CommentTok{NB.   restspace   tests for sufficient restore space}
+\CommentTok{NB.   savedir     save directory}
+\CommentTok{NB.   saveref     save references}
+\CommentTok{NB.}
+\CommentTok{NB. Notes:}
+\CommentTok{NB.   Error messages (JODdob range 200-249)}
+
+\NormalTok{coclass }\StringTok{'ajoddob'}
+\NormalTok{coinsert }\StringTok{'ajodstore'}
+
+\CommentTok{NB.*dependents x-- JODdob dependent definitions}
+
+\CommentTok{NB. directory noun name prefixes}
+\NormalTok{DIRNMS}\AlertTok{=:}\index{DIRNMS@\texttt{DIRNMS}}\FunctionTok{<}\OtherTok{;.}\NormalTok{_}\DecValTok{1} \StringTok{' WORD TEST GROUP SUITE MACRO'}
+
+\CommentTok{NB. directory noun suffixes - order matters}
+\NormalTok{DTSIXCN}\AlertTok{=:}\index{DTSIXCN@\texttt{DTSIXCN}}\FunctionTok{<}\OtherTok{;.}\NormalTok{_}\DecValTok{1} \StringTok{' TS IX CN'}
+
+\CommentTok{NB. timestamp, index list and component noun names}
+\RegionMarkerTok{(}\FunctionTok{;:}\StringTok{'DIRTS DIRIX DIRCN'}\RegionMarkerTok{)}\AlertTok{=:}\index{01indirect@\texttt{(...)=:}} \FunctionTok{<}\OtherTok{"}\NormalTok{1 }\FunctionTok{\textbar{}:} \NormalTok{DIRNMS }\FunctionTok{,}\OtherTok{&.}\FunctionTok{>}\OtherTok{/} \NormalTok{DTSIXCN}
+
+\CommentTok{NB. name class and macro type noun names}
+\NormalTok{DIRNC}\AlertTok{=:}\index{DIRNC@\texttt{DIRNC}}\FunctionTok{<}\OtherTok{;.}\NormalTok{_}\DecValTok{1} \StringTok{' WORDNC MACRONC'}
+
+\CommentTok{NB. reference objects}
+\NormalTok{DIRRFN}\AlertTok{=:}\index{DIRRFN@\texttt{DIRRFN}}\FunctionTok{<}\OtherTok{;.}\NormalTok{_}\DecValTok{1} \StringTok{' WORDREF TESTREF'}
+
+\CommentTok{NB. reference timestamp, index list and component noun names}
+\RegionMarkerTok{(}\FunctionTok{;:}\StringTok{'REFTS REFIX REFCN'}\RegionMarkerTok{)}\AlertTok{=:}\index{01indirect@\texttt{(...)=:}} \FunctionTok{<}\OtherTok{"}\NormalTok{1 }\FunctionTok{\textbar{}:} \NormalTok{DIRRFN }\FunctionTok{,}\OtherTok{&.}\FunctionTok{>}\OtherTok{/} \NormalTok{DTSIXCN}
+
+\CommentTok{NB.*enddependents}
+\CommentTok{NB.*end-header}
+\end{Highlighting}
+\end{Shaded}
+
+\end{JODGroupHeader}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. backup directory noun prefix}
+\NormalTok{BAKPFX}\AlertTok{=:}\index{BAKPFX@\texttt{BAKPFX}}\StringTok{'B'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. database file noun names - order matters - see long documenation}
+\NormalTok{DFILES}\AlertTok{=:}\index{DFILES@\texttt{DFILES}}\FunctionTok{<}\OtherTok{;.}\NormalTok{_}\DecValTok{1} \StringTok{' WF TF GF SF MF UF'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. database file noun name pointers - order matters}
+\NormalTok{DFPTRS}\AlertTok{=:}\index{DFPTRS@\texttt{DFPTRS}}\FunctionTok{<}\OtherTok{;.}\NormalTok{_}\DecValTok{1} \StringTok{' WP TP GP SP MP UP'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. main component list noun names}
+\NormalTok{DIRCN}\AlertTok{=:}\index{DIRCN@\texttt{DIRCN}}\FunctionTok{<}\OtherTok{;.}\NormalTok{_}\DecValTok{1} \StringTok{' WORDCN TESTCN GROUPCN SUITECN MACROCN'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. main index list noun names}
+\NormalTok{DIRIX}\AlertTok{=:}\index{DIRIX@\texttt{DIRIX}}\FunctionTok{<}\OtherTok{;.}\NormalTok{_}\DecValTok{1} \StringTok{' WORDIX TESTIX GROUPIX SUITEIX MACROIX'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. main timestamp noun names}
+\NormalTok{DIRTS}\AlertTok{=:}\index{DIRTS@\texttt{DIRTS}}\FunctionTok{<}\OtherTok{;.}\NormalTok{_}\DecValTok{1} \StringTok{' WORDTS TESTTS GROUPTS SUITETS MACROTS'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. visible object names}
+\NormalTok{DIRVNS}\AlertTok{=:}\index{DIRVNS@\texttt{DIRVNS}}\FunctionTok{<}\OtherTok{;.}\NormalTok{_}\DecValTok{1} \StringTok{' word test group suite macro'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. dictionary subdirectory noun names - order matters}
+\NormalTok{DSUBDIRS}\AlertTok{=:}\index{DSUBDIRS@\texttt{DSUBDIRS}}\FunctionTok{<}\OtherTok{;.}\NormalTok{_}\DecValTok{1} \StringTok{' SCR SUI DOC DMP ALI BAK'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR2}\DecValTok{00}\AlertTok{=:}\index{ERR200@\texttt{ERR200}}\StringTok{'unable to save directory - previous directory restored'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR2}\DecValTok{01}\AlertTok{=:}\index{ERR201@\texttt{ERR201}}\StringTok{'unable to save directory - unable to restore previous directory'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR2}\DecValTok{02}\AlertTok{=:}\index{ERR202@\texttt{ERR202}}\StringTok{'invalid put dictionary name'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR2}\DecValTok{03}\AlertTok{=:}\index{ERR203@\texttt{ERR203}}\StringTok{'unable to create temporary file'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR2}\DecValTok{04}\AlertTok{=:}\index{ERR204@\texttt{ERR204}}\StringTok{'not enough free disk space for operation'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR2}\DecValTok{05}\AlertTok{=:}\index{ERR205@\texttt{ERR205}}\StringTok{'unable to rename files: DLL error ->'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR2}\DecValTok{06}\AlertTok{=:}\index{ERR206@\texttt{ERR206}}\StringTok{'no backups to restore'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR2}\DecValTok{07}\AlertTok{=:}\index{ERR207@\texttt{ERR207}}\StringTok{'missing backup files - restore aborted'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR2}\DecValTok{08}\AlertTok{=:}\index{ERR208@\texttt{ERR208}}\StringTok{'unable to copy files: DLL error ->'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR2}\DecValTok{09}\AlertTok{=:}\index{ERR209@\texttt{ERR209}}\StringTok{'backup dictionary id number invalid - restore aborted'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR2}\DecValTok{10}\AlertTok{=:}\index{ERR210@\texttt{ERR210}}\StringTok{'unable to copy/move/rename files - shell messages ->'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. object report header names}
+\NormalTok{HEADNMS}\AlertTok{=:}\index{HEADNMS@\texttt{HEADNMS}}\FunctionTok{<}\OtherTok{;.}\NormalTok{_}\DecValTok{1} \StringTok{' Words Tests Groups* Suites* Macros'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{OK2}\DecValTok{00}\AlertTok{=:}\index{OK200@\texttt{OK200}}\StringTok{'dictionary packed ->'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{OK2}\DecValTok{01}\AlertTok{=:}\index{OK201@\texttt{OK201}}\StringTok{'dictionary restored ->'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. reference component list noun names}
+\NormalTok{REFCN}\AlertTok{=:}\index{REFCN@\texttt{REFCN}}\FunctionTok{<}\OtherTok{;.}\NormalTok{_}\DecValTok{1} \StringTok{' WORDREFCN TESTREFCN'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. reference main index list noun names}
+\NormalTok{REFIX}\AlertTok{=:}\index{REFIX@\texttt{REFIX}}\FunctionTok{<}\OtherTok{;.}\NormalTok{_}\DecValTok{1} \StringTok{' WORDREFIX TESTREFIX'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. reference timestamp noun names}
+\NormalTok{REFTS}\AlertTok{=:}\index{REFTS@\texttt{REFTS}}\FunctionTok{<}\OtherTok{;.}\NormalTok{_}\DecValTok{1} \StringTok{' WORDREFTS TESTREFTS'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. temporary file prefix}
+\NormalTok{TEMPFX}\AlertTok{=:}\index{TEMPFX@\texttt{TEMPFX}}\StringTok{'tmp'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{backnum}\AlertTok{=:}\index{backnum@\texttt{backnum}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*backnum v-- increments backup and pack counts.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  backnum ia}
+
+\CommentTok{NB. HARDCODE pack counter is in component 1}
+\NormalTok{nums}\CharTok{=.}\FunctionTok{>} \NormalTok{jread WF}\FunctionTok{;}\NormalTok{1  }\CommentTok{NB. object noun !(*)=. WF}
+\KeywordTok{if.} \FunctionTok{#}\NormalTok{nums }\KeywordTok{do.} \NormalTok{nums}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{>:}\DataTypeTok{y}\FunctionTok{\{}\NormalTok{nums}\RegionMarkerTok{)} \DataTypeTok{y}\OtherTok{\}}\NormalTok{nums }\KeywordTok{else.} \NormalTok{nums}\CharTok{=.} \NormalTok{0 0 }\KeywordTok{end.}
+\NormalTok{nums jreplace WF}\FunctionTok{;}\NormalTok{1}
+\DataTypeTok{y}\FunctionTok{\{}\NormalTok{nums}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{copydirinv}\AlertTok{=:}\index{copydirinv@\texttt{copydirinv}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*copydirinv v-- copies directory and inverted data region}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  copydirinv (clTemp ; clDictionary)}
+
+\StringTok{'tfile datfile'}\CharTok{=.} \DataTypeTok{y}
+
+\CommentTok{NB. errmsg: unable to create temporary file}
+\KeywordTok{if.} \NormalTok{1}\FunctionTok{~:}\NormalTok{jcreate tfile }\KeywordTok{do.} \NormalTok{jderr ERR2}\DecValTok{03} \KeywordTok{return.} \KeywordTok{end.}
+
+\CommentTok{NB. copy directory and inverted data region}
+\CommentTok{NB. errmsg: jfile read failure}
+\KeywordTok{if.} \NormalTok{badjr dat}\CharTok{=.} \NormalTok{jread datfile}\FunctionTok{;i.} \NormalTok{OFFSET }\KeywordTok{do.} \NormalTok{jderr ERR0}\DecValTok{88} \KeywordTok{return.} \KeywordTok{end.}
+\CommentTok{NB. errmsg: jfile append failure}
+\KeywordTok{if.} \NormalTok{badappend apcn}\CharTok{=.} \NormalTok{dat jappend tfile }\KeywordTok{do.} \NormalTok{jderr ERR0}\DecValTok{58} \KeywordTok{else.} \NormalTok{OK }\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. Win32 procedure that copies files}
+\NormalTok{copyfile}\AlertTok{=:}\index{copyfile@\texttt{copyfile}}\StringTok{'kernel32 CopyFileA i *c *c i'}\OtherTok{&}\NormalTok{cd}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{copyfiles}\AlertTok{=:}\index{copyfiles@\texttt{copyfiles}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*copyfiles v-- copies OS files.}
+\CommentTok{NB.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  blclSource copyfiles blclTarget}
+
+\KeywordTok{if.} \NormalTok{IFWIN }\KeywordTok{do.}
+  \NormalTok{rc}\CharTok{=.}\NormalTok{copyfile}\OtherTok{"}\NormalTok{1 }\DataTypeTok{x} \FunctionTok{,.} \DataTypeTok{y} \FunctionTok{,.} \FunctionTok{<}\NormalTok{0}
+  \CommentTok{NB. errmsg: unable to copy files}
+  \KeywordTok{if.} \FunctionTok{*.}\OtherTok{/}\NormalTok{0 }\FunctionTok{<;} \FunctionTok{\{.}\OtherTok{"}\NormalTok{1 rc }\KeywordTok{do.} \NormalTok{OK }\KeywordTok{else.} \RegionMarkerTok{(}\NormalTok{jderr ERR2}\DecValTok{08}\RegionMarkerTok{)}\FunctionTok{,}\RegionMarkerTok{(}\NormalTok{1}\DecValTok{5}\OtherTok{!:}\NormalTok{1}\DecValTok{1}\RegionMarkerTok{)}\StringTok{''} \KeywordTok{end.}
+\KeywordTok{else.}
+  \CommentTok{NB. copy current dictionary files}
+  \CommentTok{NB. NOTE: assumes path file names that do not wreak linux (cp) command}
+  \KeywordTok{if.} \NormalTok{isempty rc}\CharTok{=.} \NormalTok{host}\OtherTok{"}\NormalTok{1  }\FunctionTok{>} \RegionMarkerTok{(}\FunctionTok{<}\StringTok{'cp '}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \DataTypeTok{x} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \StringTok{' '} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \DataTypeTok{y} \KeywordTok{do.} \NormalTok{OK}
+  \KeywordTok{else.}
+    \CommentTok{NB. result not empty probably some OS error}
+    \CommentTok{NB. errmsg:  unable to copy/move/rename files - shell messages ->}
+    \RegionMarkerTok{(}\NormalTok{jderr ERR2}\DecValTok{10}\RegionMarkerTok{)}\FunctionTok{,<,}\NormalTok{rc}
+  \KeywordTok{end.}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{createdl}\AlertTok{=:}\index{createdl@\texttt{createdl}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*createdl v-- directory object creation verb.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  create bluu}
+
+\CommentTok{NB. object nouns !(*)=. BAKNUM DIDNUM DNAME RPATH RW UF SYS WF LIBSTATUS NPPFX}
+
+\CommentTok{NB. no backup directories exist at creation}
+\NormalTok{BAKNUM}\AlertTok{=:}\index{BAKNUM@\texttt{BAKNUM}} \NormalTok{_}\DecValTok{1}
+
+\StringTok{'nppfx username dpath readstatus dparms'}\CharTok{=.} \DataTypeTok{y}
+\NormalTok{DNAME}\AlertTok{=:}\index{DNAME@\texttt{DNAME}} \FunctionTok{,>}\NormalTok{username  }\CommentTok{NB. user name for this dictionary}
+\NormalTok{DIDNUM}\AlertTok{=:}\index{DIDNUM@\texttt{DIDNUM}} \FunctionTok{>}\NormalTok{1}\FunctionTok{\{}\NormalTok{dparms  }\CommentTok{NB. unique dictionary id number}
+\NormalTok{NPPFX}\AlertTok{=:}\index{NPPFX@\texttt{NPPFX}} \NormalTok{nppfx       }\CommentTok{NB. master/dictionary file path prefix mismatch}
+
+\CommentTok{NB. set master parameters first and then values specific}
+\CommentTok{NB. to this dictionary - insures all master parms are defined}
+\CommentTok{NB. (MASTERPARMS) is added to the "jod" class by (createjod)}
+\RegionMarkerTok{(}\FunctionTok{\{.}\OtherTok{"}\NormalTok{1 MASTERPARMS}\RegionMarkerTok{)}\AlertTok{=:}\index{01indirect@\texttt{(...)=:}} \FunctionTok{\{:}\OtherTok{"}\NormalTok{1 MASTERPARMS   }\CommentTok{NB. !(*)=. MASTERPARMS}
+\RegionMarkerTok{(}\FunctionTok{\{.>\{:}\NormalTok{dparms}\RegionMarkerTok{)}\AlertTok{=:}\index{01indirect@\texttt{(...)=:}} \FunctionTok{\{:>\{:}\NormalTok{dparms}
+
+\CommentTok{NB. is this a library?}
+\NormalTok{LIBSTATUS}\AlertTok{=:}\index{LIBSTATUS@\texttt{LIBSTATUS}} \NormalTok{islib dparms}
+\NormalTok{RW}\AlertTok{=:}\index{RW@\texttt{RW}} \RegionMarkerTok{(}\FunctionTok{-.}\NormalTok{LIBSTATUS}\RegionMarkerTok{)} \FunctionTok{*} \NormalTok{1}\FunctionTok{=}\NormalTok{readstatus  }\CommentTok{NB. open read status}
+
+\CommentTok{NB. script, suite, macro, document, dump, backup directories}
+\RegionMarkerTok{(}\NormalTok{DSUBDIRS}\RegionMarkerTok{)}\AlertTok{=:}\index{01indirect@\texttt{(...)=:}} \NormalTok{PARMDIRS}\FunctionTok{\{}\NormalTok{dparms}
+
+\CommentTok{NB. full dictionary file names (without extensions) and pointers}
+\CommentTok{NB. NOTE: the (dpath) does not have to match the paths of (DSUBDIRS)}
+\RegionMarkerTok{(}\NormalTok{DFILES}\RegionMarkerTok{)}\AlertTok{=:}\index{01indirect@\texttt{(...)=:}} \NormalTok{uv}\CharTok{=.} \NormalTok{dpath }\FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \NormalTok{JDFILES}
+\RegionMarkerTok{(}\NormalTok{DFPTRS}\RegionMarkerTok{)}\AlertTok{=:}\index{01indirect@\texttt{(...)=:}} \NormalTok{uv}
+
+\CommentTok{NB. dictionary directory - NIMP: provide some mechanism for}
+\CommentTok{NB. decoupling the word directory from the main dictionary}
+\NormalTok{SYS}\AlertTok{=:}\index{SYS@\texttt{SYS}} \RegionMarkerTok{((}\NormalTok{justdrv WF}\RegionMarkerTok{)} \FunctionTok{,}\StringTok{':'}\FunctionTok{,} \NormalTok{justpath WF}\RegionMarkerTok{)}\FunctionTok{,}\NormalTok{PATHDEL}
+
+\CommentTok{NB. tweak for UNC and rooted linux paths}
+\NormalTok{SYS}\AlertTok{=:}\index{SYS@\texttt{SYS}} \RegionMarkerTok{(}\StringTok{':'}\FunctionTok{=\{.}\NormalTok{SYS}\RegionMarkerTok{)}\FunctionTok{\}.}\NormalTok{SYS}
+
+\CommentTok{NB. set dictionary's reference path}
+\KeywordTok{if.} \NormalTok{badjr rp}\CharTok{=.} \NormalTok{jread UF}\FunctionTok{;}\NormalTok{CNRPATH }\KeywordTok{do.} \NormalTok{0 }\KeywordTok{else.} \NormalTok{1 }\FunctionTok{[} \NormalTok{RPATH}\AlertTok{=:}\index{RPATH@\texttt{RPATH}} \FunctionTok{>} \NormalTok{rp }\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{dfclose}\AlertTok{=:}\index{dfclose@\texttt{dfclose}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*dfclose v-- close dictionary file.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  dfclose clFilePfx}
+\CommentTok{NB.}
+\CommentTok{NB.   dfclose__DL 'U'  NB. object noun file pointer prefix}
+
+\NormalTok{fp}\CharTok{=.} \DataTypeTok{y}\FunctionTok{,}\StringTok{'P'}
+\RegionMarkerTok{(}\NormalTok{fp}\RegionMarkerTok{)}\AlertTok{=:}\index{01indirect@\texttt{(...)=:}} \FunctionTok{".}\DataTypeTok{y}\FunctionTok{,}\StringTok{'F'} \FunctionTok{[} \NormalTok{jclose_jfiles_ }\FunctionTok{".}\NormalTok{fp}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. open dictionary file}
+\NormalTok{dfopen}\AlertTok{=:}\index{dfopen@\texttt{dfopen}}\NormalTok{3 }\OtherTok{:} \StringTok{'(y,''P'')=: jopen_jfiles_ ".y,''F'''}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{dfp}\AlertTok{=:}\index{dfp@\texttt{dfp}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*dfp v-- directory file path returns the  directory  path  for}
+\CommentTok{NB. various objects.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  dfp iaObject}
+
+\CommentTok{NB. object nouns !(*)=. SCR SUI DOC DMP BAK}
+
+\KeywordTok{select.} \DataTypeTok{y}
+  \KeywordTok{case.} \NormalTok{WORD}\FunctionTok{;}\NormalTok{GROUP }\KeywordTok{do.} \NormalTok{SCR}
+  \KeywordTok{case.} \NormalTok{TEST}\FunctionTok{;}\NormalTok{SUITE }\KeywordTok{do.} \NormalTok{SUI}
+  \KeywordTok{case.} \NormalTok{DOCUMENT   }\KeywordTok{do.} \NormalTok{DOC}
+  \KeywordTok{case.} \NormalTok{DEFAULT    }\KeywordTok{do.} \NormalTok{DMP}
+  \KeywordTok{case.do.} \NormalTok{BAK}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{dncn}\AlertTok{=:}\index{dncn@\texttt{dncn}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*dncn v-- returns  directory  component noun names from object}
+\CommentTok{NB. codes.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  dncn ilObject}
+
+\RegionMarkerTok{(}\NormalTok{OBJECTNC }\FunctionTok{i.} \DataTypeTok{y}\RegionMarkerTok{)}\FunctionTok{\{}\NormalTok{DIRCN}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{dnix}\AlertTok{=:}\index{dnix@\texttt{dnix}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*dnix  v--  returns directory index  noun  names  from  object}
+\CommentTok{NB. codes.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  dnix ilObject}
+
+\RegionMarkerTok{(}\NormalTok{OBJECTNC }\FunctionTok{i.} \DataTypeTok{y}\RegionMarkerTok{)}\FunctionTok{\{}\NormalTok{DIRIX}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{dnnc}\AlertTok{=:}\index{dnnc@\texttt{dnnc}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*dnnc v-- returns directory name  class noun names from object}
+\CommentTok{NB. codes.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  dnnc ilObject}
+
+\RegionMarkerTok{((}\NormalTok{WORD}\FunctionTok{,}\NormalTok{MACRO}\RegionMarkerTok{)} \FunctionTok{i.} \DataTypeTok{y}\RegionMarkerTok{)}\FunctionTok{\{}\NormalTok{DIRNC}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{dnnm}\AlertTok{=:}\index{dnnm@\texttt{dnnm}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*dnnm v-- returns visible dictionary object names.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  dnnm ilObject}
+
+\RegionMarkerTok{(}\NormalTok{OBJECTNC }\FunctionTok{i.} \DataTypeTok{y}\RegionMarkerTok{)}\FunctionTok{\{}\NormalTok{DIRVNS}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{dnrn}\AlertTok{=:}\index{dnrn@\texttt{dnrn}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*dnrn v-- returns  directory  reference noun names from object}
+\CommentTok{NB. codes.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  dnrn iaObject}
+\CommentTok{NB. dyad:  uuIgnore dnrn iaObject}
+
+\RegionMarkerTok{((}\NormalTok{WORD}\FunctionTok{,}\NormalTok{TEST}\RegionMarkerTok{)} \FunctionTok{i.} \DataTypeTok{y}\RegionMarkerTok{)}\FunctionTok{\{}\NormalTok{REFIX  }\CommentTok{NB. name list name}
+\OtherTok{:}
+\RegionMarkerTok{((}\NormalTok{WORD}\FunctionTok{,}\NormalTok{TEST}\RegionMarkerTok{)} \FunctionTok{i.} \DataTypeTok{y}\RegionMarkerTok{)}\FunctionTok{\{}\NormalTok{REFCN  }\CommentTok{NB. component list name}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{dropall}\AlertTok{=:}\index{dropall@\texttt{dropall}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*dropall v-- erases all directory,  inverted  data,  reference}
+\CommentTok{NB. nouns}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  dropall uuIgnore}
+
+\NormalTok{erase DIRNC}\FunctionTok{,}\NormalTok{DIRIX}\FunctionTok{,}\NormalTok{DIRCN}\FunctionTok{,}\NormalTok{DIRTS}\FunctionTok{,}\NormalTok{REFIX}\FunctionTok{,}\NormalTok{REFCN}\FunctionTok{,}\NormalTok{REFTS}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{dropbakdir}\AlertTok{=:}\index{dropbakdir@\texttt{dropbakdir}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*dropbakdir  v--  erases  backup  directory  nouns  loaded  by}
+\CommentTok{NB. (loadbakdir).}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  dropdir uuIgnore}
+
+\NormalTok{erase }\RegionMarkerTok{(}\FunctionTok{<}\NormalTok{BAKPFX}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \NormalTok{DIRIX}\FunctionTok{,}\NormalTok{DIRCN}\FunctionTok{,}\NormalTok{DIRTS}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{dropdir}\AlertTok{=:}\index{dropdir@\texttt{dropdir}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*dropdir v--  erases directory nouns  loaded by  (loaddir) and}
+\CommentTok{NB. (loadstamps)}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  dropdir uuIgnore}
+
+\NormalTok{erase DIRIX}\FunctionTok{,}\NormalTok{DIRCN}\FunctionTok{,}\NormalTok{DIRTS}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{dropinv}\AlertTok{=:}\index{dropinv@\texttt{dropinv}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*dropinv v-- erases inverted data nouns.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  dropinv uuIgnore}
+
+\NormalTok{erase DIRNC}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{dropnc}\AlertTok{=:}\index{dropnc@\texttt{dropnc}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*dropnc v-- erases directory name class nouns}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  dropnc ilObject}
+
+\NormalTok{erase }\RegionMarkerTok{((}\NormalTok{WORD}\FunctionTok{,}\NormalTok{MACRO}\RegionMarkerTok{)} \FunctionTok{i.} \DataTypeTok{y}\RegionMarkerTok{)}\FunctionTok{\{}\NormalTok{DIRNC}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{dropref}\AlertTok{=:}\index{dropref@\texttt{dropref}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*dropref v-- erases reference data nouns.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  dropref uuIgnore}
+
+\NormalTok{erase REFIX}\FunctionTok{,}\NormalTok{REFCN}\FunctionTok{,}\NormalTok{REFTS}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. extract drive and path from qualified file names}
+\NormalTok{justdrvpath}\AlertTok{=:}\index{justdrvpath@\texttt{justdrvpath}}\FunctionTok{[:} \FunctionTok{\}:} \FunctionTok{]} \FunctionTok{#}\OtherTok{~} \FunctionTok{[:} \FunctionTok{+.}\OtherTok{/\textbackslash{}.} \StringTok{'\textbackslash{}'}\OtherTok{&}\FunctionTok{=}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{libstatus}\AlertTok{=:}\index{libstatus@\texttt{libstatus}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*libstatus v-- changes dictionary library status.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  bclObj libstatus pa}
+\CommentTok{NB.}
+\CommentTok{NB.   libstatus__DL 1  NB. library on}
+\CommentTok{NB.   libstatus__DL 0  NB. library off}
+
+\CommentTok{NB. object nouns !(*)=. WF NPPFX DNAME DIDNUM}
+\KeywordTok{if.} \NormalTok{NPPFX }\KeywordTok{do.} \RegionMarkerTok{(}\NormalTok{jderr ERR0}\DecValTok{98}\RegionMarkerTok{)}\FunctionTok{,}\NormalTok{DNAME}\FunctionTok{;}\NormalTok{DIDNUM }\KeywordTok{return.} \KeywordTok{end.}
+
+\KeywordTok{if.} \NormalTok{badjr dpt}\CharTok{=.} \NormalTok{jread WF}\FunctionTok{;}\NormalTok{CNPARMS  }\KeywordTok{do.} \NormalTok{jderr ERR0}\DecValTok{88} \KeywordTok{return.} \KeywordTok{end.}
+
+\CommentTok{NB. library names marked with * prefix HARDCODE}
+\CommentTok{NB. The * prefix is an illegal dictionary name character}
+\NormalTok{name}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{,>\{.}\NormalTok{dpt}\CharTok{=.} \FunctionTok{>}\NormalTok{dpt}\RegionMarkerTok{)} \FunctionTok{-.} \StringTok{'*'}
+\NormalTok{dpt}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{<}\RegionMarkerTok{(}\DataTypeTok{y}\FunctionTok{\{.}\StringTok{'*'}\RegionMarkerTok{)}\FunctionTok{,}\NormalTok{name}\RegionMarkerTok{)} \RegionMarkerTok{(}\NormalTok{0}\RegionMarkerTok{)}\OtherTok{\}}\NormalTok{dpt}
+
+\KeywordTok{if.} \NormalTok{badreps }\RegionMarkerTok{(}\FunctionTok{<}\NormalTok{dpt}\RegionMarkerTok{)} \NormalTok{jreplace WF}\FunctionTok{;}\NormalTok{CNPARMS }\KeywordTok{do.} \NormalTok{jderr ERR0}\DecValTok{17} \KeywordTok{else.} \NormalTok{OK }\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{loadbakdir}\AlertTok{=:}\index{loadbakdir@\texttt{loadbakdir}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*loadbakdir v-- loads complete requested backup directory (y).}
+\CommentTok{NB.}
+\CommentTok{NB. result is 0 for success and 1 for failure.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad: iaBn loadbakdir iaObject}
+\CommentTok{NB.}
+\CommentTok{NB.   NB. word directory from backup 25}
+\CommentTok{NB.   25 loadbackdir WORD}
+
+\CommentTok{NB. drop backup directory if backup has changed !(*)=. BAKNUM}
+\KeywordTok{if.} \NormalTok{BAKNUM}\FunctionTok{~:}\DataTypeTok{x} \KeywordTok{do.} \NormalTok{dropbakdir 0 }\KeywordTok{end.}
+
+\KeywordTok{if.} \NormalTok{wex ix}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{<}\NormalTok{BAKPFX}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \NormalTok{dnix }\DataTypeTok{y} \KeywordTok{do.} \NormalTok{0  }\CommentTok{NB. backup directory loaded}
+\KeywordTok{else.}
+  \CommentTok{NB. depends on correspondence between (JDFILES) & object codes !(*)=. BAK}
+  \NormalTok{fp}\CharTok{=.} \NormalTok{BAK}\FunctionTok{,}\RegionMarkerTok{(}\FunctionTok{":}\DataTypeTok{x}\RegionMarkerTok{)}\FunctionTok{,;}\DataTypeTok{y}\FunctionTok{\{}\NormalTok{JDFILES  }\CommentTok{NB. path file name}
+  \KeywordTok{if.} \NormalTok{badjr dat}\CharTok{=.} \NormalTok{jread fp}\FunctionTok{;}\NormalTok{CNDIR }\KeywordTok{do.}
+    \NormalTok{1  }\CommentTok{NB. cannot load}
+  \KeywordTok{else.}
+    \CommentTok{NB. HARDCODE: requires two letter TS CN IX suffixes}
+    \NormalTok{dn}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{<}\NormalTok{_}\DecValTok{2}\FunctionTok{\}.>}\NormalTok{ix}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \NormalTok{DTSIXCN}
+    \RegionMarkerTok{(}\NormalTok{dn}\RegionMarkerTok{)}\AlertTok{=:}\index{01indirect@\texttt{(...)=:}} \NormalTok{dat}
+    \CommentTok{NB. reset backup number}
+    \NormalTok{BAKNUM}\AlertTok{=:}\index{BAKNUM@\texttt{BAKNUM}} \DataTypeTok{x}
+    \CommentTok{NB. test existence of alleged directory nouns}
+    \FunctionTok{-.} \FunctionTok{*.}\OtherTok{/} \NormalTok{wex dn}
+  \KeywordTok{end.}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{loaddir}\AlertTok{=:}\index{loaddir@\texttt{loaddir}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*loaddir  v-- loads  the  complete  requested  directory  (y).}
+\CommentTok{NB.}
+\CommentTok{NB. Result is 0 for success and 1 for failure.}
+\CommentTok{NB.}
+\CommentTok{NB. monad: loaddir iaObject}
+\CommentTok{NB.}
+\CommentTok{NB.   loaddir WORD  NB. code specifies directory}
+
+\KeywordTok{if.} \NormalTok{wex ix}\CharTok{=.} \NormalTok{dnix }\DataTypeTok{y} \KeywordTok{do.} \NormalTok{0   }\CommentTok{NB. directory loaded}
+\KeywordTok{else.}
+  \NormalTok{fp}\CharTok{=.} \FunctionTok{".} \RegionMarkerTok{(}\FunctionTok{\{.}\NormalTok{ix}\CharTok{=.} \FunctionTok{>}\NormalTok{ix}\RegionMarkerTok{)}\FunctionTok{,}\StringTok{'F'}  \CommentTok{NB. path file name}
+  \KeywordTok{if.} \NormalTok{badjr dat}\CharTok{=.} \NormalTok{jread fp}\FunctionTok{;}\NormalTok{CNDIR }\KeywordTok{do.}
+    \NormalTok{1  }\CommentTok{NB. cannot load}
+  \KeywordTok{else.}
+    \CommentTok{NB. HARDCODE: requires two letter TS CN IX suffixes}
+    \NormalTok{dn}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{<}\NormalTok{_}\DecValTok{2}\FunctionTok{\}.}\NormalTok{ix}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \NormalTok{DTSIXCN}
+    \RegionMarkerTok{(}\NormalTok{dn}\RegionMarkerTok{)}\AlertTok{=:}\index{01indirect@\texttt{(...)=:}} \NormalTok{dat}
+    \CommentTok{NB. test existence of alleged directory nouns}
+    \FunctionTok{-.} \FunctionTok{*.}\OtherTok{/} \NormalTok{wex dn}
+  \KeywordTok{end.}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{loadnc}\AlertTok{=:}\index{loadnc@\texttt{loadnc}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*loadnc v--  load name class for  (y) Result is 0 for success}
+\CommentTok{NB. and 1 for failure. Currently only words and  macros have name}
+\CommentTok{NB. or type class.}
+\CommentTok{NB.}
+\CommentTok{NB. monad: loadnc iaObject}
+\CommentTok{NB.}
+\CommentTok{NB.   loadnc WORD}
+
+\KeywordTok{if.} \NormalTok{wex dn}\CharTok{=.} \NormalTok{dnnc }\DataTypeTok{y} \KeywordTok{do.} \NormalTok{0  }\CommentTok{NB. class/type loaded}
+\KeywordTok{else.}
+  \NormalTok{fp}\CharTok{=.} \FunctionTok{".} \RegionMarkerTok{(}\FunctionTok{\{.}\NormalTok{dn}\CharTok{=.} \FunctionTok{>}\NormalTok{dn}\RegionMarkerTok{)}\FunctionTok{,}\StringTok{'F'}  \CommentTok{NB. path file name}
+  \KeywordTok{if.} \NormalTok{badjr dat}\CharTok{=.} \NormalTok{jread fp}\FunctionTok{;}\NormalTok{CNCLASS }\KeywordTok{do.}
+    \NormalTok{1  }\CommentTok{NB. cannot load}
+  \KeywordTok{else.}
+    \RegionMarkerTok{(}\NormalTok{dn}\RegionMarkerTok{)}\AlertTok{=:}\index{01indirect@\texttt{(...)=:}} \FunctionTok{>}\NormalTok{dat}
+    \FunctionTok{-.} \NormalTok{wex }\FunctionTok{<}\NormalTok{dn}
+  \KeywordTok{end.}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{loadref}\AlertTok{=:}\index{loadref@\texttt{loadref}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*loadref v--  loads word and  test  reference lists from  uses}
+\CommentTok{NB. file.}
+\CommentTok{NB.}
+\CommentTok{NB. Result is 0 for  success and 1  for failure.  Test references}
+\CommentTok{NB. are not currently stored but the code providing this facility}
+\CommentTok{NB. is  left  in  this  verb  and  (saveref)  to  allow for  easy}
+\CommentTok{NB. expansion of reference types in the future.}
+\CommentTok{NB.}
+\CommentTok{NB. monad: loadref iaObject}
+\CommentTok{NB.}
+\CommentTok{NB.   loadref WORD}
+
+\KeywordTok{if.} \NormalTok{wex dn}\CharTok{=.} \NormalTok{dnrn }\DataTypeTok{y} \KeywordTok{do.} \NormalTok{0  }\CommentTok{NB. references loaded}
+\KeywordTok{else.}
+  \NormalTok{cn}\CharTok{=.} \RegionMarkerTok{((}\NormalTok{WORD}\FunctionTok{,}\NormalTok{TEST}\RegionMarkerTok{)} \FunctionTok{i.} \DataTypeTok{y}\RegionMarkerTok{)}\FunctionTok{\{}\NormalTok{CNREF}
+  \KeywordTok{if.} \NormalTok{badjr dat}\CharTok{=.} \NormalTok{jread UF}\FunctionTok{;}\NormalTok{CNMARK}\FunctionTok{,}\NormalTok{cn }\KeywordTok{do.} \CommentTok{NB. object noun !(*)=. UF}
+    \NormalTok{1  }\CommentTok{NB. cannot load}
+  \KeywordTok{else.}
+    \NormalTok{dn}\CharTok{=.} \FunctionTok{>}\NormalTok{dn}
+    \NormalTok{dn}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{<}\NormalTok{_}\DecValTok{2}\FunctionTok{\}.}\NormalTok{dn}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \NormalTok{DTSIXCN}
+    \RegionMarkerTok{(}\NormalTok{dn}\RegionMarkerTok{)}\AlertTok{=:}\index{01indirect@\texttt{(...)=:}} \NormalTok{dat}
+    \FunctionTok{-.} \FunctionTok{*.}\OtherTok{/} \NormalTok{wex dn}
+  \KeywordTok{end.}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{loadstamps}\AlertTok{=:}\index{loadstamps@\texttt{loadstamps}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*loadstamps v-- loads directory time stamps (y).}
+\CommentTok{NB.}
+\CommentTok{NB. Result is 0 for success and 1 for failure.}
+\CommentTok{NB.}
+\CommentTok{NB. monad: loadstamps uuIgnore}
+
+\NormalTok{ts}\CharTok{=.} \NormalTok{DIRTS}
+\KeywordTok{if.} \FunctionTok{*.}\OtherTok{/}\NormalTok{b}\CharTok{=.} \NormalTok{wex ts }\KeywordTok{do.} \NormalTok{0  }\CommentTok{NB. stamps loaded}
+\KeywordTok{else.}
+  \NormalTok{ts}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{-.}\NormalTok{b}\RegionMarkerTok{)}\FunctionTok{#}\NormalTok{ts          }\CommentTok{NB. load missing only}
+  \KeywordTok{for_st.} \NormalTok{ts }\KeywordTok{do.}
+    \NormalTok{fp}\CharTok{=.} \FunctionTok{".} \RegionMarkerTok{(}\FunctionTok{\{.}\NormalTok{st}\CharTok{=.} \FunctionTok{>}\NormalTok{st}\RegionMarkerTok{)}\FunctionTok{,}\StringTok{'F'}   \CommentTok{NB. path file name}
+    \KeywordTok{if.} \NormalTok{badjr dat}\CharTok{=.} \NormalTok{jread fp}\FunctionTok{;}\NormalTok{CNMARK }\KeywordTok{do.}
+      \NormalTok{1 }\KeywordTok{return.}
+    \KeywordTok{else.}
+      \RegionMarkerTok{(}\NormalTok{st}\RegionMarkerTok{)}\AlertTok{=:}\index{01indirect@\texttt{(...)=:}} \FunctionTok{>}\NormalTok{dat}
+    \KeywordTok{end.}
+  \KeywordTok{end.}
+  \FunctionTok{-.} \FunctionTok{*.}\OtherTok{/} \NormalTok{wex ts  }\CommentTok{NB. check loaded stamps}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. maximum backup prefix number - null when no numeric prefixes}
+\NormalTok{maxback}\AlertTok{=:}\index{maxback@\texttt{maxback}}\FunctionTok{[:} \FunctionTok{>.}\OtherTok{/} \FunctionTok{[:} \FunctionTok{".}\OtherTok{&}\FunctionTok{>} \RegionMarkerTok{(}\FunctionTok{]} \FunctionTok{*.}\OtherTok{/\textbackslash{}@}\FunctionTok{e.}\OtherTok{&.}\FunctionTok{>} \RegionMarkerTok{(}\FunctionTok{<}\StringTok{'0123456789'}\RegionMarkerTok{)}\OtherTok{"}\NormalTok{_}\RegionMarkerTok{)} \FunctionTok{#}\OtherTok{&.}\FunctionTok{>} \FunctionTok{]}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. Win32 procedure that moves/renames files}
+\NormalTok{movefile}\AlertTok{=:}\index{movefile@\texttt{movefile}}\StringTok{'kernel32 MoveFileA i *c *c'}\OtherTok{&}\NormalTok{cd}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. bit mask of blcl (y) items with numeric prefix (x)}
+\NormalTok{nummask}\AlertTok{=:}\index{nummask@\texttt{nummask}}\RegionMarkerTok{(}\FunctionTok{[:} \FunctionTok{":} \FunctionTok{[}\RegionMarkerTok{)} \FunctionTok{-:}\OtherTok{"}\NormalTok{1 }\RegionMarkerTok{(}\FunctionTok{[:} \FunctionTok{#} \FunctionTok{[:} \FunctionTok{":} \FunctionTok{[}\RegionMarkerTok{)} \FunctionTok{\{.}\OtherTok{&}\FunctionTok{>} \FunctionTok{]}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{packdict}\AlertTok{=:}\index{packdict@\texttt{packdict}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*packdict v-- pack the current dictionary.}
+\CommentTok{NB.}
+\CommentTok{NB. At  the  end  of  a  successful pack  operation  the  current}
+\CommentTok{NB. directory object is refreshed and subsequent  operations  are}
+\CommentTok{NB. performed on the packed files.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  packdict clName}
+
+\CommentTok{NB. object nouns !(*)=. DNAME UF WF}
+
+\KeywordTok{if.} \RegionMarkerTok{(}\FunctionTok{,}\NormalTok{DNAME}\RegionMarkerTok{)} \FunctionTok{-:} \FunctionTok{,}\DataTypeTok{y} \KeywordTok{do.}
+  \CommentTok{NB. clear current object}
+  \NormalTok{dropall 0}
+  \NormalTok{path}\CharTok{=.} \NormalTok{SYS   }\CommentTok{NB. object noun !(*)=. SYS}
+
+  \CommentTok{NB. backup number}
+  \NormalTok{pfn}\CharTok{=.}\NormalTok{backnum 0}
+
+  \CommentTok{NB. copy object files to tmp files}
+  \KeywordTok{for_obj.} \NormalTok{OBJECTNC }\KeywordTok{do.}
+    \CommentTok{NB. code relies on the fact that (OBJECTNC),}
+    \CommentTok{NB. (JDFILES) and (DFILES) have corresponding items}
+    \NormalTok{tfile}\CharTok{=.} \NormalTok{path}\FunctionTok{,}\NormalTok{TEMPFX}\FunctionTok{,>}\NormalTok{obj_index}\FunctionTok{\{}\NormalTok{JDFILES}
+    \NormalTok{datfile}\CharTok{=.} \FunctionTok{".>}\NormalTok{obj_index}\FunctionTok{\{}\NormalTok{DFILES}
+    \KeywordTok{if.} \NormalTok{badrc msg}\CharTok{=.} \NormalTok{obj tmpdatfile tfile}\FunctionTok{;}\NormalTok{datfile }\KeywordTok{do.} \NormalTok{msg }\KeywordTok{return.} \KeywordTok{end.}
+  \KeywordTok{end.}
+
+  \CommentTok{NB. copy reference file to tmp file HARDCODE file name index}
+  \NormalTok{tfile}\CharTok{=.} \NormalTok{path}\FunctionTok{,}\NormalTok{TEMPFX}\FunctionTok{,>}\NormalTok{5}\FunctionTok{\{}\NormalTok{JDFILES}
+  \KeywordTok{if.} \NormalTok{badrc msg}\CharTok{=.} \NormalTok{tmpusesfile tfile}\FunctionTok{;}\NormalTok{UF }\KeywordTok{do.} \NormalTok{msg }\KeywordTok{return.} \KeywordTok{end.}
+
+  \CommentTok{NB. move old data files to backup directory and rename}
+  \CommentTok{NB. backup prefix number HARDCODE backup directory index}
+  \NormalTok{bckpath}\CharTok{=.} \NormalTok{PATHDEL }\FunctionTok{,}\OtherTok{~} \NormalTok{path}\FunctionTok{,>}\NormalTok{5}\FunctionTok{\{}\NormalTok{JDSDIRS}
+  \NormalTok{dcfiles}\CharTok{=.} \NormalTok{JDFILES }\FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \FunctionTok{<}\NormalTok{IJF}
+  \NormalTok{source}\CharTok{=.}  \RegionMarkerTok{(}\FunctionTok{<}\NormalTok{path}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \NormalTok{dcfiles}
+  \NormalTok{target}\CharTok{=.}  \RegionMarkerTok{(}\FunctionTok{<}\NormalTok{bckpath}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \RegionMarkerTok{(}\FunctionTok{<":}\NormalTok{pfn}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \NormalTok{dcfiles}
+  \KeywordTok{if.} \NormalTok{badrc msg}\CharTok{=.}\NormalTok{source renamefiles target }\KeywordTok{do.} \NormalTok{msg }\KeywordTok{return.} \KeywordTok{end.}
+
+  \CommentTok{NB. rename tmp files to standard file names}
+  \NormalTok{target}\CharTok{=.} \NormalTok{source}
+  \NormalTok{source}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{<}\NormalTok{path}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \RegionMarkerTok{(}\FunctionTok{<}\NormalTok{TEMPFX}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \NormalTok{dcfiles}
+  \KeywordTok{if.} \NormalTok{badrc msg}\CharTok{=.}\NormalTok{source renamefiles target }\KeywordTok{do.} \NormalTok{msg }\KeywordTok{return.} \KeywordTok{end.}
+
+  \CommentTok{NB. insure new directory is reloaded when needed}
+  \NormalTok{dropall 0}
+
+  \NormalTok{ok OK2}\DecValTok{00}\FunctionTok{;}\NormalTok{DNAME}\FunctionTok{;}\NormalTok{pfn  }\CommentTok{NB. return dictionary & pack count}
+\KeywordTok{else.}
+  \NormalTok{jderr ERR2}\DecValTok{02}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{packspace}\AlertTok{=:}\index{packspace@\texttt{packspace}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*packspace v-- determines if there is sufficient free space on}
+\CommentTok{NB. the backup volume.}
+\CommentTok{NB.}
+\CommentTok{NB. The  test  is  conservative  in  that  you  must  have enough}
+\CommentTok{NB. freespace to  copy the  current  unpacked dictionary.  Packed}
+\CommentTok{NB. dictionaries  are  always  smaller  so this  leaves a  safety}
+\CommentTok{NB. margin.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  packspace uuIgnore}
+\CommentTok{NB.}
+\CommentTok{NB.   packspace__DL 0}
+
+\CommentTok{NB. object nouns !(*)=. SYS BAK}
+\CommentTok{NB. size of current unpacked dictionary}
+\NormalTok{bytes}\CharTok{=.} \FunctionTok{+}\OtherTok{/} \FunctionTok{;} \NormalTok{2 }\FunctionTok{\{}\OtherTok{"}\NormalTok{1 }\FunctionTok{]} \NormalTok{1}\OtherTok{!:}\NormalTok{0 }\FunctionTok{<}\NormalTok{SYS}\FunctionTok{,}\StringTok{'*'}\FunctionTok{,}\NormalTok{IJF}
+
+\CommentTok{NB. errmsg: not enough free disk space for operation}
+\KeywordTok{if.} \NormalTok{bytes}\FunctionTok{<}\NormalTok{volfree BAK }\KeywordTok{do.} \NormalTok{OK }\KeywordTok{else.} \NormalTok{jderr ERR2}\DecValTok{04} \KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{renamefiles}\AlertTok{=:}\index{renamefiles@\texttt{renamefiles}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*renamefiles v-- moves and renames OS files.}
+\CommentTok{NB.}
+\CommentTok{NB. NOTE: tested on  Win32  and Linux 32 bit systems  may work on}
+\CommentTok{NB. others.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  blclSource renamefiles blclTarget}
+
+\KeywordTok{if.} \NormalTok{IFWIN }\KeywordTok{do.}
+  \NormalTok{rc}\CharTok{=.}\NormalTok{movefile}\OtherTok{"}\NormalTok{1 }\DataTypeTok{x} \FunctionTok{,.} \DataTypeTok{y}
+  \CommentTok{NB. errmsg: unable to rename files}
+  \KeywordTok{if.} \FunctionTok{*.}\OtherTok{/}\NormalTok{0 }\FunctionTok{<;} \FunctionTok{\{.}\OtherTok{"}\NormalTok{1 rc }\KeywordTok{do.} \NormalTok{OK }\KeywordTok{else.} \RegionMarkerTok{(}\NormalTok{jderr ERR2}\DecValTok{05}\RegionMarkerTok{)}\FunctionTok{,}\RegionMarkerTok{(}\NormalTok{1}\DecValTok{5}\OtherTok{!:}\NormalTok{1}\DecValTok{1}\RegionMarkerTok{)}\StringTok{''} \KeywordTok{end.}
+\KeywordTok{else.}
+  \CommentTok{NB. move current dictionary files to backup location}
+  \CommentTok{NB. NOTE: assumes path file names that do not wreak linux (mv) command}
+  \KeywordTok{if.} \NormalTok{isempty rc}\CharTok{=.} \NormalTok{host}\OtherTok{"}\NormalTok{1  }\FunctionTok{>} \RegionMarkerTok{(}\FunctionTok{<}\StringTok{'mv '}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \DataTypeTok{x} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \StringTok{' '} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \DataTypeTok{y} \KeywordTok{do.} \NormalTok{OK}
+  \KeywordTok{else.}
+    \CommentTok{NB. result not empty probably some OS error}
+    \CommentTok{NB. errmsg:  unable to copy/move/rename files - shell messages ->}
+    \RegionMarkerTok{(}\NormalTok{jderr ERR2}\DecValTok{10}\RegionMarkerTok{)}\FunctionTok{,<,}\NormalTok{rc}
+  \KeywordTok{end.}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{restdict}\AlertTok{=:}\index{restdict@\texttt{restdict}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*restdict v-- restore latest backup created by (packd)}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  blclFiles restdict clName}
+
+\CommentTok{NB. object nouns !(*)=. DIDNUM DNAME SYS}
+
+\KeywordTok{if.} \RegionMarkerTok{(}\FunctionTok{,}\NormalTok{DNAME}\RegionMarkerTok{)} \FunctionTok{-:} \FunctionTok{,}\DataTypeTok{y} \KeywordTok{do.}
+
+  \CommentTok{NB. clear current object directory - frees space}
+  \NormalTok{dropall 0}
+
+  \CommentTok{NB. NIMP restore comes from the same volume as the}
+  \CommentTok{NB. dictionary.  This code depends on the fact we}
+  \CommentTok{NB. are dealing with a standard dictionary directory}
+  \CommentTok{NB. that is contained on ONE volume.}
+  \NormalTok{path}\CharTok{=.} \RegionMarkerTok{((}\NormalTok{justpath}\OtherTok{`}\NormalTok{justdrvpath}\OtherTok{@.}\NormalTok{IFWIN}\RegionMarkerTok{)} \NormalTok{SYS}\RegionMarkerTok{)}\FunctionTok{,}\NormalTok{PATHDEL}
+
+  \NormalTok{dcfiles}\CharTok{=.} \NormalTok{JDFILES }\FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \FunctionTok{<}\NormalTok{IJF            }\CommentTok{NB. dictionary file names with extension}
+  \NormalTok{bckpath}\CharTok{=.} \NormalTok{PATHDEL }\FunctionTok{,}\OtherTok{~} \NormalTok{path}\FunctionTok{,>}\NormalTok{5}\FunctionTok{\{}\NormalTok{JDSDIRS   }\CommentTok{NB. HARDCODE 5 backup directory index}
+  \NormalTok{target}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{<}\NormalTok{path}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \NormalTok{dcfiles          }\CommentTok{NB. current dictionary files}
+  \NormalTok{source}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{<}\NormalTok{bckpath}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \RegionMarkerTok{(}\FunctionTok{<":>}\DataTypeTok{x}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \NormalTok{dcfiles  }\CommentTok{NB. lastest backup files}
+
+  \CommentTok{NB. test backup files errmsg: missing backup files - restore aborted}
+  \KeywordTok{if.} \FunctionTok{-.}\NormalTok{fex source }\KeywordTok{do.} \NormalTok{jderr ERR2}\DecValTok{07} \KeywordTok{return.} \KeywordTok{end.}
+
+  \CommentTok{NB. Check DIDNUM of backup dictionary against current object}
+  \CommentTok{NB. they must match to maintain master/dictionary relationships.}
+  \CommentTok{NB. WARNING uses fact that the WORD file is first ON (source) list}
+  \KeywordTok{if.} \NormalTok{badjr dat}\CharTok{=.} \NormalTok{jread }\RegionMarkerTok{(}\FunctionTok{>\{.}\NormalTok{source}\RegionMarkerTok{)}\FunctionTok{;}\NormalTok{CNPARMS }\KeywordTok{do.}
+      \NormalTok{jderr ERR0}\DecValTok{88} \KeywordTok{return.} \CommentTok{NB. errmsg: jfile read failure}
+  \KeywordTok{end.}
+
+  \CommentTok{NB. read alleged backup DIDNUM}
+  \NormalTok{dn}\CharTok{=.} \RegionMarkerTok{((}\NormalTok{1}\OtherTok{&}\FunctionTok{\{::}\OtherTok{@}\FunctionTok{>}\RegionMarkerTok{)} \OtherTok{::} \FunctionTok{0:}\RegionMarkerTok{)} \NormalTok{dat}
+  \KeywordTok{if.} \FunctionTok{-.} \NormalTok{dn }\FunctionTok{-:} \NormalTok{DIDNUM }\KeywordTok{do.} \NormalTok{jderr ERR2}\DecValTok{09} \KeywordTok{return.} \KeywordTok{end.}
+
+  \CommentTok{NB. erase current dictionary files and copy last backup}
+  \RegionMarkerTok{(}\NormalTok{1}\OtherTok{!:}\NormalTok{5}\DecValTok{5}\RegionMarkerTok{)} \NormalTok{target}
+  \KeywordTok{if.} \NormalTok{badrc msg}\CharTok{=.}\NormalTok{source copyfiles target }\KeywordTok{do.} \NormalTok{msg }\KeywordTok{return.} \KeywordTok{end.}
+
+  \CommentTok{NB. increment pack count to prevent clash with backup}
+  \CommentTok{NB. this causes gaps in the backup count but insures we never clash}
+  \NormalTok{pfn}\CharTok{=.}\NormalTok{backnum 0}
+
+  \CommentTok{NB. insure new directory is reloaded when needed}
+  \NormalTok{dropall 0}
+
+  \NormalTok{ok OK2}\DecValTok{01}\FunctionTok{;}\NormalTok{DNAME}\FunctionTok{;<:}\NormalTok{pfn  }\CommentTok{NB. name & pack count of restored dictionary}
+\KeywordTok{else.}
+  \NormalTok{jderr ERR2}\DecValTok{02}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{restspace}\AlertTok{=:}\index{restspace@\texttt{restspace}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*restspace v-- determines  if there is enough space to restore}
+\CommentTok{NB. a dictionary.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  restspace uuIgnore}
+
+\CommentTok{NB. object nouns !(*)=. BAK SYS}
+
+\CommentTok{NB. all dictionary backup files}
+\KeywordTok{if.} \FunctionTok{#}\NormalTok{back}\CharTok{=.} \NormalTok{1}\OtherTok{!:}\NormalTok{0 }\FunctionTok{<}\NormalTok{BAK}\FunctionTok{,}\StringTok{'*'}\FunctionTok{,}\NormalTok{IJF }\KeywordTok{do.}
+
+  \CommentTok{NB. latest back up number}
+  \NormalTok{maxb}\CharTok{=.} \NormalTok{maxback }\FunctionTok{\{.}\OtherTok{"}\NormalTok{1 back}
+
+  \CommentTok{NB. select files in latest backup}
+  \NormalTok{back}\CharTok{=.} \NormalTok{back }\FunctionTok{#}\OtherTok{~} \NormalTok{maxb nummask }\FunctionTok{\{.}\OtherTok{"}\NormalTok{1 back}
+
+  \CommentTok{NB. bytes required to store lastest backup}
+  \NormalTok{bytes}\CharTok{=.} \FunctionTok{+}\OtherTok{/} \FunctionTok{;} \NormalTok{2 }\FunctionTok{\{}\OtherTok{"}\NormalTok{1 back}
+
+  \KeywordTok{if.} \NormalTok{bytes}\FunctionTok{<}\NormalTok{volfree SYS }\KeywordTok{do.}
+    \NormalTok{ok maxb       }\CommentTok{NB. return lastest backup number}
+  \KeywordTok{else.}
+    \NormalTok{jderr ERR2}\DecValTok{04}  \CommentTok{NB. errmsg: not enough free disk space for operation}
+  \KeywordTok{end.}
+\KeywordTok{else.}
+  \NormalTok{jderr ERR2}\DecValTok{06}    \CommentTok{NB. errmsg: no backups to restore}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{savedir}\AlertTok{=:}\index{savedir@\texttt{savedir}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*savedir  v--  saves  the  requested  directory  (x)  in  the}
+\CommentTok{NB. appropriate database file.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad: ilObjFp savedir clFile\textbar{}iaFp}
+\CommentTok{NB.}
+\CommentTok{NB.   0 23899923 savedir list;comp  NB. save WORD directory}
+
+\StringTok{'dir wp'}\CharTok{=.} \DataTypeTok{x}
+\DataTypeTok{y}\CharTok{=.} \NormalTok{0 }\FunctionTok{[} \StringTok{'list comp'}\CharTok{=.} \DataTypeTok{y}
+\NormalTok{dir}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{OBJECTNC }\FunctionTok{i.} \NormalTok{dir}\RegionMarkerTok{)} \FunctionTok{\{} \NormalTok{DIRNMS}
+\StringTok{'dts dix dcn'}\CharTok{=.} \NormalTok{dir }\FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \NormalTok{DTSIXCN}
+\NormalTok{cn}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{<}\NormalTok{list}\RegionMarkerTok{)} \NormalTok{jreplace wp }\FunctionTok{;} \NormalTok{CNLIST}
+\NormalTok{cn}\CharTok{=.} \NormalTok{cn}\FunctionTok{,} \NormalTok{comp jreplace wp }\FunctionTok{;} \NormalTok{CNCOMPS}
+\NormalTok{cn}\CharTok{=.} \NormalTok{cn}\FunctionTok{,} \RegionMarkerTok{(}\FunctionTok{<}\NormalTok{uv}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{#}\NormalTok{list}\RegionMarkerTok{)}\FunctionTok{;}\NormalTok{now }\StringTok{''}\RegionMarkerTok{)} \NormalTok{jreplace wp }\FunctionTok{;} \NormalTok{CNMARK}
+\KeywordTok{if.} \NormalTok{badreps cn }\KeywordTok{do.}
+
+  \CommentTok{NB. directory write error attempt to restore previous}
+  \NormalTok{cn}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{<".}\NormalTok{dix}\RegionMarkerTok{)} \NormalTok{jreplace wp }\FunctionTok{;} \NormalTok{CNLIST}
+  \NormalTok{cn}\CharTok{=.} \NormalTok{cn}\FunctionTok{,} \RegionMarkerTok{(}\FunctionTok{".}\NormalTok{dcn}\RegionMarkerTok{)} \NormalTok{jreplace wp }\FunctionTok{;} \NormalTok{CNCOMPS}
+  \NormalTok{cn}\CharTok{=.} \NormalTok{cn}\FunctionTok{,} \RegionMarkerTok{(}\FunctionTok{<".}\NormalTok{dts}\RegionMarkerTok{)} \NormalTok{jreplace wp }\FunctionTok{;} \NormalTok{CNMARK}
+  \KeywordTok{if.} \NormalTok{badreps cn }\KeywordTok{do.}
+    \NormalTok{jderr ERR2}\DecValTok{00}
+  \KeywordTok{else.}
+    \NormalTok{jderr ERR2}\DecValTok{01}
+  \KeywordTok{end.}
+
+\KeywordTok{else.}
+
+  \CommentTok{NB. update object directory}
+  \RegionMarkerTok{(}\NormalTok{dix}\RegionMarkerTok{)}\AlertTok{=:}\index{01indirect@\texttt{(...)=:}} \NormalTok{list}
+  \RegionMarkerTok{(}\NormalTok{dcn}\RegionMarkerTok{)}\AlertTok{=:}\index{01indirect@\texttt{(...)=:}} \NormalTok{comp}
+  \RegionMarkerTok{(}\NormalTok{dts}\RegionMarkerTok{)}\AlertTok{=:}\index{01indirect@\texttt{(...)=:}} \NormalTok{uv}
+  \NormalTok{OK}
+
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{saveref}\AlertTok{=:}\index{saveref@\texttt{saveref}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*saveref  v-- saves the requested reference  directory (x) in}
+\CommentTok{NB. the appropriate database file.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad: ilObjFp saveref (blcl ; il)}
+\CommentTok{NB.}
+\CommentTok{NB.   0 23899923 saveref list;comp  NB. save WORD reference directory}
+
+\StringTok{'ref fp'}\CharTok{=.} \DataTypeTok{x}
+\DataTypeTok{y}\CharTok{=.} \NormalTok{0 }\FunctionTok{[} \StringTok{'list comp'}\CharTok{=.} \DataTypeTok{y}
+\NormalTok{type}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{WORD}\FunctionTok{,}\NormalTok{TEST}\RegionMarkerTok{)} \FunctionTok{i.} \NormalTok{ref  }\CommentTok{NB. only words currently stored}
+\NormalTok{dir}\CharTok{=.} \NormalTok{type}\FunctionTok{\{}\NormalTok{DIRRFN}
+\NormalTok{cnref}\CharTok{=.} \NormalTok{type}\FunctionTok{\{}\NormalTok{CNREF}
+\StringTok{'dts dix dcn'}\CharTok{=.} \NormalTok{dir }\FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \NormalTok{DTSIXCN}
+\NormalTok{cn}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{<}\NormalTok{list}\RegionMarkerTok{)} \NormalTok{jreplace fp }\FunctionTok{;} \NormalTok{0}\FunctionTok{\{}\NormalTok{cnref}
+\NormalTok{cn}\CharTok{=.} \NormalTok{cn}\FunctionTok{,} \NormalTok{comp jreplace fp }\FunctionTok{;} \NormalTok{1}\FunctionTok{\{}\NormalTok{cnref}
+\NormalTok{cn}\CharTok{=.} \NormalTok{cn}\FunctionTok{,} \RegionMarkerTok{(}\FunctionTok{<}\NormalTok{uv}\CharTok{=.} \NormalTok{0}\FunctionTok{;}\NormalTok{now }\StringTok{''}\RegionMarkerTok{)} \NormalTok{jreplace fp }\FunctionTok{;} \NormalTok{CNMARK}
+\KeywordTok{if.} \NormalTok{badreps cn }\KeywordTok{do.}
+
+  \CommentTok{NB. directory write error attempt to restore previous}
+  \NormalTok{cn}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{<".}\NormalTok{dix}\RegionMarkerTok{)} \NormalTok{jreplace fp }\FunctionTok{;} \NormalTok{0}\FunctionTok{\{}\NormalTok{cnref}
+  \NormalTok{cn}\CharTok{=.} \NormalTok{cn}\FunctionTok{,} \RegionMarkerTok{(}\FunctionTok{".}\NormalTok{dcn}\RegionMarkerTok{)} \NormalTok{jreplace fp }\FunctionTok{;} \NormalTok{1}\FunctionTok{\{}\NormalTok{cnref}
+  \NormalTok{cn}\CharTok{=.} \NormalTok{cn}\FunctionTok{,} \RegionMarkerTok{(}\FunctionTok{<".}\NormalTok{dts}\RegionMarkerTok{)} \NormalTok{jreplace fp }\FunctionTok{;} \NormalTok{CNMARK}
+  \KeywordTok{if.} \NormalTok{badreps cn }\KeywordTok{do.}
+    \NormalTok{jderr ERR2}\DecValTok{00}
+  \KeywordTok{else.}
+    \NormalTok{jderr ERR2}\DecValTok{01}
+  \KeywordTok{end.}
+
+\KeywordTok{else.}
+
+  \CommentTok{NB. update object directory}
+  \RegionMarkerTok{(}\NormalTok{dix}\RegionMarkerTok{)}\AlertTok{=:}\index{01indirect@\texttt{(...)=:}} \NormalTok{list}
+  \RegionMarkerTok{(}\NormalTok{dcn}\RegionMarkerTok{)}\AlertTok{=:}\index{01indirect@\texttt{(...)=:}} \NormalTok{comp}
+  \RegionMarkerTok{(}\NormalTok{dts}\RegionMarkerTok{)}\AlertTok{=:}\index{01indirect@\texttt{(...)=:}} \NormalTok{uv}
+  \NormalTok{OK}
+
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{tmpdatfile}\AlertTok{=:}\index{tmpdatfile@\texttt{tmpdatfile}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*tmdatfile v-- copies  dictionary  object files  to  temporary}
+\CommentTok{NB. files.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  iaObject tmpdatfile (clTemp ; clDictionary)}
+
+\StringTok{'tfile datfile'}\CharTok{=.} \DataTypeTok{y}
+
+\CommentTok{NB. copy directory and inverted data region}
+\KeywordTok{if.} \NormalTok{badrc uv}\CharTok{=.} \NormalTok{copydirinv }\DataTypeTok{y} \KeywordTok{do.} \NormalTok{uv }\KeywordTok{return.} \KeywordTok{end.}
+
+\CommentTok{NB. copy data region in chunks no greater than (COPYFACTOR)}
+\CommentTok{NB. errmsg: unable to load directory}
+\KeywordTok{if.} \NormalTok{loaddir }\DataTypeTok{x} \KeywordTok{do.} \NormalTok{jderr ERR0}\DecValTok{54} \KeywordTok{return.} \KeywordTok{end.}
+\NormalTok{ix}\CharTok{=.}\FunctionTok{".>}\NormalTok{dnix }\DataTypeTok{x}
+\NormalTok{cn}\CharTok{=.}\FunctionTok{".>}\NormalTok{dncn }\DataTypeTok{x}
+
+\CommentTok{NB. errmsg: directory damaged}
+\KeywordTok{if.} \RegionMarkerTok{(}\FunctionTok{#}\NormalTok{ix}\RegionMarkerTok{)}\FunctionTok{~:#}\NormalTok{cn }\KeywordTok{do.} \NormalTok{jderr ERR0}\DecValTok{93} \KeywordTok{return.} \KeywordTok{end.}
+\CommentTok{NB. exit if no data to copy}
+\KeywordTok{if.} \NormalTok{0}\FunctionTok{=#}\NormalTok{ix      }\KeywordTok{do.} \NormalTok{OK }\KeywordTok{return.} \KeywordTok{end.}
+
+\NormalTok{ix}\CharTok{=.}\RegionMarkerTok{(}\FunctionTok{-}\NormalTok{COPYFACTOR}\RegionMarkerTok{)} \FunctionTok{<}\OtherTok{\textbackslash{}} \NormalTok{ix  }\CommentTok{NB. object noun !(*)=. COPYFACTOR}
+\NormalTok{cn}\CharTok{=.}\RegionMarkerTok{(}\FunctionTok{-}\NormalTok{COPYFACTOR}\RegionMarkerTok{)} \FunctionTok{<}\OtherTok{\textbackslash{}} \NormalTok{cn}
+\NormalTok{dropdir }\DataTypeTok{x}
+
+\CommentTok{NB. NIMP opening and closing files for now}
+\NormalTok{ncn}\CharTok{=.}\FunctionTok{i.}\NormalTok{0}
+\KeywordTok{for_reg.} \NormalTok{cn }\KeywordTok{do.}
+
+  \CommentTok{NB. data in object files are in pairs of components}
+  \NormalTok{uv}\CharTok{=.} \FunctionTok{,}\RegionMarkerTok{(}\FunctionTok{>}\NormalTok{reg}\RegionMarkerTok{)} \FunctionTok{,.} \FunctionTok{>:>}\NormalTok{reg}
+  \KeywordTok{if.} \NormalTok{badjr dat}\CharTok{=.} \NormalTok{jread datfile}\FunctionTok{;}\NormalTok{uv }\KeywordTok{do.} \NormalTok{jderr ERR0}\DecValTok{88} \KeywordTok{return.} \KeywordTok{end.}
+
+  \CommentTok{NB. test components against directory (NIMP handle errors later)}
+  \CommentTok{NB. errmsg: directory-data inconsistency}
+  \KeywordTok{if.} \RegionMarkerTok{(}\NormalTok{2}\FunctionTok{#>}\NormalTok{reg_index}\FunctionTok{\{}\NormalTok{ix}\RegionMarkerTok{)} \NormalTok{badcn dat }\KeywordTok{do.} \NormalTok{jderr ERR0}\DecValTok{55} \KeywordTok{return.} \KeywordTok{end.}
+  \KeywordTok{if.} \NormalTok{badappend uv}\CharTok{=.}\NormalTok{dat jappend tfile }\KeywordTok{do.} \NormalTok{jderr ERR0}\DecValTok{58} \KeywordTok{return.} \KeywordTok{end.}
+
+  \NormalTok{ncn}\CharTok{=.}\NormalTok{ncn}\FunctionTok{,}\NormalTok{fod uv  }\CommentTok{NB. new components}
+\KeywordTok{end.}
+
+\CommentTok{NB. update file component list}
+\CommentTok{NB. errmsg: jfile replace failure}
+\KeywordTok{if.} \NormalTok{badreps ncn jreplace tfile}\FunctionTok{;}\NormalTok{CNCOMPS }\KeywordTok{do.} \NormalTok{jderr ERR0}\DecValTok{56} \KeywordTok{else.} \NormalTok{OK }\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{tmpusesfile}\AlertTok{=:}\index{tmpusesfile@\texttt{tmpusesfile}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*tmpusesfiles  v-- copies  reference file.  This  file differs}
+\CommentTok{NB. from object data files and may change even more.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  tmpusesfile (clTemp ; clDictionary)}
+
+\StringTok{'tfile datfile'}\CharTok{=.} \DataTypeTok{y}
+
+\CommentTok{NB. copy directory and inverted data region}
+\KeywordTok{if.} \NormalTok{badrc uv}\CharTok{=.} \NormalTok{copydirinv }\DataTypeTok{y} \KeywordTok{do.} \NormalTok{uv }\KeywordTok{return.} \KeywordTok{end.}
+
+\CommentTok{NB. NIMP only word references are currently stored}
+\CommentTok{NB. errmsg: unable to load references}
+\KeywordTok{if.} \NormalTok{loadref WORD }\KeywordTok{do.} \NormalTok{jderr ERR0}\DecValTok{79} \KeywordTok{return.} \KeywordTok{end.}
+\NormalTok{ix}\CharTok{=.}\FunctionTok{".>}\NormalTok{dnrn WORD}
+\NormalTok{cn}\CharTok{=.}\FunctionTok{".>}\NormalTok{0 dnrn WORD}
+\NormalTok{dropref 0}
+
+\CommentTok{NB. errmsg: directory damaged}
+\KeywordTok{if.} \RegionMarkerTok{(}\FunctionTok{#}\NormalTok{ix}\RegionMarkerTok{)}\FunctionTok{~:#}\NormalTok{cn }\KeywordTok{do.} \NormalTok{jderr ERR0}\DecValTok{93} \KeywordTok{return.} \KeywordTok{end.}
+\CommentTok{NB. exit if no data to copy}
+\KeywordTok{if.} \NormalTok{0}\FunctionTok{=#}\NormalTok{ix      }\KeywordTok{do.} \NormalTok{OK }\KeywordTok{return.} \KeywordTok{end.}
+
+\NormalTok{ix}\CharTok{=.}\RegionMarkerTok{(}\FunctionTok{-}\NormalTok{COPYFACTOR}\RegionMarkerTok{)} \FunctionTok{<}\OtherTok{\textbackslash{}} \NormalTok{ix  }\CommentTok{NB. object noun !(*)=. COPYFACTOR}
+\NormalTok{cn}\CharTok{=.}\RegionMarkerTok{(}\FunctionTok{-}\NormalTok{COPYFACTOR}\RegionMarkerTok{)} \FunctionTok{<}\OtherTok{\textbackslash{}} \NormalTok{cn}
+
+\CommentTok{NB. NIMP opening and closing files for now}
+\NormalTok{ncn}\CharTok{=.}\FunctionTok{i.}\NormalTok{0}
+\KeywordTok{for_reg.} \NormalTok{cn }\KeywordTok{do.}
+
+  \KeywordTok{if.} \NormalTok{badjr dat}\CharTok{=.} \NormalTok{jread datfile}\FunctionTok{;}\NormalTok{reg }\KeywordTok{do.} \NormalTok{jderr ERR0}\DecValTok{88} \KeywordTok{return.} \KeywordTok{end.}
+
+  \CommentTok{NB. test components against directory (NIMP handle errors later)}
+  \CommentTok{NB. errmsg: directory-data inconsistency}
+  \KeywordTok{if.} \RegionMarkerTok{(}\FunctionTok{>}\NormalTok{reg_index}\FunctionTok{\{}\NormalTok{ix}\RegionMarkerTok{)} \NormalTok{badcn dat }\KeywordTok{do.} \NormalTok{jderr ERR0}\DecValTok{55} \KeywordTok{return.} \KeywordTok{end.}
+  \KeywordTok{if.} \NormalTok{badappend uv}\CharTok{=.} \NormalTok{dat jappend tfile }\KeywordTok{do.} \NormalTok{jderr ERR0}\DecValTok{58} \KeywordTok{return.} \KeywordTok{end.}
+
+  \NormalTok{ncn}\CharTok{=.}\NormalTok{ncn}\FunctionTok{,}\NormalTok{uv}
+\KeywordTok{end.}
+
+\CommentTok{NB. update reference component list NIMP words only}
+\CommentTok{NB. errmsg: jfile replace failure}
+\KeywordTok{if.} \NormalTok{badreps ncn jreplace tfile}\FunctionTok{;}\NormalTok{1}\FunctionTok{\{}\NormalTok{0}\FunctionTok{\{}\NormalTok{CNREF }\KeywordTok{do.} \NormalTok{jderr ERR0}\DecValTok{56} \KeywordTok{else.} \NormalTok{OK }\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{volfree}\AlertTok{=:}\index{volfree@\texttt{volfree}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*volfree v-- returns free bytes on volume or UNC path.}
+\CommentTok{NB.}
+\CommentTok{NB. monad: na =. volfree clPathDisk}
+\CommentTok{NB.}
+\CommentTok{NB.   volfree 'c'}
+\CommentTok{NB.   volfree '\textbackslash{}\textbackslash{}unc\textbackslash{}share\textbackslash{}'}
+\CommentTok{NB.   volfree '/home/john'   NB. NIMP: linux paths ignored for now}
+
+\KeywordTok{if.} \NormalTok{IFWIN }\KeywordTok{do.}
+  \KeywordTok{if.} \RegionMarkerTok{(}\NormalTok{2}\FunctionTok{#}\NormalTok{PATHDEL}\RegionMarkerTok{)}\FunctionTok{-:}\NormalTok{2}\FunctionTok{\{.}\DataTypeTok{y} \KeywordTok{do.} \NormalTok{freediskwin }\DataTypeTok{y} \KeywordTok{else.} \NormalTok{freediskwin }\RegionMarkerTok{(}\NormalTok{justdrv }\DataTypeTok{y}\RegionMarkerTok{)}\FunctionTok{,}\StringTok{':'}\FunctionTok{,}\NormalTok{PATHDEL }\KeywordTok{end.}
+\KeywordTok{else.}
+  \FunctionTok{<.}\OtherTok{/}\NormalTok{freedisklinux 0}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+

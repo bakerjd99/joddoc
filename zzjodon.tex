@@ -1,0 +1,108 @@
+\section{\texttt{jodon} Source Code}
+
+\begin{JODGroupHeader}
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB.*jodon s-- places (jodon) and (jodoff) in z locale.}
+
+\NormalTok{cocurrent }\StringTok{'z'}
+
+\CommentTok{NB.*end-header}
+\end{Highlighting}
+\end{Shaded}
+
+\end{JODGroupHeader}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{jodoff}\AlertTok{=:}\index{jodoff@\texttt{jodoff}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*jodoff v-- turns JOD off  result is  1  if  successful and  0}
+\CommentTok{NB. otherwise.}
+\CommentTok{NB.}
+\CommentTok{NB. Destroys dictionary objects, clears JOD classes and drops the}
+\CommentTok{NB. (ijod) interface. This  verb plus (jodon) and (jodsystempath)}
+\CommentTok{NB. remain in the (z) locale after off'ing JOD and can be used to}
+\CommentTok{NB. reload the system.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  jodoff uuIgnore}
+
+\CommentTok{NB. HARDCODE: JODobj_ijod_ ajod ijod base}
+\KeywordTok{try.}
+  \NormalTok{jo}\CharTok{=.} \FunctionTok{<}\StringTok{'JODobj_ijod_'}
+  \KeywordTok{if.} \NormalTok{0 }\FunctionTok{=} \RegionMarkerTok{(}\NormalTok{4}\OtherTok{!:}\NormalTok{0}\RegionMarkerTok{)} \NormalTok{jo }\KeywordTok{do.} \RegionMarkerTok{(}\NormalTok{4}\OtherTok{!:}\NormalTok{5}\DecValTok{5}\RegionMarkerTok{)} \NormalTok{jo }\FunctionTok{[} \RegionMarkerTok{(}\NormalTok{1}\DecValTok{8}\OtherTok{!:}\NormalTok{5}\DecValTok{5}\RegionMarkerTok{)} \NormalTok{destroyjod_}\DecValTok{_}\NormalTok{JODobj 0 }\KeywordTok{end.}
+
+  \CommentTok{NB. erase jod classes}
+  \RegionMarkerTok{(}\NormalTok{1}\DecValTok{8}\OtherTok{!:}\NormalTok{5}\DecValTok{5}\RegionMarkerTok{)} \NormalTok{w }\FunctionTok{#}\OtherTok{~} \StringTok{'ajod'}\OtherTok{&}\FunctionTok{-:}\OtherTok{@:}\RegionMarkerTok{(}\NormalTok{4}\OtherTok{&}\FunctionTok{\{.}\RegionMarkerTok{)}\OtherTok{&}\FunctionTok{>} \NormalTok{w}\CharTok{=.} \NormalTok{1}\DecValTok{8}\OtherTok{!:}\NormalTok{1 }\FunctionTok{]} \NormalTok{0}
+
+  \CommentTok{NB. erase (ijod) interface and clear base path}
+  \RegionMarkerTok{((}\NormalTok{1}\DecValTok{8}\OtherTok{!:}\NormalTok{2}\FunctionTok{<}\StringTok{'base'}\RegionMarkerTok{)}\FunctionTok{-.<}\StringTok{'ijod'}\RegionMarkerTok{)} \NormalTok{1}\DecValTok{8}\OtherTok{!:}\NormalTok{2 }\FunctionTok{<}\StringTok{'base'}
+  \RegionMarkerTok{(}\NormalTok{1}\DecValTok{8}\OtherTok{!:}\NormalTok{5}\DecValTok{5}\RegionMarkerTok{)}\FunctionTok{<}\StringTok{'ijod'}
+
+  \NormalTok{_}\DecValTok{1}\FunctionTok{=}\RegionMarkerTok{(}\NormalTok{4}\OtherTok{!:}\NormalTok{0}\RegionMarkerTok{)} \NormalTok{jo}
+\KeywordTok{catchd.}
+   \NormalTok{0}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{jodon}\AlertTok{=:}\index{jodon@\texttt{jodon}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*jodon v--  turn  JOD on  result  is 1  if  successful  and  0}
+\CommentTok{NB. otherwise.}
+\CommentTok{NB.}
+\CommentTok{NB. Tests the  current J environment and creates or activates JOD}
+\CommentTok{NB. objects.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  paRc =. jodon uuIgnore}
+
+\CommentTok{NB. format of (9!:14) has changed without warning in the past}
+\NormalTok{jvn}\CharTok{=.} \NormalTok{9}\OtherTok{!:}\NormalTok{1}\DecValTok{4} \StringTok{''}
+
+\CommentTok{NB. first value before '/' is the version number (we hope).}
+\NormalTok{jvn}\CharTok{=.} \FunctionTok{,} \RegionMarkerTok{(}\NormalTok{jvn }\FunctionTok{i.} \StringTok{'/'}\RegionMarkerTok{)} \FunctionTok{\{.} \NormalTok{jvn}
+\KeywordTok{if.} \FunctionTok{#}\NormalTok{jvn }\KeywordTok{do.} \NormalTok{jvn}\CharTok{=.} \NormalTok{0 }\FunctionTok{".} \NormalTok{jvn }\FunctionTok{#}\OtherTok{~} \NormalTok{jvn }\FunctionTok{e.} \StringTok{'0123456789'} \KeywordTok{else.} \NormalTok{jvn}\CharTok{=.} \NormalTok{0 }\KeywordTok{end.}
+
+\NormalTok{sp}\CharTok{=.} \FunctionTok{]} \FunctionTok{[} \NormalTok{1}\OtherTok{!:}\NormalTok{2}\OtherTok{&}\NormalTok{2}
+\KeywordTok{if.} \NormalTok{jvn }\FunctionTok{<:} \NormalTok{6}\DecValTok{01} \KeywordTok{do.}
+  \NormalTok{msg}\CharTok{=.} \StringTok{'JOD requires J 6.01 or later.'}
+  \NormalTok{msg}\CharTok{=.} \NormalTok{msg}\FunctionTok{,}\NormalTok{LF}\FunctionTok{,} \StringTok{'J is freely available at www.jsoftware.com'}
+  \NormalTok{0 }\FunctionTok{[} \NormalTok{sp msg}\FunctionTok{,}\NormalTok{LF}\FunctionTok{,} \StringTok{'Download and install J 6.0x/7.0x and then reinstall JOD.'}
+  \KeywordTok{return.}
+\KeywordTok{end.}
+
+\NormalTok{nc}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{4}\OtherTok{!:}\NormalTok{0}\RegionMarkerTok{)}\OtherTok{@}\FunctionTok{<}
+\NormalTok{ex}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{4}\OtherTok{!:}\NormalTok{5}\DecValTok{5}\RegionMarkerTok{)}\OtherTok{@}\FunctionTok{<}
+
+\CommentTok{NB. spot check of J environment - we need core J utilities}
+\CommentTok{NB. if the following are not present JOD will not work}
+\KeywordTok{if.} \NormalTok{_}\DecValTok{1} \FunctionTok{e.} \RegionMarkerTok{(}\NormalTok{4}\OtherTok{!:}\NormalTok{0}\RegionMarkerTok{)}\FunctionTok{;:}\StringTok{'load conew coclass coerase coinsert copath UNAME IFWIN'} \KeywordTok{do.}
+  \NormalTok{msg}\CharTok{=.} \StringTok{'JOD depends on core J load and class utilities.'}
+  \NormalTok{0 }\FunctionTok{[} \NormalTok{sp msg}\CharTok{=.} \NormalTok{msg}\FunctionTok{,}\NormalTok{LF}\FunctionTok{,}\StringTok{'Load J with a standard profile to use JOD.'}
+  \KeywordTok{return.}
+\KeywordTok{end.}
+
+\CommentTok{NB. HARDCODE: JODobj_ijod_ ijod ajod}
+\NormalTok{jodob}\CharTok{=.} \NormalTok{nc }\StringTok{'JODobj_ijod_'}          \CommentTok{NB. name class of JOD object pointer}
+\NormalTok{jodco}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{<}\StringTok{'ajod'}\RegionMarkerTok{)} \FunctionTok{e.} \NormalTok{1}\DecValTok{8}\OtherTok{!:}\NormalTok{1 }\FunctionTok{]} \NormalTok{0     }\CommentTok{NB. JOD class status}
+
+\KeywordTok{if.} \RegionMarkerTok{(}\NormalTok{0}\FunctionTok{=}\NormalTok{jodob}\RegionMarkerTok{)} \FunctionTok{*.} \NormalTok{jodco      }\KeywordTok{do.} \NormalTok{1  }\CommentTok{NB. JOD is loaded}
+\KeywordTok{elseif.} \RegionMarkerTok{(}\NormalTok{_}\DecValTok{1}\FunctionTok{=}\NormalTok{jodob}\RegionMarkerTok{)} \FunctionTok{*.} \NormalTok{jodco }\KeywordTok{do.}
+  \CommentTok{NB. jod is off and classes are loaded - create objects !(*)=. conew}
+  \NormalTok{JODobj_ijod_}\AlertTok{=:}\index{JODobj\_ijod\_@\texttt{JODobj\_ijod\_}} \NormalTok{conew }\StringTok{'ajod'}
+  \KeywordTok{if.} \NormalTok{jodcs}\CharTok{=.} \NormalTok{createjod_}\DecValTok{_}\NormalTok{JODobj JODobj_ijod_ }\KeywordTok{do.} \NormalTok{1 }\KeywordTok{else.} \NormalTok{0 }\FunctionTok{[} \NormalTok{ex }\StringTok{'JODobj_ijod_'} \KeywordTok{end.}
+\KeywordTok{elseif.} \FunctionTok{-.} \NormalTok{jodco }\KeywordTok{do.}
+  \CommentTok{NB. JOD classes absent load and start system !(*)=. load}
+  \NormalTok{ex }\StringTok{'JODobj_ijod_'}
+  \CommentTok{NB. JOD load now requires addon path}
+  \NormalTok{load }\StringTok{'general/jod'}
+  \NormalTok{0 }\FunctionTok{=} \NormalTok{nc }\StringTok{'JODobj_ijod_'}
+\KeywordTok{elseif.do.} \NormalTok{0 }\CommentTok{NB. utterly screwed up system state}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+

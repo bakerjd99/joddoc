@@ -12,7 +12,7 @@
    \href{http://www.jsoftware.com/jwiki/JAL/Package_Manager?highlight=%28JAL%29}{\emph{J package manager}} \cite{jwiki:jal}.
    
    
-   The JOD distribution is broken into two packages:
+   The JOD distribution is broken into three \texttt{JAL} packages:
    \begin{enumerate}
 	\item  \href{http://www.jsoftware.com/jwiki/Addons/general/jod}{\texttt{jod}} 
 	\cite{baker:jod}:  This is the only package that must be installed to run JOD.  
@@ -30,11 +30,15 @@
      \item \texttt{jodsourcesetup.ijs} --- J script that creates and loads the three
      JOD development dictionaries.\footnote{
 \textcolor{red}{The addon \texttt{arc/zip} can fail on 64 bit systems. This breaks \texttt{jodsourcesetup.ijs}.
-See \href{http://bakerjd99.wordpress.com/the-jod-page/}{The JOD Page} \cite{baker:jodpages} for instructions 
+See \href{http://bakerjd99.wordpress.com/the-jod-page/\#comment-210}{The JOD Page} \cite{baker:jodpages} for instructions 
 on loading JOD dictionaries without using
 \texttt{jodsourcesetup.ijs}.}
 	 }
   \end{enumerate}
+  \item \href{http://www.jsoftware.com/jwiki/Addons/general/joddocument}{\texttt{joddocument}} \cite{baker:joddocument}: this package contains 
+  JOD PDF documents. Installing this
+  package places these documents on local drives 
+  for \hyperlink{il:jodhelp}{\texttt{jodhelp}}, see page~\pageref{ss:jodhelp}.  
 \end{enumerate}
  
    \newpage
@@ -207,6 +211,11 @@ pages~\pageref{tab:objcodes}, \pageref{tab:qualcodes} and \pageref{tab:objneg}.
 \verb|4 put 'BYTEME';a.|  \\
 \end{tabular} 
 \end{minipage} \\ \hline
+\texttt{MARKDOWN\T\B} & 27 & \href{http://daringfireball.net/projects/markdown/}{MARKDOWN} text code & \begin{minipage}{3.9in}
+\begin{tabular}{l}
+\verb|5 put 'Main **dictionary** document' |  \\
+\end{tabular} 
+\end{minipage} \\ \hline
 \texttt{UTF8\T\B} & 28 & Unicode UTF8 text & \begin{minipage}{3.9in}
 \begin{tabular}{l}
 \verb|4 put 'UTF8TEXT';UTF8_ajod_;(8 u: 4 u: 56788 4578,65+i.5)  |  \\
@@ -298,7 +307,7 @@ NB. the JOD system. If you remove any of them JOD will crash. You
 NB. can  safely add additional parameters but  you  cannot safely
 NB. remove current parameters.
 
-MASTERPARMS =: 0 : 0
+MASTERPARMS=: 0 : 0
 
 NB. The format of this parameter file is:
 NB.     jname ; (type) description ; value
@@ -313,6 +322,7 @@ PUTFACTOR  ; (+integer) words stored in one loop pass  (10<y<2048)      ; 100
 GETFACTOR  ; (+integer) words retrieved in one loop pass (10<y<2048)    ; 250
 COPYFACTOR ; (+integer) components copied in one loop pass  (1<y<240)   ; 100
 DUMPFACTOR ; (+integer) objects dumped in one loop pass (1<y<240)       ; 50
+DOCUMENTDICT ; (+integer) when 1 dictionary document is put (0 or 1)    ; 1
 DOCUMENTWIDTH ; (+integer) width of justified document text  (20<y<255) ; 61
 ASCII85    ; (+integer) when 1 ascii85 used in dumps - default 0        ; 0
 
@@ -462,20 +472,23 @@ NB.</JOD_Load_Scripts>
 \input{jodhung}
 
 \newpage
-\section{JOD-nemomics}
+\section{JOD Mnemonics}
 
 %\centering
-\Large
+\large
 \itshape
   
-%``\textbf{M}nemonics \textbf{N}eatly \textbf{E}liminate \textbf{M}an's \textbf{O}nly \textbf{N}emesis - \textbf{I}nsufficient \textbf{C}erebral \textbf{S}torage''
+``\textbf{M}nemonics \textbf{N}eatly \textbf{E}liminate \textbf{M}an's \textbf{O}nly \textbf{N}emesis - \textbf{I}nsufficient \textbf{C}erebral \textbf{S}torage.''
+
+\Large
+
 \begin{center}
 
 	\hyperlink{il:jodhelp}{jodhelp} us!
 	
 	I \hyperlink{il:get}{get} it!
 
-   \hyperlink{il:dnl}{dnl} is not just a river.
+   \hyperlink{il:dnl}{dnl} is not just a river in Egypt.
 	
 	\hyperlink{il:put}{put} it where the sun don't shine.
 	

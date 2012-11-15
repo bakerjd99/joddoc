@@ -1,0 +1,1300 @@
+\section{\texttt{jodmake} Source Code}
+
+\begin{JODGroupHeader}
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. jodmake.ijs -- script making & code manipulation: extension of (JOD)}
+\CommentTok{NB.}
+\CommentTok{NB. This subclass defines utilities for making scripts from}
+\CommentTok{NB. groups and suites.  It also contains code for analyzing}
+\CommentTok{NB. name references in J words.}
+\CommentTok{NB.}
+\CommentTok{NB. Interface nouns & verbs:}
+\CommentTok{NB.   wrdglobals    extracts global names from J code}
+\CommentTok{NB.   namecats      classifies names in J code}
+\CommentTok{NB.   makedump      dumps objects on path to put dump directory}
+\CommentTok{NB.   makegs        make group and suite scripts}
+\CommentTok{NB.   wttext        word and test text}
+\CommentTok{NB.}
+\CommentTok{NB. Notes:}
+\CommentTok{NB.   Error messages (jodmake range 150-199)}
+
+\NormalTok{coclass }\StringTok{'ajodmake'}
+\NormalTok{coinsert  }\StringTok{'ajod'}
+
+\CommentTok{NB.*dependents x-- objects with definition dependencies}
+
+\CommentTok{NB. tags JOD dump script rebuild commands}
+\NormalTok{DUMPTAG}\AlertTok{=:}\index{DUMPTAG@\texttt{DUMPTAG}}\StringTok{' NB.\{*JOD*\}'}
+
+\CommentTok{NB. large text wrap temporary noun name and line width}
+\NormalTok{WRAPTMPWID}\AlertTok{=:}\index{WRAPTMPWID@\texttt{WRAPTMPWID}}\StringTok{'zz'}\FunctionTok{;}\NormalTok{6}\DecValTok{7}
+
+\CommentTok{NB. expression that clears scratch object}
+\NormalTok{SOCLEAR}\AlertTok{=:}\index{SOCLEAR@\texttt{SOCLEAR}}\StringTok{'".soclear'}\FunctionTok{,}\NormalTok{DUMPTAG}
+
+\CommentTok{NB. expression that rebuilds groups and suites from scatch object data}
+\NormalTok{SOGRP}\AlertTok{=:}\index{SOGRP@\texttt{SOGRP}}\StringTok{' grp&> ". ". '''}\FunctionTok{,}\RegionMarkerTok{(}\FunctionTok{>\{.}\NormalTok{WRAPTMPWID}\RegionMarkerTok{)}\FunctionTok{,}\StringTok{'_'',SOLOCALE,''_'' [ cocurrent ''base'''}\FunctionTok{,}\NormalTok{DUMPTAG}
+
+\CommentTok{NB. expression that stores words in the scratch object in JOD}
+\NormalTok{SOPUT}\AlertTok{=:}\index{SOPUT@\texttt{SOPUT}}\StringTok{'soput ".''nl_'',SOLOCALE,''_ i.4'' [ cocurrent ''base'''}\FunctionTok{,}\NormalTok{DUMPTAG}
+
+\CommentTok{NB. expression that stores (name,text) tables in scratch object}
+\NormalTok{SOPUTTEXT}\AlertTok{=:}\index{SOPUTTEXT@\texttt{SOPUTTEXT}}\StringTok{' put ". ".'''}\FunctionTok{,}\RegionMarkerTok{(}\FunctionTok{>\{.}\NormalTok{WRAPTMPWID}\RegionMarkerTok{)}\FunctionTok{,}\StringTok{'_'',SOLOCALE,''_'' [ cocurrent ''base'''}\FunctionTok{,}\NormalTok{DUMPTAG}
+
+\CommentTok{NB. expression that switches to numbered scratch locale}
+\NormalTok{SOSWITCH}\AlertTok{=:}\index{SOSWITCH@\texttt{SOSWITCH}}\StringTok{'cocurrent SO__JODobj'}\FunctionTok{,}\NormalTok{DUMPTAG}
+
+\CommentTok{NB.*enddependents}
+
+
+\CommentTok{NB.*end-header}
+\end{Highlighting}
+\end{Shaded}
+
+\end{JODGroupHeader}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{DUMPMSG0}\AlertTok{=:}\index{DUMPMSG0@\texttt{DUMPMSG0}}\StringTok{'NB. JOD dictionary dump: '}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{DUMPMSG1}\AlertTok{=:}\index{DUMPMSG1@\texttt{DUMPMSG1}}\StringTok{'Names & DidNums on current path'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. should appear as quoted text when displayed}
+\NormalTok{DUMPMSG2}\AlertTok{=:}\index{DUMPMSG2@\texttt{DUMPMSG2}}\StringTok{'''NB. end-of-JOD-dump-file regenerate cross references with:  0 globs&> \}. revo '''''''' '''}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. version prefix text for JOD dumps}
+\NormalTok{DUMPMSG3}\AlertTok{=:}\index{DUMPMSG3@\texttt{DUMPMSG3}}\StringTok{'NB. Generated with JOD version'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{150}\AlertTok{=:}\index{ERR0150@\texttt{ERR0150}}\StringTok{'confused declarations ->'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{151}\AlertTok{=:}\index{ERR0151@\texttt{ERR0151}}\StringTok{'word syntax'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{152}\AlertTok{=:}\index{ERR0152@\texttt{ERR0152}}\StringTok{'no definition ->'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{153}\AlertTok{=:}\index{ERR0153@\texttt{ERR0153}}\StringTok{'file write failure'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{154}\AlertTok{=:}\index{ERR0154@\texttt{ERR0154}}\StringTok{'invalid group/suite name'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{155}\AlertTok{=:}\index{ERR0155@\texttt{ERR0155}}\StringTok{'unable to append to dumpfile ->'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{156}\AlertTok{=:}\index{ERR0156@\texttt{ERR0156}}\StringTok{'unable to create dumpfile ->'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{157}\AlertTok{=:}\index{ERR0157@\texttt{ERR0157}}\StringTok{'directory-component name class inconsistency -- dump aborted ->'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{158}\AlertTok{=:}\index{ERR0158@\texttt{ERR0158}}\StringTok{'invalid fully qualified dump file name'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{159}\AlertTok{=:}\index{ERR0159@\texttt{ERR0159}}\StringTok{'mixed assignments ->'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. multiplicative factor for small text dumps}
+\NormalTok{EXPLAINFAC}\AlertTok{=:}\index{EXPLAINFAC@\texttt{EXPLAINFAC}}\NormalTok{1}\DecValTok{0}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. first table of valid single line explicit headers}
+\NormalTok{EXPPFX0}\AlertTok{=:}\index{EXPPFX0@\texttt{EXPPFX0}}\NormalTok{4 5}\FunctionTok{$}\StringTok{'1 : ''2 : ''3 : ''4 : '''}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. second table of valid single line explicit headers}
+\NormalTok{EXPPFX1}\AlertTok{=:}\index{EXPPFX1@\texttt{EXPPFX1}}\NormalTok{3 8}\FunctionTok{$}\StringTok{'3 : ('':''3 : (,'':4 : (,'':'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. report labels for reference case of (globs)}
+\NormalTok{GLOBCATS}\AlertTok{=:}\index{GLOBCATS@\texttt{GLOBCATS}}\FunctionTok{<}\OtherTok{;.}\NormalTok{_}\DecValTok{1} \StringTok{' Global Local (*)=: (*)=. for.'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. string marking end of class header}
+\NormalTok{HEADEND}\AlertTok{=:}\index{HEADEND@\texttt{HEADEND}}\StringTok{'NB.*end-header'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. explict J argument names}
+\NormalTok{JARGS}\AlertTok{=:}\index{JARGS@\texttt{JARGS}}\FunctionTok{<}\OtherTok{;.}\NormalTok{_}\DecValTok{1} \StringTok{' x y u v m n $:'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{OK0}\DecValTok{150}\AlertTok{=:}\index{OK0150@\texttt{OK0150}}\StringTok{'file saved ->'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{OK0}\DecValTok{151}\AlertTok{=:}\index{OK0151@\texttt{OK0151}}\StringTok{'object(s) on path dumped ->'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. portable box drawing characters}
+\NormalTok{PORTCHARS}\AlertTok{=:}\index{PORTCHARS@\texttt{PORTCHARS}}\FunctionTok{,:}\StringTok{'+++++++++\textbar{}-'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. name of monadic identity verb that displays and passes argument}
+\NormalTok{SOPASS}\AlertTok{=:}\index{SOPASS@\texttt{SOPASS}}\StringTok{'showpass '}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{btclfrcl}\AlertTok{=:}\index{btclfrcl@\texttt{btclfrcl}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*btclfrcl v-- inverse of clfrbtcl.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  btcl =. btclfrcl cl}
+
+\CommentTok{NB. length of prefix}
+\NormalTok{len}\CharTok{=.} \FunctionTok{".}\RegionMarkerTok{(}\NormalTok{pos}\CharTok{=.} \DataTypeTok{y} \FunctionTok{i.} \StringTok{' '}\RegionMarkerTok{)}\FunctionTok{\{.} \DataTypeTok{y}
+\DataTypeTok{y}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{>:}\NormalTok{pos}\RegionMarkerTok{)} \FunctionTok{\}.} \DataTypeTok{y}
+
+\CommentTok{NB. prefix and shape of bt}
+\NormalTok{shp}\CharTok{=.} \NormalTok{2 }\FunctionTok{\{.} \NormalTok{pfx}\CharTok{=.} \FunctionTok{".} \NormalTok{len }\FunctionTok{\{.} \DataTypeTok{y}
+\NormalTok{pfx}\CharTok{=.} \NormalTok{2 }\FunctionTok{\}.} \NormalTok{pfx}
+\NormalTok{tab}\CharTok{=.} \NormalTok{len }\FunctionTok{\}.} \DataTypeTok{y}
+
+\KeywordTok{if.} \FunctionTok{#}\NormalTok{tab }\KeywordTok{do.}
+  \NormalTok{zm}\CharTok{=.} \NormalTok{0}\FunctionTok{<}\NormalTok{pfx}
+  \NormalTok{bm}\CharTok{=.} \NormalTok{0 }\FunctionTok{#}\OtherTok{~} \FunctionTok{#}\NormalTok{tab}
+  \NormalTok{ri}\CharTok{=.} \FunctionTok{\}:}\NormalTok{0}\FunctionTok{,+}\OtherTok{/\textbackslash{}}\NormalTok{zm}\FunctionTok{#}\NormalTok{pfx}
+  \NormalTok{bm}\CharTok{=.} \NormalTok{1 ri }\OtherTok{\}} \NormalTok{bm}
+  \NormalTok{shp }\FunctionTok{$} \NormalTok{zm }\FunctionTok{#}\OtherTok{^:}\NormalTok{_}\DecValTok{1} \NormalTok{bm }\FunctionTok{<}\OtherTok{;.}\NormalTok{1 tab}
+\KeywordTok{else.}
+  \NormalTok{shp}\FunctionTok{$<}\StringTok{''}  \CommentTok{NB. all nulls}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{clearso}\AlertTok{=:}\index{clearso@\texttt{clearso}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*clearso v-- empty scratch object.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  clearso uuIgnore}
+
+\KeywordTok{if.} \FunctionTok{#}\NormalTok{s}\CharTok{=.} \NormalTok{nl_}\DecValTok{_}\NormalTok{SO }\FunctionTok{i.}\NormalTok{4 }\KeywordTok{do.} \RegionMarkerTok{(}\NormalTok{4}\OtherTok{!:}\NormalTok{5}\DecValTok{5}\RegionMarkerTok{)} \NormalTok{s }\FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \NormalTok{locsfx SO }\KeywordTok{end.}  \CommentTok{NB. !(*)=. SO}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{clfrbtcl}\AlertTok{=:}\index{clfrbtcl@\texttt{clfrbtcl}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*clfrbtcl v-- btcl to encoded cl.}
+\CommentTok{NB.}
+\CommentTok{NB. This verb  converts a boxed table of character lists to a  cl}
+\CommentTok{NB. representation that can be used  to recreate the boxed table.}
+\CommentTok{NB. It  is used instead of (5!:5) for btcl as (5!:5)  generates a}
+\CommentTok{NB. large  a.   index  representation  for  character  data  when}
+\CommentTok{NB. selected "control" characters are present.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  cl =. clfrbtcl btcl}
+
+\CommentTok{NB. shape and lengths of all char lists}
+\NormalTok{sp}\CharTok{=.} \FunctionTok{$} \DataTypeTok{y}
+\NormalTok{lc}\CharTok{=.} \FunctionTok{,} \FunctionTok{#}\OtherTok{&}\FunctionTok{>} \DataTypeTok{y}
+
+\CommentTok{NB. first number is length of prefix}
+\NormalTok{pfx}\CharTok{=.} \FunctionTok{":}\NormalTok{sp}\FunctionTok{,}\NormalTok{lc}
+\RegionMarkerTok{(}\FunctionTok{":$}\NormalTok{pfx}\RegionMarkerTok{)}\FunctionTok{,}\StringTok{' '}\FunctionTok{,}\NormalTok{pfx}\FunctionTok{,} \FunctionTok{;}\DataTypeTok{y}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{createmk}\AlertTok{=:}\index{createmk@\texttt{createmk}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*createmk v-- initializes maker objects}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  createmk blObrefs}
+\CommentTok{NB.}
+\CommentTok{NB.   createmk__MK JOD;ST;MK;UT;<SO}
+
+\CommentTok{NB. object references !(*)=. JOD ST MK UT SO}
+\StringTok{'JOD ST MK UT SO'}\AlertTok{=:}\index{00multiple@\texttt{'...'=:}} \DataTypeTok{y}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{dec8}\DecValTok{5}\AlertTok{=:}\index{dec85@\texttt{dec85}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*dec85  v-- decodes ASCII85  (name,text)  and (name,code,text)}
+\CommentTok{NB. tables.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  cl55=. dec85 cl}
+
+\NormalTok{tab}\CharTok{=.} \NormalTok{fromascii8}\DecValTok{5} \DataTypeTok{y}
+\NormalTok{tab}\CharTok{=.} \NormalTok{btclfrcl tab}
+
+\CommentTok{NB. there are two types of tables in JOD (name,text) and (name,code,text)}
+\KeywordTok{assert.} \RegionMarkerTok{(}\FunctionTok{\{:$}\NormalTok{tab}\RegionMarkerTok{)} \FunctionTok{e.} \NormalTok{2 3}
+
+\KeywordTok{if.} \NormalTok{3}\FunctionTok{=\{:$}\NormalTok{tab }\KeywordTok{do.}
+  \CommentTok{NB. codes must be integers in JOD name,code,text tables}
+  \NormalTok{codes}\CharTok{=.} \FunctionTok{<a:;}\NormalTok{1}
+  \NormalTok{val}\CharTok{=.} \FunctionTok{".}\OtherTok{&.}\FunctionTok{>} \NormalTok{codes }\FunctionTok{\{} \NormalTok{tab}
+  \NormalTok{tab}\CharTok{=.} \NormalTok{val codes }\OtherTok{\}} \NormalTok{tab}
+\KeywordTok{end.}
+
+\CommentTok{NB. put commands are expecting (5!:5) strings}
+\NormalTok{5}\OtherTok{!:}\NormalTok{5 }\FunctionTok{<}\StringTok{'tab'}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{dumpdictdoc}\AlertTok{=:}\index{dumpdictdoc@\texttt{dumpdictdoc}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*dumpdictdoc  v-- appends  dictionary  documentation  text  to}
+\CommentTok{NB. dumpfile.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  dumpdictdoc clPathFile}
+\CommentTok{NB.}
+\CommentTok{NB.   dumpdictdoc 'c:\textbackslash{}go\textbackslash{}ahead\textbackslash{}dump\textbackslash{}my\textbackslash{}dictionary.ijs'}
+
+\CommentTok{NB. cannot fetch document or document is empty}
+\KeywordTok{if.} \NormalTok{badrc uv}\CharTok{=.} \NormalTok{DICTIONARY get }\StringTok{''} \KeywordTok{do.} \RegionMarkerTok{(}\NormalTok{jderr ERR0}\DecValTok{155}\RegionMarkerTok{)}\FunctionTok{,<}\DataTypeTok{y} \KeywordTok{return.} \KeywordTok{end.}
+\KeywordTok{if.} \NormalTok{0}\FunctionTok{=#}\NormalTok{uv}\CharTok{=.} \FunctionTok{>}\NormalTok{1}\FunctionTok{\{}\NormalTok{uv }\KeywordTok{do.} \NormalTok{OK }\KeywordTok{return.} \KeywordTok{end.}
+
+\NormalTok{tag}\CharTok{=.} \NormalTok{DUMPTAG}\FunctionTok{,}\NormalTok{LF}
+\NormalTok{putso}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{2}\FunctionTok{#}\NormalTok{LF}\RegionMarkerTok{)}\FunctionTok{,}\NormalTok{SOSWITCH}\FunctionTok{,}\NormalTok{LF}
+
+\CommentTok{NB. expression to store dictionary documentation text in scratch locale}
+\NormalTok{soputdoc}\CharTok{=.} \NormalTok{SOPASS}\FunctionTok{,}\RegionMarkerTok{(}\FunctionTok{":}\NormalTok{DICTIONARY}\RegionMarkerTok{)}\FunctionTok{,}\StringTok{' put >1\{,".".''zz_'',SOLOCALE,''_'' [ cocurrent ''base'' '}\FunctionTok{,}\NormalTok{tag}
+
+\CommentTok{NB. format document text for dump}
+\NormalTok{dicdoc}\CharTok{=.} \NormalTok{putso}\FunctionTok{,}\NormalTok{WRAPTMPWID fmtdumptext }\FunctionTok{,:}\StringTok{''}\FunctionTok{;}\NormalTok{uv}
+\NormalTok{dicdoc}\CharTok{=.} \NormalTok{dicdoc}\FunctionTok{,}\NormalTok{LF}\FunctionTok{,}\NormalTok{soputdoc}\FunctionTok{,}\NormalTok{SOCLEAR}\FunctionTok{,}\NormalTok{2}\FunctionTok{#}\NormalTok{LF}
+
+\CommentTok{NB. append dictionary documentation error msg: unable to append to dumpfile}
+\KeywordTok{if.} \NormalTok{_}\DecValTok{1} \FunctionTok{-:} \RegionMarkerTok{(}\NormalTok{toHOST dicdoc}\RegionMarkerTok{)} \NormalTok{fap }\FunctionTok{<}\DataTypeTok{y} \KeywordTok{do.} \RegionMarkerTok{(}\NormalTok{jderr ERR0}\DecValTok{155}\RegionMarkerTok{)}\FunctionTok{,<}\DataTypeTok{y} \KeywordTok{else.} \NormalTok{OK }\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{dumpdoc}\AlertTok{=:}\index{dumpdoc@\texttt{dumpdoc}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*dumpdoc v-- dumps object documentation text.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  (iaBlksize ; iaObject ; clPathfile) dumpdoc blclNames}
+\CommentTok{NB.}
+\CommentTok{NB.   (0;50;'c:\textbackslash{}dump\textbackslash{}on\textbackslash{}me.ijs') dumpdoc ;:'word name list'}
+
+\CommentTok{NB. block size, object, output file}
+\StringTok{'blk obj out'}\CharTok{=.} \DataTypeTok{x}
+
+\CommentTok{NB. append short and long object documentation - short documents are small}
+\CommentTok{NB. hence we process in blocks (EXPLAINFAC) times larger than the dump block}
+\KeywordTok{if.} \NormalTok{badrc uv}\CharTok{=.} \RegionMarkerTok{((}\NormalTok{EXPLAINFAC}\FunctionTok{*}\NormalTok{blk}\RegionMarkerTok{)}\FunctionTok{;}\RegionMarkerTok{(}\NormalTok{obj}\FunctionTok{,}\NormalTok{EXPLAIN}\RegionMarkerTok{)}\FunctionTok{;}\NormalTok{out}\RegionMarkerTok{)} \NormalTok{dumptext }\DataTypeTok{y} \KeywordTok{do.} \NormalTok{uv}
+\KeywordTok{elseif.} \NormalTok{badrc uv}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{blk}\FunctionTok{;}\RegionMarkerTok{(}\NormalTok{obj}\FunctionTok{,}\NormalTok{DOCUMENT}\RegionMarkerTok{)}\FunctionTok{;}\NormalTok{out}\RegionMarkerTok{)} \NormalTok{dumptext }\DataTypeTok{y} \KeywordTok{do.} \NormalTok{uv}
+\KeywordTok{elseif.do.} \NormalTok{OK}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{dumpgs}\AlertTok{=:}\index{dumpgs@\texttt{dumpgs}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*dumpgs v-- dump groups and suites on path.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  iaBlksizeObject dumpgs clPathFile}
+\CommentTok{NB.}
+\CommentTok{NB.   (50,GROUP) dumpgs 'c:\textbackslash{}dump\textbackslash{}your\textbackslash{}groups.ijs'}
+
+\StringTok{'dmp obj'}\CharTok{=.} \DataTypeTok{x}
+\NormalTok{putso}\CharTok{=.} \NormalTok{LF}\FunctionTok{,}\NormalTok{SOSWITCH}\FunctionTok{,}\NormalTok{LF}
+\NormalTok{cmd}\CharTok{=.} \NormalTok{SOPASS}\FunctionTok{,}\RegionMarkerTok{(}\FunctionTok{":}\NormalTok{obj}\RegionMarkerTok{)}\FunctionTok{,}\NormalTok{SOGRP}\FunctionTok{,}\NormalTok{LF}\FunctionTok{,}\NormalTok{SOCLEAR}\FunctionTok{,}\NormalTok{LF}
+\NormalTok{out}\CharTok{=.} \FunctionTok{<}\DataTypeTok{y}
+
+\KeywordTok{if.} \NormalTok{badrc uv}\CharTok{=.} \NormalTok{obj dnl }\StringTok{''} \KeywordTok{do.} \NormalTok{uv}
+\KeywordTok{elseif.} \FunctionTok{a:} \FunctionTok{e.} \NormalTok{uv          }\KeywordTok{do.} \NormalTok{OK  }\CommentTok{NB. no groups or suites}
+\KeywordTok{elseif.do.}
+
+  \NormalTok{uv}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{-}\NormalTok{dmp}\RegionMarkerTok{)} \FunctionTok{<}\OtherTok{\textbackslash{}} \NormalTok{uv}\CharTok{=.}\FunctionTok{\}.}\NormalTok{uv}
+  \KeywordTok{for_blk.} \NormalTok{uv }\KeywordTok{do.}
+
+    \CommentTok{NB. get blblcl of all objects in groups/suites}
+    \NormalTok{gnames}\CharTok{=.} \NormalTok{obj grp}\OtherTok{&.}\FunctionTok{>} \FunctionTok{>}\NormalTok{blk}
+
+    \CommentTok{NB. check all return codes error msg: unable to dump group/suite list(s)}
+    \KeywordTok{if.} \NormalTok{0 }\FunctionTok{e.} \FunctionTok{\{.}\OtherTok{&}\FunctionTok{>} \NormalTok{gnames }\KeywordTok{do.} \NormalTok{jderr ERR0}\DecValTok{157} \KeywordTok{return.} \KeywordTok{end.}
+
+    \CommentTok{NB. remove return codes, attach group/suite names and format as text}
+    \NormalTok{gnames}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{<}\OtherTok{"}\NormalTok{0 }\FunctionTok{>}\NormalTok{blk}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \FunctionTok{\}.}\OtherTok{&.}\FunctionTok{>} \NormalTok{gnames}
+    \NormalTok{gnames}\CharTok{=.} \NormalTok{5}\OtherTok{!:}\NormalTok{5 }\FunctionTok{<}\StringTok{'gnames'}
+
+    \CommentTok{NB. append if any text}
+    \KeywordTok{if.} \FunctionTok{#}\NormalTok{gnames}\CharTok{=.} \NormalTok{WRAPTMPWID wraplinear gnames }\KeywordTok{do.}
+      \NormalTok{gnames}\CharTok{=.} \NormalTok{toHOST putso}\FunctionTok{,}\NormalTok{gnames}\FunctionTok{,}\NormalTok{LF}\FunctionTok{,}\NormalTok{cmd}
+      \KeywordTok{if.} \NormalTok{_}\DecValTok{1} \FunctionTok{-:} \NormalTok{gnames fap out }\KeywordTok{do.} \RegionMarkerTok{(}\NormalTok{jderr ERR0}\DecValTok{155}\RegionMarkerTok{)}\FunctionTok{,}\NormalTok{out }\KeywordTok{return.} \KeywordTok{end.}
+    \KeywordTok{end.}
+
+  \KeywordTok{end.}
+
+  \CommentTok{NB. dump group/suite header scripts}
+  \KeywordTok{if.} \NormalTok{badrc msg}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{dmp}\FunctionTok{;}\NormalTok{obj}\FunctionTok{;}\DataTypeTok{y}\RegionMarkerTok{)} \NormalTok{dumptext }\FunctionTok{;}\NormalTok{uv }\KeywordTok{do.} \NormalTok{msg }\KeywordTok{return.} \KeywordTok{end.}
+
+  \CommentTok{NB. dump group/suite documentation}
+  \KeywordTok{if.} \NormalTok{badrc msg}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{dmp}\FunctionTok{;}\NormalTok{obj}\FunctionTok{;}\DataTypeTok{y}\RegionMarkerTok{)} \NormalTok{dumpdoc }\FunctionTok{;}\NormalTok{uv }\KeywordTok{do.} \NormalTok{msg }\KeywordTok{return.} \KeywordTok{end.}
+\KeywordTok{end.}
+\NormalTok{OK}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{dumpheader}\AlertTok{=:}\index{dumpheader@\texttt{dumpheader}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*dumpheader  v--  creates  the  dumpfile  and  writes   header}
+\CommentTok{NB. information.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  dumpheader clPathFile}
+\CommentTok{NB.}
+\CommentTok{NB.   dumpheader 'c:\textbackslash{}go\textbackslash{}ahead\textbackslash{}dump\textbackslash{}my\textbackslash{}dictionary.ijs'}
+
+\CommentTok{NB. error msg: unable to create dumpfile}
+\KeywordTok{if.} \NormalTok{_}\DecValTok{1} \FunctionTok{-:} \StringTok{''} \RegionMarkerTok{(}\NormalTok{write }\OtherTok{::} \FunctionTok{_1:}\RegionMarkerTok{)} \DataTypeTok{y} \KeywordTok{do.} \RegionMarkerTok{(}\NormalTok{jderr ERR0}\DecValTok{156}\RegionMarkerTok{)}\FunctionTok{,<}\DataTypeTok{y} \KeywordTok{return.} \KeywordTok{end.}
+
+\CommentTok{NB. make box characters portable}
+\NormalTok{9}\OtherTok{!:}\NormalTok{7 }\FunctionTok{,} \NormalTok{PORTCHARS }\FunctionTok{[} \NormalTok{curchars}\CharTok{=.} \FunctionTok{,} \NormalTok{9}\OtherTok{!:}\NormalTok{6 }\StringTok{''}
+
+\CommentTok{NB. format header text}
+\NormalTok{head}\CharTok{=.} \NormalTok{DUMPMSG0 }\FunctionTok{,} \NormalTok{tstamp }\StringTok{''}
+\NormalTok{head}\CharTok{=.} \NormalTok{head}\FunctionTok{,}\NormalTok{LF}\FunctionTok{,}\NormalTok{DUMPMSG3 }\FunctionTok{,} \FunctionTok{;}\RegionMarkerTok{(}\FunctionTok{<}\StringTok{'; '}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \FunctionTok{":}\OtherTok{&.}\FunctionTok{>}\NormalTok{JODVMD}
+\NormalTok{head}\CharTok{=.} \NormalTok{head}\FunctionTok{,}\NormalTok{LF}\FunctionTok{,}\NormalTok{ctl }\StringTok{'NB. '}\FunctionTok{,}\OtherTok{"}\NormalTok{1 }\StringTok{' '} \FunctionTok{,} \NormalTok{DUMPMSG1 }\FunctionTok{,} \FunctionTok{":} \NormalTok{0 1 }\FunctionTok{\{}\OtherTok{"}\NormalTok{1 DPATH_}\DecValTok{_}\NormalTok{ST}
+\NormalTok{head}\CharTok{=.} \NormalTok{head}\FunctionTok{,}\NormalTok{LF}\FunctionTok{,}\NormalTok{LF}
+
+\CommentTok{NB. reset box characters}
+\NormalTok{9}\OtherTok{!:}\NormalTok{7 curchars}
+
+\CommentTok{NB. set up J environment to process script - assumes that}
+\CommentTok{NB. JOD is loaded and that a target put dictionary is open}
+\NormalTok{tag}\CharTok{=.} \NormalTok{DUMPTAG}\FunctionTok{,}\NormalTok{LF}
+
+\CommentTok{NB. retain white space}
+\NormalTok{head}\CharTok{=.} \NormalTok{head}\FunctionTok{,}\StringTok{'9!:41 [ 1'}\FunctionTok{,}\NormalTok{tag}
+
+\NormalTok{head}\CharTok{=.} \NormalTok{head}\FunctionTok{,}\StringTok{'cocurrent ''base'''}\FunctionTok{,}\NormalTok{tag}
+\NormalTok{head}\CharTok{=.} \NormalTok{head}\FunctionTok{,}\StringTok{'sonl_z_=: ''sonl__MK__JODobj i.4'''}\FunctionTok{,}\NormalTok{tag}
+\NormalTok{head}\CharTok{=.} \NormalTok{head}\FunctionTok{,} \RegionMarkerTok{(}\NormalTok{SOPASS}\FunctionTok{-.}\StringTok{' '}\RegionMarkerTok{)}\FunctionTok{,}\StringTok{'_z_=:] [ 1!:2&2'}\FunctionTok{,}\NormalTok{tag}
+\NormalTok{head}\CharTok{=.} \NormalTok{head}\FunctionTok{,}\StringTok{'SOLOCALE_z_=:":>SO__JODobj'}\FunctionTok{,}\NormalTok{tag}
+\NormalTok{head}\CharTok{=.} \NormalTok{head}\FunctionTok{,}\StringTok{'soput_z_=:SOLOCALE&put'}\FunctionTok{,}\NormalTok{tag}
+\NormalTok{head}\CharTok{=.} \NormalTok{head}\FunctionTok{,}\StringTok{'soclear_z_=: ''0 0 $ clearso__MK__JODobj 0'''}\FunctionTok{,}\NormalTok{tag}
+
+\CommentTok{NB. append header error msg: unable to append to dumpfile}
+\KeywordTok{if.} \NormalTok{_}\DecValTok{1} \FunctionTok{-:} \RegionMarkerTok{(}\NormalTok{toHOST head}\RegionMarkerTok{)} \NormalTok{fap }\FunctionTok{<}\DataTypeTok{y} \KeywordTok{do.} \RegionMarkerTok{(}\NormalTok{jderr ERR0}\DecValTok{155}\RegionMarkerTok{)}\FunctionTok{,<}\DataTypeTok{y} \KeywordTok{else.} \NormalTok{OK }\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{dumptext}\AlertTok{=:}\index{dumptext@\texttt{dumptext}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*dumptext v-- appends text tables to dump file.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  (iaBlksize ; ilObjCode ; clPathFile) dumptext blclNames}
+\CommentTok{NB.}
+\CommentTok{NB.  (50;1 8;'c:\textbackslash{}temp\textbackslash{}dump.ijs') dumptext ;:'test case names'}
+
+\CommentTok{NB. block size, object & option code, output file}
+\StringTok{'bsize noc out'}\CharTok{=.} \DataTypeTok{x}
+\NormalTok{out}\CharTok{=.}\FunctionTok{<}\NormalTok{out}
+\NormalTok{bnames}\CharTok{=.}\RegionMarkerTok{(}\FunctionTok{-}\NormalTok{bsize}\RegionMarkerTok{)} \FunctionTok{<}\OtherTok{\textbackslash{}} \DataTypeTok{y}
+\NormalTok{putso}\CharTok{=.} \NormalTok{LF}\FunctionTok{,}\NormalTok{SOSWITCH}\FunctionTok{,}\NormalTok{LF}
+
+\CommentTok{NB. reload command for object}
+\NormalTok{cmd}\CharTok{=.} \NormalTok{SOPASS}\FunctionTok{,}\RegionMarkerTok{(}\FunctionTok{":}\NormalTok{noc}\RegionMarkerTok{)}\FunctionTok{,}\NormalTok{SOPUTTEXT}\FunctionTok{,}\NormalTok{LF}\FunctionTok{,}\NormalTok{SOCLEAR}\FunctionTok{,}\NormalTok{LF}
+
+\CommentTok{NB. dump text in blocks}
+\KeywordTok{for_blk.} \NormalTok{bnames }\KeywordTok{do.}
+  \KeywordTok{if.} \NormalTok{badrc uv}\CharTok{=.} \NormalTok{noc get }\FunctionTok{>}\NormalTok{blk }\KeywordTok{do.} \NormalTok{uv }\KeywordTok{return.} \KeywordTok{else.} \NormalTok{uv}\CharTok{=.} \NormalTok{rv uv }\KeywordTok{end.}
+
+  \CommentTok{NB. append only when we have text}
+  \KeywordTok{if.} \FunctionTok{#}\NormalTok{uv}\CharTok{=.} \NormalTok{WRAPTMPWID fmtdumptext uv }\KeywordTok{do.}
+    \NormalTok{uv}\CharTok{=.} \NormalTok{toHOST putso}\FunctionTok{,}\NormalTok{uv}\FunctionTok{,}\NormalTok{LF}\FunctionTok{,}\NormalTok{cmd}
+    \CommentTok{NB. error msg: unable to append to dumpfile}
+    \KeywordTok{if.} \NormalTok{_}\DecValTok{1} \FunctionTok{-:} \NormalTok{uv fap out }\KeywordTok{do.} \RegionMarkerTok{(}\NormalTok{jderr ERR0}\DecValTok{155}\RegionMarkerTok{)}\FunctionTok{,}\NormalTok{out }\KeywordTok{return.} \KeywordTok{end.}
+  \KeywordTok{end.}
+
+\KeywordTok{end.}
+\NormalTok{OK}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{dumptm}\AlertTok{=:}\index{dumptm@\texttt{dumptm}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*dumptm v-- dumps test cases and macros on path.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  ilBlksizeObject dumptm clPathFile}
+\CommentTok{NB.}
+\CommentTok{NB.   50 1 dumptm 'c:\textbackslash{}dump\textbackslash{}on\textbackslash{}me.ijs'}
+
+\StringTok{'blk obj'}\CharTok{=.} \DataTypeTok{x}
+
+\KeywordTok{if.} \NormalTok{badrc uv0}\CharTok{=.} \NormalTok{obj dnl }\StringTok{''} \KeywordTok{do.} \NormalTok{uv0  }\KeywordTok{return.} \KeywordTok{end.}
+\KeywordTok{if.} \FunctionTok{a:} \FunctionTok{e.} \NormalTok{uv0 }\KeywordTok{do.} \NormalTok{OK }\KeywordTok{return.} \KeywordTok{end.} \CommentTok{NB. no test cases or macros}
+
+\KeywordTok{if.} \FunctionTok{#}\NormalTok{uv0}\CharTok{=.} \FunctionTok{\}.}\NormalTok{uv0 }\KeywordTok{do.}
+  \KeywordTok{if.} \NormalTok{badrc uv1}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{blk}\FunctionTok{;}\NormalTok{obj}\FunctionTok{;}\DataTypeTok{y}\RegionMarkerTok{)} \NormalTok{dumptext uv0 }\KeywordTok{do.} \NormalTok{uv1 }\KeywordTok{return.} \KeywordTok{end.}
+  \KeywordTok{if.} \NormalTok{badrc uv1}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{blk}\FunctionTok{;}\NormalTok{obj}\FunctionTok{;}\DataTypeTok{y}\RegionMarkerTok{)} \NormalTok{dumpdoc uv0  }\KeywordTok{do.} \NormalTok{uv1 }\KeywordTok{return.} \KeywordTok{end.}
+\KeywordTok{end.}
+\NormalTok{OK}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{dumptrailer}\AlertTok{=:}\index{dumptrailer@\texttt{dumptrailer}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*dumptrailer v-- appends terminal text to dumpfile.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  dumptrailer clPathFile}
+\CommentTok{NB.}
+\CommentTok{NB.   dumptrailer 'c:\textbackslash{}go\textbackslash{}ahead\textbackslash{}dump\textbackslash{}my\textbackslash{}dictionary.ijs'}
+
+\NormalTok{tag}\CharTok{=.} \NormalTok{DUMPTAG}\FunctionTok{,}\NormalTok{LF}
+\NormalTok{tail}\CharTok{=.} \NormalTok{LF}\FunctionTok{,}\StringTok{'cocurrent ''base'''}\FunctionTok{,}\NormalTok{tag}
+\NormalTok{tail}\CharTok{=.} \NormalTok{tail}\FunctionTok{,}\StringTok{'0 0$(4!:55);:''sonl_z_ SOLOCALE_z_ soput_z_ soclear_z_'''}\FunctionTok{,}\NormalTok{tag}
+\NormalTok{tail}\CharTok{=.} \NormalTok{tail}\FunctionTok{,}\NormalTok{SOPASS}\FunctionTok{,}\NormalTok{DUMPMSG2}\FunctionTok{,}\NormalTok{tag}
+
+\CommentTok{NB. append trailer error msg: unable to append to dumpfile}
+\KeywordTok{if.} \NormalTok{_}\DecValTok{1} \FunctionTok{-:} \RegionMarkerTok{(}\NormalTok{toHOST tail}\RegionMarkerTok{)} \NormalTok{fap }\FunctionTok{<}\DataTypeTok{y} \KeywordTok{do.} \RegionMarkerTok{(}\NormalTok{jderr ERR0}\DecValTok{155}\RegionMarkerTok{)}\FunctionTok{,<}\DataTypeTok{y} \KeywordTok{else.} \NormalTok{OK }\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{dumpwords}\AlertTok{=:}\index{dumpwords@\texttt{dumpwords}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*dumpwords v-- dumps path words to an ASCII script file. Nouns}
+\CommentTok{NB. are dumped first in alphabetic order and then remaining words}
+\CommentTok{NB. are dumped in alphabetic order.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  iaBlockSize dumpwords clPathFile}
+\CommentTok{NB.}
+\CommentTok{NB.   50 dumpwords 'c:\textbackslash{}j405\textbackslash{}addons\textbackslash{}jod\textbackslash{}joddev\textbackslash{}dump\textbackslash{}joddev.ijs'}
+
+\CommentTok{NB. dump all nouns}
+\KeywordTok{if.} \NormalTok{badrc nouns}\CharTok{=.} \NormalTok{did 0 }\KeywordTok{do.} \NormalTok{nouns }\KeywordTok{return.}
+\KeywordTok{else.}
+  \KeywordTok{if.} \NormalTok{2}\FunctionTok{=#}\NormalTok{nouns }\KeywordTok{do.} \CommentTok{NB. HARDCODE 2}
+    \CommentTok{NB. only one dictionary on the path - common case}
+    \KeywordTok{if.} \NormalTok{badrc nouns}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{WORD}\FunctionTok{,}\NormalTok{1}\FunctionTok{,}\NormalTok{WORD}\RegionMarkerTok{)} \NormalTok{dnl }\StringTok{''} \KeywordTok{do.} \NormalTok{nouns }\KeywordTok{return.} \KeywordTok{else.} \NormalTok{nouns}\CharTok{=.} \FunctionTok{\}.} \NormalTok{nouns }\KeywordTok{end.}
+  \KeywordTok{else.}
+    \CommentTok{NB. more than one dictionary on path - requires deeper look to determine}
+    \CommentTok{NB. whether a path order fetched word is a noun or something else}
+    \KeywordTok{if.} \NormalTok{badrc nouns}\CharTok{=.} \NormalTok{0 _}\DecValTok{1} \NormalTok{0 dnl }\StringTok{''} \KeywordTok{do.} \NormalTok{nouns }\KeywordTok{return.} \KeywordTok{end.}
+    \KeywordTok{if.} \NormalTok{badrc other}\CharTok{=.} \NormalTok{0 _}\DecValTok{1} \NormalTok{dnl }\StringTok{''}   \KeywordTok{do.} \NormalTok{other }\KeywordTok{return.} \KeywordTok{end.}
+
+    \NormalTok{other}\CharTok{=.} \FunctionTok{\}.}\NormalTok{other}
+    \NormalTok{nouns}\CharTok{=.} \FunctionTok{\}.}\NormalTok{nouns}
+    \NormalTok{other}\CharTok{=.} \NormalTok{other }\FunctionTok{-.}\OtherTok{&.}\FunctionTok{>} \NormalTok{nouns}
+
+    \CommentTok{NB. sorted list of nouns that will be retrieved in path order}
+    \NormalTok{nouns}\CharTok{=.} \FunctionTok{/:}\OtherTok{~} \FunctionTok{~.} \FunctionTok{;} \NormalTok{nouns }\FunctionTok{-.}\OtherTok{&.}\FunctionTok{>} \FunctionTok{~.}\OtherTok{@:}\FunctionTok{;}\OtherTok{&.}\FunctionTok{>} \FunctionTok{<}\OtherTok{"}\NormalTok{1 }\FunctionTok{,}\OtherTok{\textbackslash{}} \NormalTok{other}
+
+  \KeywordTok{end.}
+\KeywordTok{end.}
+
+\NormalTok{putclr}\CharTok{=.} \NormalTok{LF}\FunctionTok{,}\NormalTok{LF}\FunctionTok{,}\NormalTok{SOPASS}\FunctionTok{,}\NormalTok{SOPUT}\FunctionTok{,}\NormalTok{LF}\FunctionTok{,}\NormalTok{SOCLEAR}
+\NormalTok{putso}\CharTok{=.} \NormalTok{LF}\FunctionTok{,}\NormalTok{SOSWITCH}\FunctionTok{,}\NormalTok{LF}
+\NormalTok{noc}\CharTok{=.} \NormalTok{WORD}\FunctionTok{,}\NormalTok{0}
+\NormalTok{out}\CharTok{=.} \FunctionTok{<}\DataTypeTok{y}
+\NormalTok{space}\CharTok{=.} \NormalTok{2           }\CommentTok{NB. generates one blank line between objects}
+\NormalTok{wnc}\CharTok{=.} \NormalTok{WORD}\FunctionTok{,}\NormalTok{INCLASS  }\CommentTok{NB. word name class code}
+
+\KeywordTok{if.} \RegionMarkerTok{(}\NormalTok{0}\FunctionTok{<#}\NormalTok{nouns}\RegionMarkerTok{)} \FunctionTok{*.} \FunctionTok{-.} \FunctionTok{a:} \FunctionTok{e.} \NormalTok{nouns }\KeywordTok{do.}
+  \KeywordTok{if.} \NormalTok{badrc wnc}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{WORD}\FunctionTok{,}\NormalTok{INCLASS}\RegionMarkerTok{)} \NormalTok{invfetch_}\DecValTok{_}\NormalTok{ST nouns }\KeywordTok{do.} \NormalTok{wnc }\KeywordTok{return.}
+  \KeywordTok{else.} \NormalTok{wnc}\CharTok{=.}\RegionMarkerTok{(}\FunctionTok{-}\DataTypeTok{x}\RegionMarkerTok{)} \FunctionTok{<}\OtherTok{\textbackslash{}} \NormalTok{rv wnc}
+  \KeywordTok{end.}
+  \NormalTok{names}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{-}\DataTypeTok{x}\RegionMarkerTok{)} \FunctionTok{<}\OtherTok{\textbackslash{}} \NormalTok{nouns}
+  \KeywordTok{for_blk.} \NormalTok{names }\KeywordTok{do.}
+
+    \CommentTok{NB. get block of nouns}
+    \KeywordTok{if.} \NormalTok{badrc uv}\CharTok{=.} \NormalTok{noc getobjects_}\DecValTok{_}\NormalTok{ST }\FunctionTok{>}\NormalTok{blk }\KeywordTok{do.} \NormalTok{uv }\KeywordTok{return.} \KeywordTok{else.} \NormalTok{uv}\CharTok{=.} \NormalTok{rv uv }\KeywordTok{end.}
+
+    \CommentTok{NB. check component-directory name class for consistency - classes must}
+    \CommentTok{NB. be consistent to insure that the dump script can properly reload}
+    \KeywordTok{if.} \NormalTok{1 }\FunctionTok{e.} \NormalTok{mask}\CharTok{=.}\FunctionTok{-.}\RegionMarkerTok{(}\FunctionTok{>}\NormalTok{blk_index}\FunctionTok{\{}\NormalTok{wnc}\RegionMarkerTok{)} \FunctionTok{=} \FunctionTok{;} \NormalTok{1 }\FunctionTok{\{}\OtherTok{"}\NormalTok{1 uv }\KeywordTok{do.}
+      \CommentTok{NB. error msg: directory-component name class inconsistency -- dump aborted}
+      \RegionMarkerTok{(}\NormalTok{jderr ERR0}\DecValTok{157}\RegionMarkerTok{)}\FunctionTok{,}\NormalTok{mask}\FunctionTok{#}\NormalTok{0}\FunctionTok{\{}\OtherTok{"}\NormalTok{1 uv }\KeywordTok{return.}
+    \KeywordTok{end.}
+
+    \CommentTok{NB. convert to linear representations}
+    \CommentTok{NB. NIMP not wrapping large binaries}
+    \KeywordTok{if.} \NormalTok{badrc uv}\CharTok{=.} \NormalTok{0 nounlrep uv }\KeywordTok{do.} \NormalTok{uv }\KeywordTok{return.} \KeywordTok{else.} \NormalTok{uv}\CharTok{=.}\NormalTok{rv uv }\KeywordTok{end.}
+    \NormalTok{uv}\CharTok{=.} \NormalTok{space jscript jscriptdefs uv}
+
+    \CommentTok{NB. insert JOD commands to reload}
+    \NormalTok{uv}\CharTok{=.} \NormalTok{toHOST putso}\FunctionTok{,}\NormalTok{uv}\FunctionTok{,}\NormalTok{putclr}
+
+    \CommentTok{NB. append to file}
+    \KeywordTok{if.} \NormalTok{_}\DecValTok{1} \FunctionTok{-:} \NormalTok{uv fap out }\KeywordTok{do.} \RegionMarkerTok{(}\NormalTok{jderr ERR0}\DecValTok{155}\RegionMarkerTok{)}\FunctionTok{,}\NormalTok{out }\KeywordTok{return.} \KeywordTok{end.}
+  \KeywordTok{end.}
+\KeywordTok{end.}
+
+\CommentTok{NB. append all remaining words that are stored as text}
+\KeywordTok{if.} \NormalTok{badrc names}\CharTok{=.} \NormalTok{dnl }\StringTok{''} \KeywordTok{do.} \NormalTok{names }\KeywordTok{return.} \KeywordTok{else.} \NormalTok{vnc}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{names}\CharTok{=.} \FunctionTok{\}.}\NormalTok{names }\FunctionTok{-.} \FunctionTok{a:}\RegionMarkerTok{)} \FunctionTok{-.} \NormalTok{nouns }\KeywordTok{end.}
+\NormalTok{nouns}\CharTok{=.}\NormalTok{0}
+
+\KeywordTok{if.} \FunctionTok{#}\NormalTok{vnc }\KeywordTok{do.}
+  \KeywordTok{if.} \NormalTok{badrc wnc}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{WORD}\FunctionTok{,}\NormalTok{INCLASS}\RegionMarkerTok{)} \NormalTok{invfetch_}\DecValTok{_}\NormalTok{ST vnc }\KeywordTok{do.} \NormalTok{wnc }\KeywordTok{return.}
+  \KeywordTok{else.} \NormalTok{wnc}\CharTok{=.}\RegionMarkerTok{(}\FunctionTok{-}\DataTypeTok{x}\RegionMarkerTok{)} \FunctionTok{<}\OtherTok{\textbackslash{}} \NormalTok{rv wnc}
+  \KeywordTok{end.}
+  \NormalTok{vnc}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{-}\DataTypeTok{x}\RegionMarkerTok{)} \FunctionTok{<}\OtherTok{\textbackslash{}} \NormalTok{vnc}
+  \KeywordTok{for_blk.} \NormalTok{vnc }\KeywordTok{do.}
+    \KeywordTok{if.} \NormalTok{badrc uv}\CharTok{=.} \NormalTok{noc getobjects_}\DecValTok{_}\NormalTok{ST }\FunctionTok{>}\NormalTok{blk }\KeywordTok{do.} \NormalTok{uv }\KeywordTok{return.} \KeywordTok{else.} \NormalTok{uv}\CharTok{=.} \NormalTok{rv uv }\KeywordTok{end.}
+    \KeywordTok{if.} \NormalTok{1 }\FunctionTok{e.} \NormalTok{mask}\CharTok{=.}\FunctionTok{-.}\RegionMarkerTok{(}\FunctionTok{>}\NormalTok{blk_index}\FunctionTok{\{}\NormalTok{wnc}\RegionMarkerTok{)} \FunctionTok{=} \FunctionTok{;} \NormalTok{1 }\FunctionTok{\{}\OtherTok{"}\NormalTok{1 uv }\KeywordTok{do.}
+      \RegionMarkerTok{(}\NormalTok{jderr ERR0}\DecValTok{157}\RegionMarkerTok{)}\FunctionTok{,}\NormalTok{mask}\FunctionTok{#}\NormalTok{0}\FunctionTok{\{}\OtherTok{"}\NormalTok{1 uv }\KeywordTok{return.}
+    \KeywordTok{end.}
+    \NormalTok{uv}\CharTok{=.} \NormalTok{space jscript jscriptdefs uv}
+    \NormalTok{uv}\CharTok{=.} \NormalTok{toHOST putso}\FunctionTok{,}\NormalTok{uv}\FunctionTok{,}\NormalTok{putclr}
+    \KeywordTok{if.} \NormalTok{_}\DecValTok{1} \FunctionTok{-:} \NormalTok{uv fap out }\KeywordTok{do.} \RegionMarkerTok{(}\NormalTok{jderr ERR0}\DecValTok{155}\RegionMarkerTok{)}\FunctionTok{,}\NormalTok{out }\KeywordTok{return.} \KeywordTok{end.}
+  \KeywordTok{end.}
+\KeywordTok{end.}
+
+\CommentTok{NB. dump word documentation}
+\KeywordTok{if.} \FunctionTok{-.} \FunctionTok{a:} \FunctionTok{e.} \NormalTok{names }\KeywordTok{do.} \RegionMarkerTok{(}\DataTypeTok{x}\FunctionTok{;}\NormalTok{WORD}\FunctionTok{;}\NormalTok{out}\RegionMarkerTok{)} \NormalTok{dumpdoc names }\KeywordTok{else.} \NormalTok{OK }\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{extscopes}\AlertTok{=:}\index{extscopes@\texttt{extscopes}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*extscopes  v--  handles  exceptions  to  normal  J assignment}
+\CommentTok{NB. scoping rules. The exceptions are:}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  extscopes blclParsed}
+\CommentTok{NB.}
+\CommentTok{NB.   'quoted locals'=.}
+\CommentTok{NB.   'quoted globals'=:}
+\CommentTok{NB.}
+\CommentTok{NB.   for_loopvar. x do.}
+\CommentTok{NB.       $ loopvar        NB. implict for. local references}
+\CommentTok{NB.       loopvar_index}
+\CommentTok{NB.   end.}
+
+\CommentTok{NB. get any quoted assignments from syntactically correct code}
+\NormalTok{qlocs}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{\}.}\OtherTok{@:}\FunctionTok{\}:}\RegionMarkerTok{)} \OtherTok{&.}\FunctionTok{>} \DataTypeTok{u} \FunctionTok{#}\OtherTok{~} \StringTok{''''} \FunctionTok{=} \FunctionTok{\{.}\OtherTok{&}\FunctionTok{>} \DataTypeTok{u}\CharTok{=.} \DataTypeTok{y} \FunctionTok{#}\OtherTok{~} \NormalTok{1}\FunctionTok{\textbar{}.}\DataTypeTok{y} \FunctionTok{=} \FunctionTok{<}\StringTok{'=.'}
+\NormalTok{qgbls}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{\}.}\OtherTok{@:}\FunctionTok{\}:}\RegionMarkerTok{)} \OtherTok{&.}\FunctionTok{>} \DataTypeTok{u} \FunctionTok{#}\OtherTok{~} \StringTok{''''} \FunctionTok{=} \FunctionTok{\{.}\OtherTok{&}\FunctionTok{>} \DataTypeTok{u}\CharTok{=.} \DataTypeTok{y} \FunctionTok{#}\OtherTok{~} \NormalTok{1}\FunctionTok{\textbar{}.}\DataTypeTok{y} \FunctionTok{=} \FunctionTok{<}\StringTok{'=:'}
+\KeywordTok{if.} \FunctionTok{#}\NormalTok{qlocs }\KeywordTok{do.} \NormalTok{qlocs}\CharTok{=.} \NormalTok{jnfrblcl }\FunctionTok{<}\OtherTok{;.}\NormalTok{_}\DecValTok{1} \FunctionTok{;} \StringTok{' '} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \NormalTok{qlocs }\KeywordTok{end.}
+\KeywordTok{if.} \FunctionTok{#}\NormalTok{qgbls }\KeywordTok{do.} \NormalTok{qgbls}\CharTok{=.} \NormalTok{jnfrblcl }\FunctionTok{<}\OtherTok{;.}\NormalTok{_}\DecValTok{1} \FunctionTok{;} \StringTok{' '} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \NormalTok{qgbls }\KeywordTok{end.}
+
+\CommentTok{NB. get any implicit for. locals}
+\NormalTok{flocs}\CharTok{=.} \StringTok{''}
+\KeywordTok{if.} \FunctionTok{+.}\OtherTok{/} \DataTypeTok{u}\CharTok{=.} \RegionMarkerTok{((}\NormalTok{4}\OtherTok{&}\FunctionTok{\{.}\OtherTok{&.}\FunctionTok{>} \DataTypeTok{y}\RegionMarkerTok{)} \FunctionTok{e.} \FunctionTok{<}\StringTok{'for_'}\RegionMarkerTok{)} \FunctionTok{*.} \StringTok{'.'} \FunctionTok{=} \FunctionTok{\{:}\OtherTok{&}\FunctionTok{>} \DataTypeTok{y} \KeywordTok{do.}
+  \DataTypeTok{u}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{4}\OtherTok{&}\FunctionTok{\}.}\OtherTok{@:}\FunctionTok{\}:}\RegionMarkerTok{)}\OtherTok{&.}\FunctionTok{>} \DataTypeTok{u} \FunctionTok{#} \DataTypeTok{y}
+  \DataTypeTok{u}\CharTok{=.} \DataTypeTok{u} \FunctionTok{,} \DataTypeTok{u} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \FunctionTok{<}\StringTok{'_index'}  \CommentTok{NB. possible implicits}
+  \NormalTok{flocs}\CharTok{=.} \FunctionTok{,} \DataTypeTok{y} \FunctionTok{#}\OtherTok{~} \DataTypeTok{y} \FunctionTok{e.} \DataTypeTok{u}
+\KeywordTok{end.}
+
+\RegionMarkerTok{(}\FunctionTok{<}\NormalTok{qgbls}\RegionMarkerTok{)}\FunctionTok{,}\RegionMarkerTok{(}\FunctionTok{<}\NormalTok{qlocs}\FunctionTok{,}\NormalTok{flocs}\RegionMarkerTok{)}\FunctionTok{,<}\NormalTok{flocs}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. direct file append with error trap}
+\NormalTok{fap}\AlertTok{=:}\index{fap@\texttt{fap}}\NormalTok{1}\OtherTok{!:}\NormalTok{3 }\OtherTok{::}\RegionMarkerTok{(}\FunctionTok{_1:}\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{fmtdumptext}\AlertTok{=:}\index{fmtdumptext@\texttt{fmtdumptext}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*fmtdumptext  v--  formats  (name,text)  tables  for  dumping.}
+\CommentTok{NB. Result is a J script character list or null.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  (clName ; iaWidth) fmtdumptext btNameText}
+\CommentTok{NB.}
+\CommentTok{NB.   ('z';67) fmtdumptext 1 pick 0 8 get \}. dnl ''}
+
+\CommentTok{NB. remove null entries}
+\KeywordTok{if.} \FunctionTok{#}\NormalTok{text}\CharTok{=.} \DataTypeTok{y} \FunctionTok{#}\OtherTok{~} \NormalTok{0 }\FunctionTok{<} \FunctionTok{#}\OtherTok{&}\FunctionTok{>} \FunctionTok{\{:}\OtherTok{"}\NormalTok{1 }\DataTypeTok{y} \KeywordTok{do.}
+
+  \NormalTok{ascii8}\DecValTok{5}\CharTok{=.} \NormalTok{0 }\CommentTok{NB. do not use ascii85 default}
+
+  \CommentTok{NB. if setting exists in class use it}
+  \KeywordTok{if.} \NormalTok{0}\FunctionTok{=}\NormalTok{nc}\FunctionTok{<}\StringTok{'ASCII85'}     \KeywordTok{do.} \NormalTok{ascii8}\DecValTok{5}\CharTok{=.} \NormalTok{1}\FunctionTok{=}\NormalTok{ASCII8}\DecValTok{5}
+  \KeywordTok{elseif.}
+      \CommentTok{NB. if ASCII85 setting exists in put dictionary directory use it}
+      \NormalTok{do}\CharTok{=.} \FunctionTok{\{:} \FunctionTok{\{.}\NormalTok{DPATH_}\DecValTok{_}\NormalTok{ST}
+      \NormalTok{0}\FunctionTok{=}\NormalTok{nc}\FunctionTok{<}\StringTok{'ASCII85__do'} \KeywordTok{do.} \NormalTok{ascii8}\DecValTok{5}\CharTok{=.} \NormalTok{1}\FunctionTok{=}\NormalTok{ASCII85__do}
+  \KeywordTok{end.}
+
+  \CommentTok{NB. The (5!:5) representation will produce}
+  \CommentTok{NB. a large a. index representation when any}
+  \CommentTok{NB. unprintable characters are present.  To get}
+  \CommentTok{NB. a compact representation for ASCII85 5!:5 must}
+  \CommentTok{NB. be replaced in this context}
+  \KeywordTok{if.} \NormalTok{ascii8}\DecValTok{5} \KeywordTok{do.} \NormalTok{text}\CharTok{=.} \NormalTok{clfrbtcl }\FunctionTok{":}\OtherTok{&.}\FunctionTok{>} \NormalTok{text }\KeywordTok{else.} \NormalTok{text}\CharTok{=.} \NormalTok{5}\OtherTok{!:}\NormalTok{5 }\FunctionTok{<}\StringTok{'text'} \KeywordTok{end.}
+
+  \RegionMarkerTok{(}\DataTypeTok{x}\FunctionTok{,<}\NormalTok{ascii8}\DecValTok{5}\RegionMarkerTok{)} \NormalTok{wraplinear text}
+\KeywordTok{else.}
+  \StringTok{''}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{fromascii8}\DecValTok{5}\AlertTok{=:}\index{fromascii85@\texttt{fromascii85}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*fromascii85 v-- decode ASCII85 representation.}
+\CommentTok{NB.}
+\CommentTok{NB. Inverse of (toascii85).}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  cl =. fromascii85 clA85}
+
+\NormalTok{r}\CharTok{=.} \FunctionTok{,}\DataTypeTok{y}
+\NormalTok{r}\CharTok{=.} \FunctionTok{a.i.}\NormalTok{r}
+\NormalTok{r}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{r }\FunctionTok{>} \NormalTok{3}\DecValTok{2}\RegionMarkerTok{)} \FunctionTok{#} \NormalTok{r}
+\NormalTok{r}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{2 }\FunctionTok{*} \RegionMarkerTok{(}\FunctionTok{a.i.}\StringTok{'<~'}\RegionMarkerTok{)} \FunctionTok{-:} \NormalTok{2 }\FunctionTok{\{.} \NormalTok{r}\RegionMarkerTok{)} \FunctionTok{\}.} \NormalTok{r}
+\NormalTok{r}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{-}\NormalTok{2 }\FunctionTok{*} \RegionMarkerTok{(}\FunctionTok{a.i.}\StringTok{'~>'}\RegionMarkerTok{)} \FunctionTok{-:} \NormalTok{_}\DecValTok{2} \FunctionTok{\{.} \NormalTok{r}\RegionMarkerTok{)} \FunctionTok{\}.} \NormalTok{r}
+\DataTypeTok{m}\CharTok{=.} \NormalTok{r }\FunctionTok{=} \FunctionTok{a.i.}\StringTok{'z'}
+\NormalTok{r}\CharTok{=.} \NormalTok{r }\FunctionTok{-} \NormalTok{3}\DecValTok{3}
+\NormalTok{r}\CharTok{=.} \NormalTok{0 }\RegionMarkerTok{(}\FunctionTok{I.}\DataTypeTok{m}\RegionMarkerTok{)} \OtherTok{\}} \NormalTok{r}
+\NormalTok{r}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{1}\FunctionTok{+}\NormalTok{4}\FunctionTok{*}\DataTypeTok{m}\RegionMarkerTok{)} \FunctionTok{#} \NormalTok{r}
+\NormalTok{b}\CharTok{=.} \NormalTok{5 }\FunctionTok{\textbar{}} \FunctionTok{#}\NormalTok{r}
+\NormalTok{r}\CharTok{=.} \NormalTok{r}\FunctionTok{,}\NormalTok{8}\DecValTok{4} \FunctionTok{#}\OtherTok{~} \NormalTok{b}\FunctionTok{\{} \NormalTok{0 4 3 2 1}
+\NormalTok{r}\CharTok{=.} \FunctionTok{a.\{}\OtherTok{~} \FunctionTok{,}\RegionMarkerTok{(}\NormalTok{4}\FunctionTok{#}\NormalTok{2}\DecValTok{56}\RegionMarkerTok{)} \FunctionTok{#:} \NormalTok{8}\DecValTok{5} \FunctionTok{#.} \NormalTok{_}\DecValTok{5} \FunctionTok{[}\OtherTok{\textbackslash{}} \NormalTok{r}
+\NormalTok{r }\FunctionTok{\}.}\OtherTok{~} \FunctionTok{-} \NormalTok{b }\FunctionTok{\{} \NormalTok{0 0 3 2 1}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. 0's every other 1 in even groups of 1's}
+\NormalTok{halfbits}\AlertTok{=:}\index{halfbits@\texttt{halfbits}}\FunctionTok{]} \FunctionTok{*.} \NormalTok{1 0}\OtherTok{"}\NormalTok{_ }\FunctionTok{$}\OtherTok{~} \FunctionTok{#}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. clips head and tail delimited lists - see long documentation}
+\NormalTok{htclip}\AlertTok{=:}\index{htclip@\texttt{htclip}}\FunctionTok{[} \RegionMarkerTok{(}\FunctionTok{]} \FunctionTok{\}.}\OtherTok{~} \FunctionTok{[:} \FunctionTok{>:} \FunctionTok{]} \FunctionTok{i.} \FunctionTok{[}\RegionMarkerTok{)} \FunctionTok{]} \FunctionTok{\}.}\OtherTok{~} \FunctionTok{[:} \FunctionTok{-} \FunctionTok{[:} \FunctionTok{>:} \FunctionTok{[} \FunctionTok{i.}\OtherTok{~} \FunctionTok{[:} \FunctionTok{\textbar{}.} \FunctionTok{]}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{jnb}\AlertTok{=:}\index{jnb@\texttt{jnb}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+\CommentTok{NB.*jnb v-- blanks out J code leaving only comments}
+\DataTypeTok{y} \NormalTok{jnb}\OtherTok{~} \NormalTok{masknb }\DataTypeTok{y}
+\OtherTok{:}
+\RegionMarkerTok{(}\DataTypeTok{x} \FunctionTok{*} \FunctionTok{>:} \FunctionTok{i.} \FunctionTok{$} \DataTypeTok{x}\RegionMarkerTok{)}\FunctionTok{\{}\StringTok{' '}\FunctionTok{,,}\DataTypeTok{y}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. definition table to script text}
+\NormalTok{jscript}\AlertTok{=:}\index{jscript@\texttt{jscript}}\FunctionTok{[:} \FunctionTok{;} \RegionMarkerTok{((}\FunctionTok{[:} \FunctionTok{<}\OtherTok{"}\NormalTok{0 }\FunctionTok{[}\RegionMarkerTok{)} \FunctionTok{#}\OtherTok{&.}\FunctionTok{>} \RegionMarkerTok{(}\NormalTok{1}\DecValTok{0}\FunctionTok{\{a.}\RegionMarkerTok{)}\OtherTok{"}\NormalTok{_}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \FunctionTok{]}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. name, class, definition table to assigned name table}
+\NormalTok{jscriptdefs}\AlertTok{=:}\index{jscriptdefs@\texttt{jscriptdefs}}\RegionMarkerTok{((}\FunctionTok{[:} \FunctionTok{\{.}\OtherTok{"}\NormalTok{1 }\FunctionTok{]}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \RegionMarkerTok{(}\FunctionTok{<}\StringTok{'=:'}\RegionMarkerTok{)}\OtherTok{"}\NormalTok{_}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \FunctionTok{[:} \FunctionTok{\{:}\OtherTok{"}\NormalTok{1 }\FunctionTok{]}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{makedump}\AlertTok{=:}\index{makedump@\texttt{makedump}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*makedump  v-- dumps the current path as a J  script file. The}
+\CommentTok{NB. dump script can be run back  into  JOD  to rebuild  a  single}
+\CommentTok{NB. dictionary that contains all objects on the current path. The}
+\CommentTok{NB. dump script is a simple ASCII file  that is intended for long}
+\CommentTok{NB. term storage of J  words in a form that is immune to  changes}
+\CommentTok{NB. in binary storage formats.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  makedump uuIgnore}
+
+\CommentTok{NB. do we have a dictionary open?}
+\KeywordTok{if.} \NormalTok{badrc uv}\CharTok{=.} \NormalTok{checkopen_}\DecValTok{_}\NormalTok{ST 0 }\KeywordTok{do.} \NormalTok{uv }\KeywordTok{return.} \KeywordTok{end.}
+
+\CommentTok{NB. create dump file in put dump directory !(*)=. DL}
+\NormalTok{DL}\CharTok{=.}\FunctionTok{\{:\{.}\NormalTok{DPATH_}\DecValTok{_}\NormalTok{ST}
+
+\CommentTok{NB. dumpfactor is set from the put dictionary}
+\NormalTok{df}\CharTok{=.} \NormalTok{DUMPFACTOR_}\DecValTok{_}\NormalTok{DL}
+
+\CommentTok{NB. default dump file name is the put dictionary name}
+\KeywordTok{if.} \NormalTok{isempty }\DataTypeTok{y}   \KeywordTok{do.} \NormalTok{dumpfile}\CharTok{=.} \NormalTok{DMP_}\DecValTok{_}\NormalTok{DL}\FunctionTok{,}\NormalTok{DNAME_}\DecValTok{_}\NormalTok{DL}\FunctionTok{,}\NormalTok{IJS}
+\KeywordTok{elseif.} \NormalTok{badcl }\DataTypeTok{y} \KeywordTok{do.} \NormalTok{jderr ERR0}\DecValTok{158} \KeywordTok{return.} \CommentTok{NB. error msg: invalid dump file}
+\KeywordTok{elseif.do.} \NormalTok{dumpfile}\CharTok{=.} \DataTypeTok{y}
+\KeywordTok{end.}
+
+\CommentTok{NB. standardize path character}
+\NormalTok{dumpfile}\CharTok{=.} \NormalTok{jpathsep dumpfile}
+
+\KeywordTok{if.}     \NormalTok{badrc uv}\CharTok{=.} \NormalTok{dumpheader dumpfile        }\KeywordTok{do.} \NormalTok{uv}
+\KeywordTok{elseif.} \NormalTok{badrc uv}\CharTok{=.} \NormalTok{df dumpwords dumpfile      }\KeywordTok{do.} \NormalTok{uv}
+\KeywordTok{elseif.} \NormalTok{badrc uv}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{df}\FunctionTok{,}\NormalTok{TEST}\RegionMarkerTok{)} \NormalTok{dumptm dumpfile  }\KeywordTok{do.} \NormalTok{uv}
+\KeywordTok{elseif.} \NormalTok{badrc uv}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{df}\FunctionTok{,}\NormalTok{MACRO}\RegionMarkerTok{)} \NormalTok{dumptm dumpfile }\KeywordTok{do.} \NormalTok{uv}
+\KeywordTok{elseif.} \NormalTok{badrc uv}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{df}\FunctionTok{,}\NormalTok{GROUP}\RegionMarkerTok{)} \NormalTok{dumpgs dumpfile }\KeywordTok{do.} \NormalTok{uv}
+\KeywordTok{elseif.} \NormalTok{badrc uv}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{df}\FunctionTok{,}\NormalTok{SUITE}\RegionMarkerTok{)} \NormalTok{dumpgs dumpfile }\KeywordTok{do.} \NormalTok{uv}
+\KeywordTok{elseif.} \NormalTok{badrc uv}\CharTok{=.} \NormalTok{dumpdictdoc dumpfile       }\KeywordTok{do.} \NormalTok{uv}
+\KeywordTok{elseif.} \NormalTok{badrc uv}\CharTok{=.} \NormalTok{dumptrailer dumpfile       }\KeywordTok{do.} \NormalTok{uv}
+\KeywordTok{elseif.do.}
+  \RegionMarkerTok{(}\NormalTok{ok OK0}\DecValTok{151}\RegionMarkerTok{)}\FunctionTok{,<}\NormalTok{dumpfile}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{makegs}\AlertTok{=:}\index{makegs@\texttt{makegs}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*makegs  v--  make  group   and  suite  scripts.  Objects  are}
+\CommentTok{NB. assembled by name class and within class alphabetically.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  iaObject makegs clName}
+\CommentTok{NB.}
+\CommentTok{NB.   2 makegs 'group'}
+
+\StringTok{'obj wf'}\CharTok{=.} \DataTypeTok{x}
+\NormalTok{DL}\CharTok{=.}\FunctionTok{\{:\{.}\NormalTok{DPATH_}\DecValTok{_}\NormalTok{ST}
+
+\CommentTok{NB. for postive option codes generate files only if the object}
+\CommentTok{NB. is in the put dictionary for negative codes generate files}
+\CommentTok{NB. regardless of where on the path it occurs. Generated files}
+\CommentTok{NB. are ALWAYS written to the put dictionary script directory}
+\NormalTok{wf}\CharTok{=.} \FunctionTok{\textbar{}}\NormalTok{wf }\FunctionTok{[} \NormalTok{po}\CharTok{=.} \NormalTok{0}\FunctionTok{<}\NormalTok{wf}
+
+\CommentTok{NB. errmsg: invalid group/suite name}
+\KeywordTok{if.} \RegionMarkerTok{(}\NormalTok{isempty }\FunctionTok{+.} \NormalTok{badcl}\RegionMarkerTok{)} \DataTypeTok{y} \KeywordTok{do.} \NormalTok{jderr ERR0}\DecValTok{154} \KeywordTok{return.} \KeywordTok{end.}
+\KeywordTok{if.} \NormalTok{badrc head}\CharTok{=.} \NormalTok{obj getgstext_}\DecValTok{_}\NormalTok{ST }\DataTypeTok{y} \KeywordTok{do.} \NormalTok{head }\KeywordTok{return.} \KeywordTok{end.}
+
+\CommentTok{NB. generate files for dictionary objects}
+\KeywordTok{if.} \RegionMarkerTok{(}\NormalTok{1}\FunctionTok{=}\NormalTok{wf}\RegionMarkerTok{)} \FunctionTok{*.} \NormalTok{po }\KeywordTok{do.}
+  \KeywordTok{if.} \NormalTok{badrc uv}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{obj}\FunctionTok{;<}\NormalTok{DL}\RegionMarkerTok{)} \NormalTok{inputdict_}\DecValTok{_}\NormalTok{ST }\FunctionTok{<}\DataTypeTok{y}\CharTok{=.} \DataTypeTok{y}\FunctionTok{-.}\StringTok{' '} \KeywordTok{do.} \NormalTok{uv }\KeywordTok{return.} \KeywordTok{end.}
+\KeywordTok{end.}
+
+\CommentTok{NB. get group or suite list and generate text}
+\KeywordTok{if.} \NormalTok{badrc uv}\CharTok{=.} \NormalTok{obj gslistnl_}\DecValTok{_}\NormalTok{ST }\DataTypeTok{y} \KeywordTok{do.} \NormalTok{uv }\KeywordTok{return.} \KeywordTok{end.}
+\KeywordTok{if.} \NormalTok{isempty }\FunctionTok{>}\NormalTok{1}\FunctionTok{\{}\NormalTok{uv }\KeywordTok{do.} \NormalTok{uv}\CharTok{=.}\StringTok{''}
+\KeywordTok{else.}
+  \KeywordTok{if.} \NormalTok{DODEPENDENTS }\KeywordTok{do.}
+    \CommentTok{NB. process any dependent sections in headers and adjust lists}
+    \KeywordTok{if.} \NormalTok{badrc deps}\CharTok{=.} \NormalTok{obj gdeps }\DataTypeTok{y} \KeywordTok{do.} \NormalTok{deps }\KeywordTok{return.} \KeywordTok{else.} \NormalTok{deps}\CharTok{=.}\FunctionTok{\}.} \NormalTok{deps }\KeywordTok{end.}
+  \KeywordTok{else.}
+    \NormalTok{deps}\CharTok{=.}\StringTok{''}
+  \KeywordTok{end.}
+  \CommentTok{NB. dependents may empty group/suite list}
+  \KeywordTok{if.} \FunctionTok{#}\NormalTok{uv}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{\}.}\NormalTok{uv}\RegionMarkerTok{)}\FunctionTok{-.}\NormalTok{deps }\KeywordTok{do.}
+    \KeywordTok{if.} \NormalTok{badrc uv}\CharTok{=.} \RegionMarkerTok{((}\NormalTok{obj}\FunctionTok{-}\NormalTok{2}\RegionMarkerTok{)}\FunctionTok{,}\NormalTok{0}\RegionMarkerTok{)} \NormalTok{getobjects_}\DecValTok{_}\NormalTok{ST uv }\KeywordTok{do.} \NormalTok{uv }\KeywordTok{return.} \KeywordTok{end.}
+    \KeywordTok{if.} \NormalTok{badrc uv}\CharTok{=.} \RegionMarkerTok{((}\NormalTok{obj}\FunctionTok{-}\NormalTok{2}\RegionMarkerTok{)}\FunctionTok{,}\NormalTok{0}\RegionMarkerTok{)} \NormalTok{wttext rv uv }\KeywordTok{do.} \NormalTok{uv }\KeywordTok{return.} \KeywordTok{end.}
+    \NormalTok{uv}\CharTok{=.}\NormalTok{rv uv}
+  \KeywordTok{else.} \NormalTok{uv}\CharTok{=.}\StringTok{''}
+  \KeywordTok{end.}
+\KeywordTok{end.}
+
+\CommentTok{NB. trim any header and append to word or test text}
+\KeywordTok{if.} \FunctionTok{#}\NormalTok{head}\CharTok{=.} \NormalTok{alltrim}\OtherTok{@:}\NormalTok{lfcrtrim }\RegionMarkerTok{(}\NormalTok{1}\FunctionTok{;}\NormalTok{0 1}\RegionMarkerTok{)} \FunctionTok{\{::} \NormalTok{head }\KeywordTok{do.} \NormalTok{uv}\CharTok{=.} \NormalTok{head}\FunctionTok{,}\NormalTok{LF}\FunctionTok{,}\NormalTok{HEADEND}\FunctionTok{,}\NormalTok{LF}\FunctionTok{,}\NormalTok{LF}\FunctionTok{,}\NormalTok{uv }\KeywordTok{end.}
+
+\CommentTok{NB. write file or return character list result}
+\KeywordTok{if.} \NormalTok{1}\FunctionTok{=}\NormalTok{wf }\KeywordTok{do.} \RegionMarkerTok{(}\NormalTok{obj}\FunctionTok{;}\DataTypeTok{y}\RegionMarkerTok{)} \NormalTok{writeijs uv }\KeywordTok{else.} \NormalTok{ok uv }\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{masknb}\AlertTok{=:}\index{masknb@\texttt{masknb}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*masknb v-- bit mask of unquoted comment starts.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  masknb ct}
+\CommentTok{NB. dyad:  cl masknb ct}
+
+\StringTok{'NB.'} \NormalTok{masknb }\DataTypeTok{y}
+\OtherTok{:}
+\NormalTok{c }\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{$}\DataTypeTok{y}\RegionMarkerTok{)}\FunctionTok{$}\DataTypeTok{x} \FunctionTok{E.} \FunctionTok{,}\DataTypeTok{y}
+\FunctionTok{+.}\OtherTok{/\textbackslash{}"}\NormalTok{1 c }\FunctionTok{>} \FunctionTok{~:}\OtherTok{/\textbackslash{}"}\NormalTok{1 }\DataTypeTok{y} \FunctionTok{e.} \StringTok{''''}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{namecats}\AlertTok{=:}\index{namecats@\texttt{namecats}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*namecats v-- extracts and classifies names in J code.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  pa namecats ctJcode}
+\CommentTok{NB.}
+\CommentTok{NB. name classifications}
+\CommentTok{NB.   global           global reference or assignment}
+\CommentTok{NB.   local            local reference of assignment}
+\CommentTok{NB.   declared global  names marked with global comment tag (*)=:}
+\CommentTok{NB.   declared local   names marked with local command tag (*)=.}
+\CommentTok{NB.   for. local       implicit for. locals}
+\CommentTok{NB.}
+\CommentTok{NB.  0 namecats jcr 'wordname' NB. only globals}
+\CommentTok{NB.  1 namecats jcr 'wordname' NB. full classification}
+
+\KeywordTok{if.} \NormalTok{badrc parsed}\CharTok{=.} \NormalTok{parsecode }\DataTypeTok{y} \KeywordTok{do.}
+  \NormalTok{parsed  }\CommentTok{NB. parse error}
+\KeywordTok{else.}
+  \StringTok{'dgbls dlocs parsed'}\CharTok{=.} \FunctionTok{\}.} \NormalTok{parsed}
+
+  \CommentTok{NB. handle quoted assignments and implicit for. locals}
+  \StringTok{'mgbls mlocs flocs'}\CharTok{=.} \NormalTok{extscopes parsed}
+
+  \CommentTok{NB. declarations override other scopes}
+  \NormalTok{mgbls}\CharTok{=.} \NormalTok{mgbls }\FunctionTok{-.} \NormalTok{dlocs }\FunctionTok{[} \NormalTok{mlocs}\CharTok{=.} \NormalTok{mlocs }\FunctionTok{-.} \NormalTok{dgbls}
+  \NormalTok{gbls}\CharTok{=.} \NormalTok{dgbls}\FunctionTok{,}\NormalTok{mgbls }\FunctionTok{[} \NormalTok{locs}\CharTok{=.} \NormalTok{dlocs}\FunctionTok{,}\NormalTok{mlocs}
+
+  \CommentTok{NB. pick out assignments}
+  \NormalTok{uv0}\CharTok{=.} \NormalTok{parsed }\FunctionTok{#}\OtherTok{~} \NormalTok{1}\FunctionTok{\textbar{}.}\NormalTok{parsed }\FunctionTok{=} \FunctionTok{<}\StringTok{'=.'}
+  \NormalTok{uv1}\CharTok{=.} \NormalTok{parsed }\FunctionTok{#}\OtherTok{~} \NormalTok{1}\FunctionTok{\textbar{}.}\NormalTok{parsed }\FunctionTok{=} \FunctionTok{<}\StringTok{'=:'}
+
+  \NormalTok{uv1}\CharTok{=.} \NormalTok{uv0 }\FunctionTok{-.} \NormalTok{uv0 }\FunctionTok{-.} \NormalTok{uv1}
+  \CommentTok{NB. errmsg: mixed scopes}
+  \KeywordTok{if.} \NormalTok{0}\FunctionTok{<#} \NormalTok{uv1 }\KeywordTok{do.} \RegionMarkerTok{(}\NormalTok{jderr ERR0}\DecValTok{159}\RegionMarkerTok{)}\FunctionTok{,}\NormalTok{uv1 }\KeywordTok{return.} \KeywordTok{end.}
+
+  \NormalTok{uv1}\CharTok{=.} \NormalTok{parsed }\FunctionTok{-.} \NormalTok{uv0}
+  \NormalTok{gbls}\CharTok{=.} \NormalTok{gbls }\FunctionTok{,} \RegionMarkerTok{(}\NormalTok{jnfrblcl uv1}\RegionMarkerTok{)} \FunctionTok{-.} \NormalTok{locs}\FunctionTok{,}\NormalTok{JARGS}
+
+  \KeywordTok{if.} \DataTypeTok{x} \KeywordTok{do.}
+    \CommentTok{NB. complete name classification}
+    \NormalTok{locs}\CharTok{=.} \NormalTok{locs}\FunctionTok{,}\NormalTok{jnfrblcl uv0}
+    \NormalTok{uv1}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{<}\NormalTok{gbls}\RegionMarkerTok{)}\FunctionTok{,}\RegionMarkerTok{(}\FunctionTok{<}\NormalTok{locs}\RegionMarkerTok{)}\FunctionTok{,}\RegionMarkerTok{(}\FunctionTok{<}\NormalTok{dgbls}\RegionMarkerTok{)}\FunctionTok{,}\RegionMarkerTok{(}\FunctionTok{<}\NormalTok{dlocs}\RegionMarkerTok{)}\FunctionTok{,<}\NormalTok{flocs}
+    \NormalTok{ok }\FunctionTok{<}\NormalTok{GLOBCATS }\FunctionTok{,.} \RegionMarkerTok{(}\FunctionTok{/:}\OtherTok{~}\RegionMarkerTok{)}\OtherTok{@:}\FunctionTok{~.} \OtherTok{&.}\FunctionTok{>} \NormalTok{uv1}
+  \KeywordTok{else.}
+    \CommentTok{NB. return only unique sorted globals}
+    \NormalTok{ok }\FunctionTok{/:}\OtherTok{~} \FunctionTok{~.} \NormalTok{gbls}
+  \KeywordTok{end.}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{nounlrep}\AlertTok{=:}\index{nounlrep@\texttt{nounlrep}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*nounlrep v-- converts nouns stored as binary  to linear  text}
+\CommentTok{NB. representations. Uses  a  scratch locale to temporarily define}
+\CommentTok{NB. nouns.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  iaNoex nounlrep bt}
+
+\KeywordTok{if.} \FunctionTok{#}\DataTypeTok{y} \KeywordTok{do.}
+  \NormalTok{clearso 0}
+  \NormalTok{names}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{errnames}\CharTok{=.} \FunctionTok{\{.}\OtherTok{"}\NormalTok{1 }\DataTypeTok{y}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \NormalTok{locsfx SO  }\CommentTok{NB. !(*)=. SO}
+  \KeywordTok{try.}
+    \RegionMarkerTok{(}\NormalTok{names}\RegionMarkerTok{)}\AlertTok{=:}\index{01indirect@\texttt{(...)=:}} \RegionMarkerTok{(}\NormalTok{3}\OtherTok{!:}\NormalTok{2}\RegionMarkerTok{)}\OtherTok{&.}\FunctionTok{>} \FunctionTok{\{:}\OtherTok{"}\NormalTok{1 }\DataTypeTok{y}
+    \NormalTok{names}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{5}\OtherTok{!:}\NormalTok{5}\OtherTok{@}\FunctionTok{<}\RegionMarkerTok{)}\OtherTok{&.}\FunctionTok{>} \NormalTok{names}
+  \KeywordTok{catch.} \RegionMarkerTok{(}\NormalTok{jderr ERR0}\DecValTok{16}\RegionMarkerTok{)}\FunctionTok{,}\NormalTok{errnames }\KeywordTok{return.} \KeywordTok{end.}
+  \KeywordTok{if.} \DataTypeTok{x} \KeywordTok{do.} \NormalTok{names}\CharTok{=.} \NormalTok{names }\FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \NormalTok{LF }\KeywordTok{end.}
+  \DataTypeTok{y}\CharTok{=.} \NormalTok{names }\RegionMarkerTok{(}\FunctionTok{<a:;}\NormalTok{2}\RegionMarkerTok{)}\OtherTok{\}} \DataTypeTok{y}
+  \NormalTok{clearso 0}
+\KeywordTok{end.}
+\NormalTok{ok }\FunctionTok{<}\DataTypeTok{y}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{opaqnames}\AlertTok{=:}\index{opaqnames@\texttt{opaqnames}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*opaqnames v-- extract  opaque names  from J  code.  An opaque}
+\CommentTok{NB. name is a declared reference.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:}
+
+\NormalTok{b}\CharTok{=.}  \FunctionTok{+.}\OtherTok{/"}\NormalTok{1 }\DataTypeTok{x}        \CommentTok{NB. text mask}
+\DataTypeTok{x}\CharTok{=.} \NormalTok{b }\FunctionTok{#} \DataTypeTok{x} \FunctionTok{[} \DataTypeTok{y}\CharTok{=.} \NormalTok{b }\FunctionTok{#} \DataTypeTok{y}
+\DataTypeTok{y}\CharTok{=.} \DataTypeTok{x} \NormalTok{jnb }\DataTypeTok{y}         \CommentTok{NB. search only comment text}
+\KeywordTok{if.} \FunctionTok{+.}\OtherTok{/} \StringTok{'(*)='} \FunctionTok{E.} \FunctionTok{,} \DataTypeTok{y} \KeywordTok{do.}
+
+  \CommentTok{NB. replace any single quotes ' with blanks}
+  \CommentTok{NB. quotes will confuse (masknb) below}
+  \DataTypeTok{y}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{$}\DataTypeTok{y}\RegionMarkerTok{)}\FunctionTok{$} \StringTok{' '} \RegionMarkerTok{(} \FunctionTok{I.} \RegionMarkerTok{(}\FunctionTok{,}\DataTypeTok{y}\RegionMarkerTok{)} \FunctionTok{=} \StringTok{''''}\RegionMarkerTok{)}\OtherTok{\}} \FunctionTok{,}\DataTypeTok{y}
+
+  \CommentTok{NB. this is a rare instance of where HARDCODE is}
+  \CommentTok{NB. beneficial.  The tags used to mark declared}
+  \CommentTok{NB. globals and locals in J code are sprinkled}
+  \CommentTok{NB. throughout many programs.  If the tags where}
+  \CommentTok{NB. ever changed in this verb it would not properly}
+  \CommentTok{NB. process changed tags. By hardcoding the tags}
+  \CommentTok{NB. they are difficult to change which is what I want!}
+  \NormalTok{locals}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{,}\DataTypeTok{y}\RegionMarkerTok{)} \FunctionTok{#}\OtherTok{~} \FunctionTok{,} \StringTok{'(*)=.'} \NormalTok{masknb }\DataTypeTok{y}
+  \NormalTok{locals}\CharTok{=.} \FunctionTok{~.} \FunctionTok{<}\OtherTok{;.}\NormalTok{_}\DecValTok{1} \StringTok{' '}\FunctionTok{,}\NormalTok{locals }\FunctionTok{#}\OtherTok{~} \FunctionTok{-.} \StringTok{'  '} \FunctionTok{E.} \NormalTok{locals}
+  \NormalTok{locals}\CharTok{=.} \FunctionTok{<}\NormalTok{jnfrblcl locals}
+  \NormalTok{globals}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{,}\DataTypeTok{y}\RegionMarkerTok{)} \FunctionTok{#}\OtherTok{~} \FunctionTok{,} \StringTok{'(*)=:'} \NormalTok{masknb }\DataTypeTok{y}
+  \NormalTok{globals}\CharTok{=.} \FunctionTok{~.} \FunctionTok{<}\OtherTok{;.}\NormalTok{_}\DecValTok{1} \StringTok{' '}\FunctionTok{,}\NormalTok{globals }\FunctionTok{#}\OtherTok{~} \FunctionTok{-.} \StringTok{'  '} \FunctionTok{E.} \NormalTok{globals}
+  \NormalTok{globals}\CharTok{=.} \FunctionTok{<}\NormalTok{jnfrblcl globals}
+  \NormalTok{locals}\FunctionTok{,}\NormalTok{globals}
+\KeywordTok{else.}
+  \StringTok{''}\FunctionTok{;}\StringTok{''}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{parsecode}\AlertTok{=:}\index{parsecode@\texttt{parsecode}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*parsecode v-- parses J word code.  Normal result  is a  three}
+\CommentTok{NB. item boxed list of boxed lists containing declared  names and}
+\CommentTok{NB. parsed tokens. Will return  an  error if  given syntactically}
+\CommentTok{NB. invalid J code.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  parsecode cl\textbar{}ctJcr}
+\CommentTok{NB.}
+\CommentTok{NB.   parsecode jcr 'wordname'}
+
+\KeywordTok{if.} \NormalTok{0 }\FunctionTok{e.} \FunctionTok{$}\NormalTok{parsed}\CharTok{=.} \NormalTok{tabit }\DataTypeTok{y} \KeywordTok{do.} \NormalTok{ok}\StringTok{''} \KeywordTok{return.}
+\CommentTok{NB. possible quoted single line explicit}
+\KeywordTok{elseif.} \NormalTok{1}\FunctionTok{=#}\NormalTok{parsed }\KeywordTok{do.} \NormalTok{parsed}\CharTok{=.} \NormalTok{uqtsingle parsed}
+\KeywordTok{end.}
+
+\CommentTok{NB. end with a blank and compute comment mask}
+\NormalTok{parsed}\CharTok{=.} \NormalTok{parsed }\FunctionTok{,}\OtherTok{"}\NormalTok{1 }\StringTok{' '}
+\NormalTok{mask}\CharTok{=.} \NormalTok{masknb parsed}
+\NormalTok{locs}\CharTok{=.} \NormalTok{gbls}\CharTok{=.} \StringTok{''}
+
+\CommentTok{NB. if any declared names extract them}
+\KeywordTok{if.} \NormalTok{1 }\FunctionTok{e.} \StringTok{'(*)='} \FunctionTok{E.} \FunctionTok{,} \NormalTok{parsed }\KeywordTok{do.}
+  \StringTok{'locs gbls'}\CharTok{=.} \NormalTok{mask opaqnames parsed}
+  \NormalTok{olap}\CharTok{=.} \NormalTok{locs }\FunctionTok{-.} \NormalTok{locs }\FunctionTok{-.} \NormalTok{gbls  }\CommentTok{NB. intersection}
+  \CommentTok{NB. errmsg: confused declarations}
+  \KeywordTok{if.} \NormalTok{0}\FunctionTok{<#} \NormalTok{olap }\KeywordTok{do.} \RegionMarkerTok{(}\NormalTok{jderr ERR0}\DecValTok{150}\RegionMarkerTok{)}\FunctionTok{,}\NormalTok{olap }\KeywordTok{return.} \KeywordTok{end.}
+\KeywordTok{end.}
+
+\CommentTok{NB. blank comments, clear mask and remove blank rows}
+\NormalTok{mask}\CharTok{=.} \NormalTok{0 }\FunctionTok{[} \NormalTok{parsed}\CharTok{=.} \NormalTok{parsed jnb}\OtherTok{~} \FunctionTok{-.} \NormalTok{mask}
+\NormalTok{parsed}\CharTok{=.} \NormalTok{parsed }\FunctionTok{#}\OtherTok{~} \NormalTok{parsed }\FunctionTok{+.}\OtherTok{/} \OtherTok{.} \FunctionTok{~:} \StringTok{' '}
+\NormalTok{parsed}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{;:} \OtherTok{::} \FunctionTok{0:}\RegionMarkerTok{)}\OtherTok{&.}\FunctionTok{>} \FunctionTok{<}\OtherTok{"}\NormalTok{1 parsed  }\CommentTok{NB. parse code}
+\KeywordTok{if.} \NormalTok{parsed }\FunctionTok{e.}\OtherTok{~} \FunctionTok{<}\NormalTok{0 }\KeywordTok{do.}
+  \NormalTok{jderr ERR0}\DecValTok{151}  \CommentTok{NB. errmsg: word syntax}
+\KeywordTok{else.}
+  \NormalTok{parsed}\CharTok{=.} \NormalTok{ok}\RegionMarkerTok{(}\FunctionTok{<}\NormalTok{gbls}\RegionMarkerTok{)}\FunctionTok{,}\RegionMarkerTok{(}\FunctionTok{<}\NormalTok{locs}\RegionMarkerTok{)}\FunctionTok{,<;}\NormalTok{parsed}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{sexpin}\AlertTok{=:}\index{sexpin@\texttt{sexpin}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+\CommentTok{NB.*sexpin v-- single line explicit definition test.}
+\KeywordTok{if.}      \NormalTok{EXPPFX0 }\FunctionTok{e.}\OtherTok{~} \NormalTok{5 }\FunctionTok{\{.} \NormalTok{hd}\CharTok{=.} \NormalTok{alltrim 2}\DecValTok{0} \FunctionTok{\{.} \FunctionTok{,}\DataTypeTok{y}  \KeywordTok{do.} \NormalTok{1}
+\KeywordTok{elseif.}  \NormalTok{EXPPFX1 }\FunctionTok{e.}\OtherTok{~} \NormalTok{8 }\FunctionTok{\{.} \NormalTok{hd  }\KeywordTok{do.} \NormalTok{1  }\CommentTok{NB. monad null}
+\KeywordTok{elseif.} \KeywordTok{do.} \NormalTok{0}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{sonl}\AlertTok{=:}\index{sonl@\texttt{sonl}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*sonl v-- scratch object namelist.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  sonl il}
+
+\NormalTok{nl_}\DecValTok{_}\NormalTok{SO }\DataTypeTok{y}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. promotes only atoms and lists to tables}
+\NormalTok{tabit}\AlertTok{=:}\index{tabit@\texttt{tabit}}\FunctionTok{]}\OtherTok{`}\FunctionTok{,:}\OtherTok{@.}\RegionMarkerTok{(}\NormalTok{1}\OtherTok{&}\FunctionTok{>:}\OtherTok{@}\RegionMarkerTok{(}\FunctionTok{#}\OtherTok{@}\FunctionTok{$}\RegionMarkerTok{))}\OtherTok{^:}\NormalTok{2}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{toascii8}\DecValTok{5}\AlertTok{=:}\index{toascii85@\texttt{toascii85}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*toascii85 v-- to ascii85 representation.}
+\CommentTok{NB.}
+\CommentTok{NB. From convert/misc/ascii85 addon.}
+\CommentTok{NB.}
+\CommentTok{NB. Converts  a  list  of  bytes to  an  ASCII85  representation:}
+\CommentTok{NB. essentially all the  "visible" ASCII characters.  Useful  for}
+\CommentTok{NB. encoding arbitrary byte  lists as a  portable stream. Returns}
+\CommentTok{NB. lines of length no more than 75 + LF}
+\CommentTok{NB.}
+\CommentTok{NB. The encoding does not begin with <~, though sometimes this is}
+\CommentTok{NB. allowed.  However  PDF  files  do  not  accept  this  prefix.}
+\CommentTok{NB. Decoding does support the prefix.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  clA85 =. toascii85 cl}
+
+\NormalTok{r}\CharTok{=.} \FunctionTok{,}\DataTypeTok{y}
+\NormalTok{len}\CharTok{=.} \FunctionTok{#}\NormalTok{r}
+\KeywordTok{assert.} \NormalTok{4 }\FunctionTok{<:} \NormalTok{len  }\CommentTok{NB. fails on short cl}
+\NormalTok{r}\CharTok{=.} \NormalTok{2}\DecValTok{56} \FunctionTok{#.} \NormalTok{_}\DecValTok{4}\FunctionTok{[}\OtherTok{\textbackslash{}} \FunctionTok{a.i.}\NormalTok{r}
+\DataTypeTok{m}\CharTok{=.} \NormalTok{0 }\RegionMarkerTok{(}\NormalTok{_}\DecValTok{1}\RegionMarkerTok{)} \OtherTok{\}} \NormalTok{r }\FunctionTok{=} \NormalTok{0}
+\DataTypeTok{n}\CharTok{=.} \NormalTok{5 }\FunctionTok{*} \FunctionTok{I.}\DataTypeTok{m}
+\NormalTok{r}\CharTok{=.} \FunctionTok{a.} \FunctionTok{\{}\OtherTok{~} \NormalTok{3}\DecValTok{3} \FunctionTok{+} \FunctionTok{,}\RegionMarkerTok{(}\NormalTok{5}\FunctionTok{#}\NormalTok{8}\DecValTok{5}\RegionMarkerTok{)} \FunctionTok{#:} \NormalTok{r}
+\NormalTok{r}\CharTok{=.} \StringTok{'z'} \DataTypeTok{n} \OtherTok{\}} \NormalTok{r}
+\DataTypeTok{m}\CharTok{=.} \NormalTok{1 }\DataTypeTok{n} \OtherTok{\}} \NormalTok{5 }\FunctionTok{#} \FunctionTok{-.} \DataTypeTok{m}
+\NormalTok{r}\CharTok{=.} \DataTypeTok{m} \FunctionTok{#} \NormalTok{r}
+\NormalTok{r}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{-} \RegionMarkerTok{(}\NormalTok{4}\FunctionTok{\textbar{}}\NormalTok{len}\RegionMarkerTok{)} \FunctionTok{\{} \NormalTok{0 3 2 1}\RegionMarkerTok{)} \FunctionTok{\}.} \NormalTok{r}
+\NormalTok{r}\CharTok{=.} \FunctionTok{\}:} \FunctionTok{,}\RegionMarkerTok{(}\NormalTok{_}\DecValTok{75} \FunctionTok{[}\OtherTok{\textbackslash{}} \NormalTok{r}\RegionMarkerTok{)}\FunctionTok{,.}\NormalTok{LF}
+\RegionMarkerTok{(}\StringTok{'~>'}\FunctionTok{,}\NormalTok{LF}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{~} \RegionMarkerTok{(}\NormalTok{r }\FunctionTok{i:} \StringTok{' '}\RegionMarkerTok{)} \FunctionTok{\{.} \NormalTok{r}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{uqtsingle}\AlertTok{=:}\index{uqtsingle@\texttt{uqtsingle}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+\CommentTok{NB.*uqtsingle v-- unquotes single line explicit definitions}
+\KeywordTok{if.} \NormalTok{sexpin }\DataTypeTok{y} \KeywordTok{do.}
+  \NormalTok{m9}\DecValTok{9}\CharTok{=.} \StringTok{''''} \NormalTok{htclip alltrim }\FunctionTok{,}\DataTypeTok{y}
+  \NormalTok{m9}\DecValTok{9}\CharTok{=.} \NormalTok{tabit m9}\DecValTok{9} \FunctionTok{#}\OtherTok{~} \FunctionTok{-.} \NormalTok{halfbits }\StringTok{''''} \FunctionTok{=} \NormalTok{m9}\DecValTok{9}
+  \FunctionTok{]}\OtherTok{`}\RegionMarkerTok{(}\StringTok{''''}\OtherTok{&}\FunctionTok{,}\OtherTok{"}\NormalTok{1}\RegionMarkerTok{)}\OtherTok{@.}\RegionMarkerTok{(}\StringTok{':'''}\OtherTok{&}\FunctionTok{-:}\OtherTok{@}\RegionMarkerTok{(}\NormalTok{2}\OtherTok{&}\FunctionTok{\{.}\OtherTok{@}\FunctionTok{,}\RegionMarkerTok{))} \NormalTok{m9}\DecValTok{9}  \CommentTok{NB. correct dyad}
+\KeywordTok{else.}
+  \DataTypeTok{y}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{wraplinear}\AlertTok{=:}\index{wraplinear@\texttt{wraplinear}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*wraplinear  v--  wraps the linear representation of  large  J}
+\CommentTok{NB. objects into a series of script lines.}
+\CommentTok{NB.}
+\CommentTok{NB. The linear form  of large  J  objects  can produce  very long}
+\CommentTok{NB. lines  in  script files. Many editors cannot deal  with  very}
+\CommentTok{NB. long lines. This verb  produces  an equivalent representation}
+\CommentTok{NB. that can always be edited.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  (clTempName ; iaWidth) wraplinear clLinear}
+\CommentTok{NB.        (clTempName ; iaWidth ; paAscii85) wraplinear clLinear}
+\CommentTok{NB.}
+\CommentTok{NB.   ('z';67) wraplinear 5!:5 <'bighonkingarray'}
+\CommentTok{NB.   ('z';67;1) wraplinear 'uses ascii85',LF,'encoding - better for most texts'}
+
+\CommentTok{NB. temporary noun name, line length, ascii85 representation}
+\StringTok{'temp width ascii85'}\CharTok{=.} \NormalTok{3 }\FunctionTok{\{.} \DataTypeTok{x}\FunctionTok{,<}\NormalTok{0}
+
+\KeywordTok{if.} \NormalTok{ascii8}\DecValTok{5} \KeywordTok{do.}
+  \CommentTok{NB. use ASCII85 encoding.  This representation is}
+  \CommentTok{NB. about three times more compact than the default}
+  \CommentTok{NB. representation but requires roughly three times}
+  \CommentTok{NB. the CPU with current algorithms to encode/decode}
+  \NormalTok{temp}\FunctionTok{,}\StringTok{'=:dec85__MK__JODobj 0 : 0'}\FunctionTok{,}\NormalTok{LF}\FunctionTok{,}\StringTok{')'} \FunctionTok{,}\OtherTok{~} \NormalTok{toascii8}\DecValTok{5} \DataTypeTok{y}
+\KeywordTok{else.}
+  \NormalTok{head}\CharTok{=.} \NormalTok{temp}\FunctionTok{,}\StringTok{'=:'''''}                \CommentTok{NB. null header}
+  \NormalTok{tail}\CharTok{=.} \NormalTok{temp}\FunctionTok{,}\StringTok{'=:'}\FunctionTok{,}\RegionMarkerTok{(}\FunctionTok{":#}\DataTypeTok{y}\RegionMarkerTok{)}\FunctionTok{,}\StringTok{'\{.'}\FunctionTok{,}\NormalTok{temp   }\CommentTok{NB. trim to correct length}
+  \NormalTok{line}\CharTok{=.} \NormalTok{temp}\FunctionTok{,}\StringTok{'=:'}\FunctionTok{,}\NormalTok{temp}\FunctionTok{,}\StringTok{','}           \CommentTok{NB. next line}
+
+  \CommentTok{NB. wrap text and insure each line is properly quoted}
+  \NormalTok{body}\CharTok{=.} \NormalTok{ctl line }\FunctionTok{,}\OtherTok{"}\NormalTok{1 quote}\OtherTok{"}\NormalTok{1 }\RegionMarkerTok{(}\FunctionTok{-}\NormalTok{width}\RegionMarkerTok{)} \FunctionTok{]}\OtherTok{\textbackslash{}} \DataTypeTok{y}
+  \NormalTok{head}\FunctionTok{,}\NormalTok{LF}\FunctionTok{,}\NormalTok{body}\FunctionTok{,}\NormalTok{LF}\FunctionTok{,}\NormalTok{tail}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{wrdglobals}\AlertTok{=:}\index{wrdglobals@\texttt{wrdglobals}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*wrdglobals v--  extracts names from J  words. Assumes name is}
+\CommentTok{NB. valid.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  pa wrdglobals clName}
+\CommentTok{NB.}
+\CommentTok{NB.  0 wrdglobals 'wordname'  NB. only globals}
+\CommentTok{NB.  1 wrdglobals 'wordname'  NB. full name classification}
+
+\NormalTok{code}\CharTok{=.} \NormalTok{jcr }\OtherTok{::} \FunctionTok{0:} \DataTypeTok{y}
+\CommentTok{NB. errmsg: no definition}
+\KeywordTok{if.} \NormalTok{code }\FunctionTok{-:} \NormalTok{0 }\KeywordTok{do.} \RegionMarkerTok{(}\NormalTok{jderr ERR0}\DecValTok{152}\RegionMarkerTok{)}\FunctionTok{,<}\DataTypeTok{y} \KeywordTok{else.} \DataTypeTok{x} \NormalTok{namecats code }\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{writeijs}\AlertTok{=:}\index{writeijs@\texttt{writeijs}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*writeijs v-- writes file to put dictionary directory}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  (iaObject ; clFile) writeijs clText}
+
+\StringTok{'obj file'}\CharTok{=.} \DataTypeTok{x}
+\NormalTok{DL}\CharTok{=.}\FunctionTok{\{:\{.}\NormalTok{DPATH_}\DecValTok{_}\NormalTok{ST}
+\CommentTok{NB. get put dictionary script directory}
+\NormalTok{path}\CharTok{=.}\NormalTok{jpathsep dfp_}\DecValTok{_}\NormalTok{DL obj}
+\DataTypeTok{m}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{toHOST }\DataTypeTok{y}\RegionMarkerTok{)} \RegionMarkerTok{(}\NormalTok{write }\OtherTok{::} \FunctionTok{_1:}\RegionMarkerTok{)} \NormalTok{path}\CharTok{=.}\NormalTok{path}\FunctionTok{,}\NormalTok{file}\FunctionTok{,}\NormalTok{IJS}
+\CommentTok{NB. errmsg: file write failure with target path and file appended}
+\KeywordTok{if.} \DataTypeTok{m} \FunctionTok{-:} \NormalTok{_}\DecValTok{1} \KeywordTok{do.} \RegionMarkerTok{(}\NormalTok{jderr ERR0}\DecValTok{153}\RegionMarkerTok{)}\FunctionTok{,<}\NormalTok{path }\KeywordTok{else.} \RegionMarkerTok{(}\NormalTok{ok OK0}\DecValTok{150}\RegionMarkerTok{)}\FunctionTok{,<}\NormalTok{path }\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{wttext}\AlertTok{=:}\index{wttext@\texttt{wttext}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*wttext v-- returns annotated word or test text.}
+\CommentTok{NB.}
+\CommentTok{NB. This  verb converts dictionary  words and  tests to formatted}
+\CommentTok{NB. script   text.  (y)   is   a  boxed   (name,class,value)   or}
+\CommentTok{NB. (name,value) table.  The result is either  a single cl script}
+\CommentTok{NB. or a btcl of object scripts.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  (paRc ; blcl) =. iaObjExFtab wttext bt}
+\CommentTok{NB.        (paRc ; btcl) =. iaObjExFtab wttext bt}
+
+\CommentTok{NB. object code, explanation bit, formatted table bit}
+\CommentTok{NB. default table bit is off - this verb is frequently}
+\CommentTok{NB. called with a two item (x) argument}
+\StringTok{'obj noex nftab'}\CharTok{=.} \NormalTok{3}\FunctionTok{\{.}\DataTypeTok{x}\FunctionTok{,}\NormalTok{0}
+
+\KeywordTok{if.} \NormalTok{WORD}\FunctionTok{=}\NormalTok{obj }\KeywordTok{do.}
+  \DataTypeTok{y}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{/:} \FunctionTok{;} \NormalTok{1 }\FunctionTok{\{}\OtherTok{"}\NormalTok{1 }\DataTypeTok{y}\RegionMarkerTok{)}\FunctionTok{\{}\DataTypeTok{y}      \CommentTok{NB. sort words by name class}
+  \NormalTok{nr}\CharTok{=.} \RegionMarkerTok{((}\FunctionTok{;} \NormalTok{1 }\FunctionTok{\{}\OtherTok{"}\NormalTok{1 }\DataTypeTok{y}\RegionMarkerTok{)}\FunctionTok{>}\NormalTok{0}\RegionMarkerTok{)} \FunctionTok{i.} \NormalTok{1}
+  \CommentTok{NB. convert noun values to linear representations}
+  \KeywordTok{if.} \NormalTok{badrc m2}\CharTok{=.} \NormalTok{noex nounlrep nr}\FunctionTok{\{.}\DataTypeTok{y} \KeywordTok{do.} \NormalTok{m2 }\KeywordTok{return.} \KeywordTok{end.}
+  \DataTypeTok{y}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{rv m2}\RegionMarkerTok{)} \FunctionTok{,} \NormalTok{nr}\FunctionTok{\}.}\DataTypeTok{y}
+\KeywordTok{end.}
+
+\KeywordTok{if.} \NormalTok{nftab }\KeywordTok{do.} \NormalTok{nms}\CharTok{=.} \NormalTok{0 }\FunctionTok{\{}\OtherTok{"}\NormalTok{1 }\DataTypeTok{y} \KeywordTok{end.}  \CommentTok{NB. retain sorted names}
+
+\KeywordTok{if.} \NormalTok{noex }\KeywordTok{do.}
+  \CommentTok{NB. no explanations and no LF's depends on caller}
+  \DataTypeTok{m}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{#}\DataTypeTok{y}\RegionMarkerTok{)}\FunctionTok{#}\NormalTok{0}
+\KeywordTok{elseif.} \FunctionTok{+.}\OtherTok{/}\DataTypeTok{m}\CharTok{=.} \FunctionTok{-.}\NormalTok{LF }\FunctionTok{e.}\OtherTok{&}\FunctionTok{>} \FunctionTok{\{:}\OtherTok{"}\NormalTok{1 }\DataTypeTok{y} \KeywordTok{do.}
+  \CommentTok{NB. prefix any short explanations for single line definitions}
+  \NormalTok{m2}\CharTok{=.} \DataTypeTok{m}\FunctionTok{#\{.}\OtherTok{"}\NormalTok{1 }\DataTypeTok{y}
+  \KeywordTok{if.} \NormalTok{badrc et}\CharTok{=.} \NormalTok{obj getexplain_}\DecValTok{_}\NormalTok{ST m2 }\KeywordTok{do.} \NormalTok{et }\KeywordTok{return.} \KeywordTok{end.}
+  \NormalTok{m2}\CharTok{=.} \NormalTok{0}\FunctionTok{<#}\OtherTok{&}\FunctionTok{>} \NormalTok{et}\CharTok{=.} \FunctionTok{\{:}\OtherTok{"}\NormalTok{1 rv et}
+  \NormalTok{et}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{<}\OtherTok{"}\NormalTok{0 m2}\RegionMarkerTok{)} \FunctionTok{#}\OtherTok{&.}\FunctionTok{>} \RegionMarkerTok{(}\FunctionTok{<}\StringTok{'NB. '}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \NormalTok{et }\FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \NormalTok{LF}
+  \DataTypeTok{y}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{et }\FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \DataTypeTok{m}\FunctionTok{#\{.}\OtherTok{"}\NormalTok{1 }\DataTypeTok{y}\RegionMarkerTok{)} \RegionMarkerTok{(}\FunctionTok{<}\RegionMarkerTok{(}\FunctionTok{I.} \DataTypeTok{m}\RegionMarkerTok{)}\FunctionTok{;}\NormalTok{0}\RegionMarkerTok{)}\OtherTok{\}} \DataTypeTok{y}
+  \CommentTok{NB. number of LF's between corresponding objects}
+  \DataTypeTok{m}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{>:}\NormalTok{2}\FunctionTok{*-.}\DataTypeTok{m}\RegionMarkerTok{)} \FunctionTok{+} \DataTypeTok{m} \RegionMarkerTok{(}\FunctionTok{#}\OtherTok{^:}\NormalTok{_}\DecValTok{1}\RegionMarkerTok{)} \NormalTok{m2}
+  \DataTypeTok{m}\CharTok{=.} \DataTypeTok{m} \FunctionTok{+} \NormalTok{2}\FunctionTok{*}\NormalTok{firstone 1}\FunctionTok{=}\DataTypeTok{m}
+\KeywordTok{elseif.do.}
+  \CommentTok{NB. 3 LF's between all multi-line defs HARDCODE}
+  \DataTypeTok{m}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{#}\DataTypeTok{y}\RegionMarkerTok{)}\FunctionTok{#}\NormalTok{3}
+\KeywordTok{end.}
+
+\CommentTok{NB. construct J object scripts}
+\KeywordTok{if.} \NormalTok{WORD}\FunctionTok{=}\NormalTok{obj }\KeywordTok{do.} \DataTypeTok{y}\CharTok{=.}\NormalTok{jscriptdefs }\DataTypeTok{y} \KeywordTok{else.} \DataTypeTok{y}\CharTok{=.} \FunctionTok{\{:}\OtherTok{"}\NormalTok{1 }\DataTypeTok{y} \KeywordTok{end.}
+
+\CommentTok{NB. return formated (name,script) table or cl script}
+\KeywordTok{if.} \NormalTok{nftab }\KeywordTok{do.} \NormalTok{ok }\FunctionTok{<}\NormalTok{nms }\FunctionTok{,.} \DataTypeTok{y} \KeywordTok{else.} \NormalTok{ok }\RegionMarkerTok{(}\FunctionTok{\{.}\DataTypeTok{m}\RegionMarkerTok{)}\FunctionTok{\}.}\DataTypeTok{m} \NormalTok{jscript }\DataTypeTok{y} \KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+

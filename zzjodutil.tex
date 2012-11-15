@@ -1,0 +1,1298 @@
+\section{\texttt{jodutil} Source Code}
+
+\begin{JODGroupHeader}
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. jodutil.ijs -- a collection of JOD utility words.}
+\CommentTok{NB.}
+\CommentTok{NB. This subclass defines a set of handy utilites that use the core}
+\CommentTok{NB. facilities of JOD to perform tasks of general use to J programmers.}
+\CommentTok{NB.}
+\CommentTok{NB. Interface nouns & verbs:}
+\CommentTok{NB.   compj    extreme compression of dictionary words}
+\CommentTok{NB.   de       drop error code from JOD results}
+\CommentTok{NB.   disp     display dictionary objects}
+\CommentTok{NB.   doc      format comments in words and documents}
+\CommentTok{NB.   ed       edit objects from JOD}
+\CommentTok{NB.   et       edit text}
+\CommentTok{NB.   gt       get text out of edit windows}
+\CommentTok{NB.   revo     list recently revised objects}
+\CommentTok{NB.   rm       run macros}
+\CommentTok{NB.   rtt      run tautology tests}
+\CommentTok{NB.   jodhelp  spawn browser for online help}
+\CommentTok{NB.}
+\CommentTok{NB. Notes:}
+\CommentTok{NB.   error & ok messages (jodutil range 00250-00399)}
+
+\NormalTok{coclass }\StringTok{'ajodutil'}
+\NormalTok{coinsert }\StringTok{'ajod'}
+
+\CommentTok{NB. current help topics}
+\NormalTok{JODHELP}\AlertTok{=:}\index{JODHELP@\texttt{JODHELP}} \NormalTok{0 }\OtherTok{:} \NormalTok{0}
+\NormalTok{AContents }\FunctionTok{;} \NormalTok{1pR1kc2}\DecValTok{7}\NormalTok{OwTEGZ4BavhYT4RVvAtlEEUzueT9T}\FunctionTok{-}\NormalTok{URY9t0}
+\NormalTok{AJodIndex }\FunctionTok{;} \NormalTok{1kXc_yzzuHkjnfIp_qU3IIP4lfj0}\DecValTok{6}\NormalTok{KFgoKbTZEQlyiFA}
+\NormalTok{BestPractices }\FunctionTok{;} \NormalTok{1lZ3qI9}\FunctionTok{-}\NormalTok{AmH8CtuU7m8}\DecValTok{0}\NormalTok{E5sheQkG73vsLFud1uuytUgc}
+\NormalTok{Classes   }\FunctionTok{;} \NormalTok{1ko9FlV9fJNH_QCyhUN5XjtjGdX4bmeli}\FunctionTok{-}\NormalTok{gVXtwgewTs}
+\NormalTok{Codes     }\FunctionTok{;} \NormalTok{1G3t0L7XRmowiU4wQEL9IvOGPqQ1Kf7h6QXxKIhLxal4}
+\NormalTok{DependentSection }\FunctionTok{;} \NormalTok{1tn9qV8Hu}\FunctionTok{-}\NormalTok{rk_rj7}\DecValTok{0}\NormalTok{NkwGNmCFHa}\FunctionTok{-}\NormalTok{VfRAnB3GYzqzpLrw}
+\NormalTok{Directories }\FunctionTok{;} \NormalTok{1JMDQaCHiRdmgCOb}\FunctionTok{-}\NormalTok{4EhOweObiB}\FunctionTok{--}\NormalTok{34fTYbB4RL6}\DecValTok{5}\NormalTok{Hi8}
+\NormalTok{Introduction }\FunctionTok{;} \NormalTok{1}\DecValTok{1}\NormalTok{QiWE8qJ0AojDAv2_jiOcPz5kDtI88jUR3vmNqw}\FunctionTok{-}\NormalTok{pLQ}
+\NormalTok{ReleaseNotes }\FunctionTok{;} \NormalTok{1aBdt8rwdOq_CQ52qRQ}\FunctionTok{-}\NormalTok{js1MwiaovC2pxlQq}\FunctionTok{-}\NormalTok{Z9VosOg}
+\NormalTok{addgrp    }\FunctionTok{;} \NormalTok{1e9mEbLASGXvzYNGJcHXI3vzv7Dph9f_HjmNLqg9reWY}
+\NormalTok{compj     }\FunctionTok{;} \NormalTok{1AieHkq0jGLTJT2UrcwtdAoOZv5Uj8T_0jjOomYLhYSE}
+\NormalTok{del       }\FunctionTok{;} \NormalTok{1DP}\FunctionTok{-}\NormalTok{nLxYfs5_QhlhmD9JtpeDQ98fteWp}\FunctionTok{-}\NormalTok{tSIHMUGtYdg}
+\NormalTok{delgrp    }\FunctionTok{;} \NormalTok{1pBBfh5UdSq4RZFjagbma7_uZfRnY6}\DecValTok{6}\NormalTok{Ghn6Ezvvvq5ZY}
+\NormalTok{did       }\FunctionTok{;} \NormalTok{1y}\FunctionTok{-}\NormalTok{3Gaov9tW8d}\FunctionTok{-}\NormalTok{E1uhTNYmFhyJEmmC_N3q4G0t8L7gJM}
+\NormalTok{disp      }\FunctionTok{;} \NormalTok{1_oZe7JxNR4qK3LwLeDrwarsxvpFkpsUdcViY5KpYAVg}
+\NormalTok{dnl       }\FunctionTok{;} \NormalTok{1rmg4ErbOxDa3CFJtwUgfWusWKvlzO6ooNhlcd1VxVKg}
+\NormalTok{doc       }\FunctionTok{;} \NormalTok{1zcZvo1}\FunctionTok{-}\NormalTok{4f7LLPXrTrJFAYkr6JTtOtGFIsJolylDz2}\DecValTok{34}
+\NormalTok{dpset     }\FunctionTok{;} \NormalTok{1zEDu9VLz2VY_5wR7hVYbQqrwfUIWw4WK00zmKOKGCJg}
+\NormalTok{ed        }\FunctionTok{;} \NormalTok{1PdqC8IHhJJrUI59koofhSxgcCDXknI8yFlRHPSTdY4Q}
+\NormalTok{et        }\FunctionTok{;} \NormalTok{1IYmf8C5eJElstSsdXyui8N0KRKb9yNQTFBU0TgVVWlc}
+\NormalTok{get       }\FunctionTok{;} \NormalTok{1Vk}\FunctionTok{-}\NormalTok{PQrdPEISp0SL4eDaGDgg5HpATarPPvXHryC1}\DecValTok{2}\NormalTok{I8M}
+\NormalTok{getrx     }\FunctionTok{;} \NormalTok{1gUR9LLIVCPW9hfAXIltyiBuZf1kBURedrRVqmvWXJvQ}
+\NormalTok{globs     }\FunctionTok{;} \NormalTok{1s4_Af0kZnrfcCBgRDMK2MPMSTGwZb0ZDaFEMi_qXjn8}
+\NormalTok{grp       }\FunctionTok{;} \NormalTok{1bBeyMbSH_BFBurvnlVnWTf0JLY3}\DecValTok{0}\NormalTok{LrFTbzgtOGvMyrk}
+\NormalTok{gt        }\FunctionTok{;} \NormalTok{1}\DecValTok{34}\NormalTok{EaK4pSHXccvjZTjPS79zsnkXH3im8}\DecValTok{3}\NormalTok{KJv3ggeUqIs}
+\NormalTok{hlpnl     }\FunctionTok{;} \NormalTok{1ZjmYZXo_Pruz0KsRENiN}\FunctionTok{-}\NormalTok{qSryd6medadAbxSmdIu9kA}
+\NormalTok{jodage    }\FunctionTok{;} \NormalTok{1h5LfaqgO4lrB2RzLWjdaBbNAjfLlAu}\FunctionTok{-}\NormalTok{eh}\FunctionTok{-}\NormalTok{LNM9sJPfI}
+\NormalTok{jodhelp   }\FunctionTok{;} \NormalTok{1p9dyoymZ}\FunctionTok{-}\NormalTok{q9YEkqS8sZa}\FunctionTok{-}\NormalTok{VwV2FPxTf8KdlUvqSIkR8w}
+\NormalTok{lg        }\FunctionTok{;} \NormalTok{1}\FunctionTok{-}\NormalTok{4OmVkDmg0pijMXXoheS6uUryN5G9OAHDztpgH7vrcM}
+\NormalTok{locgrp    }\FunctionTok{;} \NormalTok{1BVhp_XrtoU4DEo5rK0sgoBIKoE8XdzL3hPaOOfAFhIE}
+\NormalTok{make      }\FunctionTok{;} \NormalTok{1mfvL9}\DecValTok{80}\NormalTok{DNpfoej1KCzgp3}\DecValTok{0}\NormalTok{CFvRccEHvMqL2nE1oLjWc}
+\NormalTok{mls       }\FunctionTok{;} \NormalTok{1aREjTasgLz7n9}\FunctionTok{-}\NormalTok{bPaOQLHG2}\FunctionTok{-}\NormalTok{Jy1}\FunctionTok{-}\NormalTok{3YaxKyZIoc3BioU}
+\NormalTok{newd      }\FunctionTok{;} \NormalTok{1}\DecValTok{2}\NormalTok{AckZFKDNa0lDAj6}\DecValTok{26}\NormalTok{Ix2HW8emGldx0}\DecValTok{4}\NormalTok{YDDJdFxS_eY}
+\NormalTok{notgrp    }\FunctionTok{;} \NormalTok{1uWBqdrMQK4pa0yUiWN7JD6etgjAZpmXzBU2XLP8WBGQ}
+\NormalTok{nt        }\FunctionTok{;} \NormalTok{11cOKzEkGwwfmK7CGWsO1znzA_vxxDh}\FunctionTok{-}\NormalTok{k35qoUNbYkso}
+\NormalTok{nw        }\FunctionTok{;} \NormalTok{18hgq6}\DecValTok{9}\NormalTok{AK7m3bik7UTwk8}\DecValTok{2}\NormalTok{A5Ind2qAD5ZFHjBwAQ2kIw}
+\NormalTok{od        }\FunctionTok{;} \NormalTok{1sMmIe7ViflORenJaolLE1qj7BB54s7z9Mi9ulV7N7g4}
+\NormalTok{packd     }\FunctionTok{;} \NormalTok{1dU2chbJBQ5mRTT8GvT6VVPs3FjoD5JxJiUhSxMjXmWc}
+\NormalTok{pr        }\FunctionTok{;} \NormalTok{1mxDtNJGKztFsQ4RlQb96nGyIaHd1}\DecValTok{5}\NormalTok{PX}\FunctionTok{-}\NormalTok{RJYSooJaNbA}
+\NormalTok{put       }\FunctionTok{;} \NormalTok{1uhZaiNyIHMVqVaa}\FunctionTok{-}\NormalTok{peCj_sN6JjnuxVdmnODm9uoE6}\DecValTok{6}\NormalTok{Y}
+\NormalTok{regd      }\FunctionTok{;} \NormalTok{1OC4UNVCeRpJcLThP5pkYp8Kkxpdi4zz7}\DecValTok{7}\NormalTok{ZdFgZb1A}\FunctionTok{-}\NormalTok{g}
+\NormalTok{restd     }\FunctionTok{;} \NormalTok{1vlRYJrrrxbw4TGNsvHpd8pPVfiYYKn2VDy5DqYU77_s}
+\NormalTok{revo      }\FunctionTok{;} \NormalTok{1rNe_RB7AXdr2OMNVLtKFCqKwE02jkOH1aiPu7xSl1lA}
+\NormalTok{revonex   }\FunctionTok{;} \NormalTok{1xEGQPwmyROge9myNW8iC8uCbFYP2kOhd1EwFfqgI5mE}
+\NormalTok{rm        }\FunctionTok{;} \NormalTok{1PImOwL_PNvyHEkYW2}\DecValTok{05}\FunctionTok{--}\NormalTok{ukAg}\FunctionTok{-}\NormalTok{tv9tceMEEZAbgqnbY}
+\NormalTok{rtt       }\FunctionTok{;} \NormalTok{1WT7bciC3XQRPPrHwy8nQRwNYyV2TSzAXd8}\DecValTok{j5}\NormalTok{BZP3nmY}
+\NormalTok{usedby    }\FunctionTok{;} \NormalTok{1LYQVi}\FunctionTok{-}\NormalTok{T2sIoCR0BQHiu6y6Cvb_KgZoALXNuAXccspr8}
+\NormalTok{uses      }\FunctionTok{;} \NormalTok{1NUFFk3ya9iWlT0N6}\FunctionTok{-}\NormalTok{Ly}\FunctionTok{-}\NormalTok{vd6}\DecValTok{9}\NormalTok{MO2Njfqoyul4eBfMW9E}
+\RegionMarkerTok{)}
+
+\CommentTok{NB.*dependents d-- dependent words}
+
+\CommentTok{NB. documentation mark for assumes}
+\NormalTok{ASSUMESMARK}\AlertTok{=:}\index{ASSUMESMARK@\texttt{ASSUMESMARK}}\StringTok{'assumes:'}
+
+\CommentTok{NB. documentation mark for author}
+\NormalTok{AUTHORMARK}\AlertTok{=:}\index{AUTHORMARK@\texttt{AUTHORMARK}}\StringTok{'author:'}
+
+\CommentTok{NB. documentation mark for created}
+\NormalTok{CREATEDMARK}\AlertTok{=:}\index{CREATEDMARK@\texttt{CREATEDMARK}}\StringTok{'created:'}
+
+\CommentTok{NB. documentation mark for dyad hungarian and examples}
+\NormalTok{DYADMARK}\AlertTok{=:}\index{DYADMARK@\texttt{DYADMARK}}\StringTok{'dyad:'}
+
+\CommentTok{NB. documentation mark for monad hungarian and examples}
+\NormalTok{MONADMARK}\AlertTok{=:}\index{MONADMARK@\texttt{MONADMARK}}\StringTok{'monad:'}
+
+\CommentTok{NB. documentation mark for verbatim}
+\NormalTok{VERBATIMMARK}\AlertTok{=:}\index{VERBATIMMARK@\texttt{VERBATIMMARK}}\StringTok{'verbatim:'}
+
+\CommentTok{NB. documentation mark for root words}
+\NormalTok{ROOTWORDSMARK}\AlertTok{=:}\index{ROOTWORDSMARK@\texttt{ROOTWORDSMARK}}\StringTok{'rootwords:'}
+
+\CommentTok{NB. documentation marks - depends on other marks}
+\NormalTok{DOCUMENTMARKS}\AlertTok{=:}\index{DOCUMENTMARKS@\texttt{DOCUMENTMARKS}} \NormalTok{ASSUMESMARK}\FunctionTok{;}\NormalTok{AUTHORMARK}\FunctionTok{;}\NormalTok{CREATEDMARK}\FunctionTok{;}\NormalTok{DYADMARK}\FunctionTok{;}\NormalTok{MONADMARK}\FunctionTok{;}\NormalTok{VERBATIMMARK}\FunctionTok{;}\NormalTok{ROOTWORDSMARK}
+
+\CommentTok{NB. help url prefix}
+\NormalTok{URLPFX}\AlertTok{=:}\index{URLPFX@\texttt{URLPFX}}\StringTok{'https://docs.google.com/document/d/'}
+\CommentTok{NB. URLPFX=: 'http://docs.google.com/View?docID='}
+
+\CommentTok{NB. help urp suffix}
+\NormalTok{URLSUX}\AlertTok{=:}\index{URLSUX@\texttt{URLSUX}}\StringTok{'/edit?hl=en_US#'}
+
+\CommentTok{NB. set documented word urls}
+\CommentTok{NB. defined in superclasses  !(*)=. CR afterstr beforestr alltrim dblquote}
+\NormalTok{JODHELP}\AlertTok{=:}\index{JODHELP@\texttt{JODHELP}} \FunctionTok{\textbar{}:} \NormalTok{alltrim}\OtherTok{&.}\FunctionTok{>} \RegionMarkerTok{(}\StringTok{';'}\OtherTok{&}\NormalTok{beforestr  }\FunctionTok{;} \StringTok{';'}\OtherTok{&}\NormalTok{afterstr}\RegionMarkerTok{)}\OtherTok{&}\FunctionTok{>} \RegionMarkerTok{(}\NormalTok{alltrim}\OtherTok{&.}\FunctionTok{>} \FunctionTok{<}\OtherTok{;.}\NormalTok{_}\DecValTok{2} \NormalTok{JODHELP }\FunctionTok{-.} \NormalTok{CR}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \FunctionTok{<}\NormalTok{URLSUX}
+\NormalTok{JODHELP}\AlertTok{=:}\index{JODHELP@\texttt{JODHELP}} \RegionMarkerTok{((}\FunctionTok{<}\NormalTok{URLPFX}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \NormalTok{1}\FunctionTok{\{}\NormalTok{JODHELP}\RegionMarkerTok{)} \RegionMarkerTok{(}\NormalTok{1}\RegionMarkerTok{)}\OtherTok{\}} \NormalTok{JODHELP}
+\NormalTok{JODHELP}\AlertTok{=:}\index{JODHELP@\texttt{JODHELP}} \RegionMarkerTok{(}\StringTok{'AJodPage'}\FunctionTok{;}\StringTok{'http://bakerjd99.wordpress.com/the-jod-page/'}\RegionMarkerTok{)}\FunctionTok{,.}\NormalTok{JODHELP}
+\NormalTok{JODHELP}\AlertTok{=:}\index{JODHELP@\texttt{JODHELP}} \RegionMarkerTok{(}\FunctionTok{/:} \NormalTok{0}\FunctionTok{\{}\NormalTok{JODHELP}\RegionMarkerTok{)} \FunctionTok{\{}\OtherTok{"}\NormalTok{1 JODHELP}
+
+\CommentTok{NB. command line quotes OS dependent}
+\NormalTok{qt}\AlertTok{=:}\index{qt@\texttt{qt}} \FunctionTok{]}\OtherTok{`}\NormalTok{dblquote}\OtherTok{@.}\NormalTok{IFWIN}
+
+\CommentTok{NB.*enddependents}
+
+\CommentTok{NB.*end-header}
+\end{Highlighting}
+\end{Shaded}
+
+\end{JODGroupHeader}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. remove only white space tag}
+\NormalTok{CWSONLY}\AlertTok{=:}\index{CWSONLY@\texttt{CWSONLY}}\StringTok{'(-.)=:'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. default edit file name}
+\NormalTok{EDTEMP}\AlertTok{=:}\index{EDTEMP@\texttt{EDTEMP}}\StringTok{'99'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{250}\AlertTok{=:}\index{ERR0250@\texttt{ERR0250}}\StringTok{' is a noun no internal document'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{251}\AlertTok{=:}\index{ERR0251@\texttt{ERR0251}}\StringTok{'not loaded - load'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{252}\AlertTok{=:}\index{ERR0252@\texttt{ERR0252}}\StringTok{'not J script(s) ->'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{253}\AlertTok{=:}\index{ERR0253@\texttt{ERR0253}}\StringTok{'invalid locale name'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{254}\AlertTok{=:}\index{ERR0254@\texttt{ERR0254}}\StringTok{'unable to get TEMP/*.ijs text'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{255}\AlertTok{=:}\index{ERR0255@\texttt{ERR0255}}\StringTok{'unable to open TEMP/*ijs for editing'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{256}\AlertTok{=:}\index{ERR0256@\texttt{ERR0256}}\StringTok{'J error in script ->'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{257}\AlertTok{=:}\index{ERR0257@\texttt{ERR0257}}\StringTok{'invalid help word name'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{258}\AlertTok{=:}\index{ERR0258@\texttt{ERR0258}}\StringTok{'browser not found ->'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{259}\AlertTok{=:}\index{ERR0259@\texttt{ERR0259}}\StringTok{'no help for ->'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{260}\AlertTok{=:}\index{ERR0260@\texttt{ERR0260}}\StringTok{'PDF reader not found'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{261}\AlertTok{=:}\index{ERR0261@\texttt{ERR0261}}\StringTok{'macro is not a J script - not formatted'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ERR0}\DecValTok{262}\AlertTok{=:}\index{ERR0262@\texttt{ERR0262}}\StringTok{'not supported on current J system'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{IzJODutinterface}\AlertTok{=:}\index{IzJODutinterface@\texttt{IzJODutinterface}}\FunctionTok{<}\OtherTok{;.}\NormalTok{_}\DecValTok{1} \StringTok{' compj de disp doc ed et gt jodhelp revo rm rtt'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. valid characters in J names}
+\NormalTok{NAMEALPHA}\AlertTok{=:}\index{NAMEALPHA@\texttt{NAMEALPHA}}\StringTok{'abcdefghijklmnopqrstuvwxyzABCDEFGHIJKLMNOPQRSTUVWXYZ0123456789_'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{OK0}\DecValTok{250}\AlertTok{=:}\index{OK0250@\texttt{OK0250}}\StringTok{' documented in ->'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{OK0}\DecValTok{251}\AlertTok{=:}\index{OK0251@\texttt{OK0251}}\StringTok{'edit locale cleared'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{OK0}\DecValTok{252}\AlertTok{=:}\index{OK0252@\texttt{OK0252}}\StringTok{'edit locale ->'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{OK0}\DecValTok{253}\AlertTok{=:}\index{OK0253@\texttt{OK0253}}\StringTok{'starting browser help for ->'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{OK0}\DecValTok{254}\AlertTok{=:}\index{OK0254@\texttt{OK0254}}\StringTok{'starting browser on help index'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{OK0}\DecValTok{255}\AlertTok{=:}\index{OK0255@\texttt{OK0255}}\StringTok{'starting PDF reader'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{OK0}\DecValTok{256}\AlertTok{=:}\index{OK0256@\texttt{OK0256}}\StringTok{'jod.pdf not installed - use JAL to install the addon general/joddocument'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. PDF document indicator}
+\NormalTok{PDF}\AlertTok{=:}\index{PDF@\texttt{PDF}}\StringTok{'PDF'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. PDF reader - must accept command line argument}
+\NormalTok{PDFREADER}\AlertTok{=:}\index{PDFREADER@\texttt{PDFREADER}}\StringTok{'C:\textbackslash{}Program Files\textbackslash{}Adobe\textbackslash{}Reader 8.0\textbackslash{}Reader\textbackslash{}acrord32.exe'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. on Mac's use the OS open command for PDFs}
+\NormalTok{PDFREADERMAC}\AlertTok{=:}\index{PDFREADERMAC@\texttt{PDFREADERMAC}}\StringTok{'open'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. character used to mark scriptdoc headers - currently a '*'}
+\NormalTok{SCRIPTDOCCHAR}\AlertTok{=:}\index{SCRIPTDOCCHAR@\texttt{SCRIPTDOCCHAR}}\StringTok{'*'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. first Windows JOD browser}
+\NormalTok{WWW0}\AlertTok{=:}\index{WWW0@\texttt{WWW0}}\StringTok{'C:\textbackslash{}Program Files\textbackslash{}Internet Explorer\textbackslash{}IEXPLORE.EXE'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. first linux JOD browser}
+\NormalTok{WWW0linux}\AlertTok{=:}\index{WWW0linux@\texttt{WWW0linux}}\StringTok{'chromium-browser'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. www mac browser}
+\NormalTok{WWW0mac}\AlertTok{=:}\index{WWW0mac@\texttt{WWW0mac}}\StringTok{'open'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. second Windows JOD browser}
+\NormalTok{WWW1}\AlertTok{=:}\index{WWW1@\texttt{WWW1}}\StringTok{'c:\textbackslash{}Program Files\textbackslash{}Mozilla Firefox\textbackslash{}firefox.exe'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{blkaft}\AlertTok{=:}\index{blkaft@\texttt{blkaft}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*blkaft v-- appends necessary blanks to J tokens.}
+\CommentTok{NB.}
+\CommentTok{NB. This verb appends some  necessary blanks to  J tokens so that}
+\CommentTok{NB. raising  a token list and reparsing  produces  the same token}
+\CommentTok{NB. list. A few unecessary blanks may be inserted.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  blkaft blcl}
+\CommentTok{NB.}
+\CommentTok{NB.   NB. line of J code}
+\CommentTok{NB.   line=. 'c=. +./\textbackslash{}"1 c > ~:/\textbackslash{}"1 y. e. '''''''''}
+\CommentTok{NB.   tokens=.  ;: line}
+\CommentTok{NB.}
+\CommentTok{NB.   NB. compare}
+\CommentTok{NB.   (;: ; tokens) -: tokens}
+\CommentTok{NB.   (;: ; blkaft tokens) -: tokens}
+
+\CommentTok{NB. assume no blanks are required}
+\NormalTok{r}\CharTok{=.} \NormalTok{0 }\FunctionTok{#}\OtherTok{~} \FunctionTok{#} \DataTypeTok{y}
+\NormalTok{t}\CharTok{=.} \DataTypeTok{y}
+
+\KeywordTok{while.do.}
+ \DataTypeTok{u}\CharTok{=.} \FunctionTok{;:} \FunctionTok{;}\OtherTok{\textbackslash{}} \NormalTok{t}
+ \DataTypeTok{v}\CharTok{=.} \FunctionTok{~.}\OtherTok{&.}\FunctionTok{>}  \RegionMarkerTok{(} \FunctionTok{<}\OtherTok{"}\NormalTok{1 }\FunctionTok{\textbar{}:} \DataTypeTok{u}\RegionMarkerTok{)} \FunctionTok{-.} \OtherTok{L:} \NormalTok{1  }\FunctionTok{a:}
+ \NormalTok{r}\CharTok{=.} \NormalTok{r }\FunctionTok{+.} \DataTypeTok{y} \FunctionTok{e.} \FunctionTok{;} \FunctionTok{\{.}\OtherTok{&.}\FunctionTok{>} \RegionMarkerTok{(}\NormalTok{1 }\FunctionTok{<} \FunctionTok{#}\OtherTok{&}\FunctionTok{>} \DataTypeTok{v}\RegionMarkerTok{)}\FunctionTok{#}\DataTypeTok{v}
+
+ \KeywordTok{if.} \DataTypeTok{y} \FunctionTok{-:} \FunctionTok{\{:} \DataTypeTok{u} \KeywordTok{do.}
+   \CommentTok{NB. last tokenized row matches original}
+   \KeywordTok{break.}
+ \KeywordTok{else.}
+   \CommentTok{NB. insert required blanks and reparse}
+   \NormalTok{t}\CharTok{=.} \RegionMarkerTok{((}\NormalTok{r}\FunctionTok{#}\NormalTok{t}\RegionMarkerTok{)}\FunctionTok{,}\OtherTok{&.}\FunctionTok{>}\StringTok{' '}\RegionMarkerTok{)} \RegionMarkerTok{(}\FunctionTok{I.} \NormalTok{r}\RegionMarkerTok{)}\OtherTok{\}} \NormalTok{t}
+ \KeywordTok{end.}
+
+\KeywordTok{end.}
+
+\CommentTok{NB. insert required blanks and raise tokens}
+\FunctionTok{;} \RegionMarkerTok{((}\NormalTok{r}\FunctionTok{#}\DataTypeTok{y}\RegionMarkerTok{)}\FunctionTok{,}\OtherTok{&.}\FunctionTok{>}\StringTok{' '}\RegionMarkerTok{)} \RegionMarkerTok{(}\FunctionTok{I.} \NormalTok{r}\RegionMarkerTok{)}\OtherTok{\}} \DataTypeTok{y}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{changetok}\AlertTok{=:}\index{changetok@\texttt{changetok}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*changetok  v--  replaces  J name tokens within  a string. See}
+\CommentTok{NB. long documentation.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  clChanged =. clTokens changetok clStr}
+\CommentTok{NB.}
+\CommentTok{NB.   '/boo/hoo' changetok 'boo boo boohoo boohoo'}
+
+\KeywordTok{if.} \FunctionTok{#}\NormalTok{pairs}\CharTok{=.} \NormalTok{2 }\FunctionTok{\{.}\OtherTok{"}\RegionMarkerTok{(}\NormalTok{1}\RegionMarkerTok{)} \NormalTok{_}\DecValTok{2} \FunctionTok{[}\OtherTok{\textbackslash{}} \FunctionTok{<}\OtherTok{;.}\NormalTok{_}\DecValTok{1} \DataTypeTok{x} \KeywordTok{do.}
+  \NormalTok{pairs}\CharTok{=.} \NormalTok{pairs }\FunctionTok{#}\OtherTok{~} \NormalTok{_}\DecValTok{2} \FunctionTok{~:} \RegionMarkerTok{(}\NormalTok{4}\OtherTok{!:}\NormalTok{0}\RegionMarkerTok{)} \FunctionTok{\{.}\OtherTok{"}\NormalTok{1 pairs  }\CommentTok{NB. eliminate non-token pairs}
+\KeywordTok{end.}
+\NormalTok{cnt}\CharTok{=.}\NormalTok{_}\DecValTok{1} \FunctionTok{[} \NormalTok{lim}\CharTok{=.} \FunctionTok{#} \NormalTok{pairs}
+\KeywordTok{while.} \NormalTok{lim }\FunctionTok{>} \NormalTok{cnt}\CharTok{=.} \FunctionTok{>:}\NormalTok{cnt }\KeywordTok{do.}         \CommentTok{NB. process each change pair}
+  \StringTok{'t c'}\CharTok{=.} \NormalTok{cnt }\FunctionTok{\{} \NormalTok{pairs                }\CommentTok{NB. /target/change (*)=. t c}
+  \KeywordTok{if.} \FunctionTok{+.}\OtherTok{/}\NormalTok{b}\CharTok{=.} \NormalTok{t }\FunctionTok{E.} \DataTypeTok{y} \KeywordTok{do.}              \CommentTok{NB. next if no targets}
+    \NormalTok{w}\CharTok{=.} \FunctionTok{I.} \NormalTok{b                         }\CommentTok{NB. target starts}
+    \StringTok{'l o'}\CharTok{=.} \FunctionTok{#}\OtherTok{&}\FunctionTok{>} \NormalTok{cnt }\FunctionTok{\{} \NormalTok{pairs          }\CommentTok{NB. lengths (*)=. l o}
+    \NormalTok{q}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{w }\FunctionTok{\{} \StringTok{' '} \FunctionTok{,} \DataTypeTok{y}\RegionMarkerTok{)} \FunctionTok{e.} \NormalTok{NAMEALPHA        }\CommentTok{NB. head chars}
+    \NormalTok{r}\CharTok{=.} \RegionMarkerTok{((}\NormalTok{w }\FunctionTok{+} \NormalTok{l}\RegionMarkerTok{)} \FunctionTok{\{} \DataTypeTok{y} \FunctionTok{,} \StringTok{' '}\RegionMarkerTok{)} \FunctionTok{e.} \NormalTok{NAMEALPHA  }\CommentTok{NB. tail chars}
+    \NormalTok{w}\CharTok{=.} \NormalTok{w }\FunctionTok{#}\OtherTok{~} \FunctionTok{-.} \NormalTok{q }\FunctionTok{+.} \NormalTok{r               }\CommentTok{NB. eliminate embedded tokens}
+    \KeywordTok{if.} \NormalTok{0 }\FunctionTok{=} \FunctionTok{#}\NormalTok{w }\KeywordTok{do.} \KeywordTok{continue.} \KeywordTok{end.}    \CommentTok{NB. next if no targets}
+    \NormalTok{b}\CharTok{=.} \NormalTok{1 w}\OtherTok{\}} \NormalTok{0 }\FunctionTok{#}\OtherTok{~} \FunctionTok{#} \NormalTok{b                }\CommentTok{NB. reset target mask}
+    \NormalTok{p}\CharTok{=.} \NormalTok{w }\FunctionTok{+} \NormalTok{0}\FunctionTok{,+}\OtherTok{/\textbackslash{}}\RegionMarkerTok{(}\FunctionTok{<:#} \NormalTok{w}\RegionMarkerTok{)}\FunctionTok{$} \NormalTok{d }\CharTok{=.} \NormalTok{o }\FunctionTok{-} \NormalTok{l   }\CommentTok{NB. change starts}
+    \NormalTok{s}\CharTok{=.} \FunctionTok{*} \NormalTok{d                          }\CommentTok{NB. reduce < and > to =}
+    \KeywordTok{if.} \NormalTok{s }\FunctionTok{=} \NormalTok{_}\DecValTok{1} \KeywordTok{do.}
+      \NormalTok{b}\CharTok{=.} \NormalTok{1 }\FunctionTok{#}\OtherTok{~} \FunctionTok{#} \NormalTok{b}
+      \NormalTok{b}\CharTok{=.} \RegionMarkerTok{((}\NormalTok{l }\FunctionTok{*} \FunctionTok{#} \NormalTok{w}\RegionMarkerTok{)}\FunctionTok{$} \NormalTok{1 0 }\FunctionTok{#}\OtherTok{~} \NormalTok{o}\FunctionTok{,}\NormalTok{l}\FunctionTok{-}\NormalTok{o}\RegionMarkerTok{)} \RegionMarkerTok{(}\FunctionTok{,}\NormalTok{w }\FunctionTok{+}\OtherTok{/} \FunctionTok{i.} \NormalTok{l}\RegionMarkerTok{)}\OtherTok{\}} \NormalTok{b}
+      \DataTypeTok{y}\CharTok{=.} \NormalTok{b }\FunctionTok{#} \DataTypeTok{y}
+      \KeywordTok{if.} \NormalTok{o }\FunctionTok{=} \NormalTok{0 }\KeywordTok{do.} \KeywordTok{continue.} \KeywordTok{end.}   \CommentTok{NB. next for deletions}
+    \KeywordTok{elseif.} \NormalTok{s }\FunctionTok{=} \NormalTok{1 }\KeywordTok{do.}
+      \DataTypeTok{y}\CharTok{=.} \DataTypeTok{y} \FunctionTok{#}\OtherTok{~} \FunctionTok{>:} \NormalTok{d w}\OtherTok{\}} \NormalTok{b             }\CommentTok{NB. first target char replicated}
+    \KeywordTok{end.}
+    \DataTypeTok{y}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{c }\FunctionTok{$}\OtherTok{~} \NormalTok{o }\FunctionTok{*#} \NormalTok{w}\RegionMarkerTok{)} \RegionMarkerTok{(}\FunctionTok{,}\NormalTok{p }\FunctionTok{+}\OtherTok{/}\FunctionTok{i.} \NormalTok{o}\RegionMarkerTok{)}\OtherTok{\}} \DataTypeTok{y}  \CommentTok{NB. insert replacements}
+  \KeywordTok{end.}
+\KeywordTok{end.} \DataTypeTok{y}                               \CommentTok{NB. altered string}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{compj}\AlertTok{=:}\index{compj@\texttt{compj}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*compj v-- compresses nonnouns  by removing  white  space and}
+\CommentTok{NB. shortening local identifiers.}
+\CommentTok{NB.}
+\CommentTok{NB. (compj)  does not shorten  global identifiers, object or  locale}
+\CommentTok{NB. names  and implicit local (for.) names. The names  changed  by}
+\CommentTok{NB. (compj) are labeled local by (11 globs).}
+\CommentTok{NB.}
+\CommentTok{NB. WARNING: code compression requires that all ambigous names in}
+\CommentTok{NB. J  code  are properly declared  using  (globs) scope tags. If}
+\CommentTok{NB. such names are not properly identified compression will break}
+\CommentTok{NB. your code.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  cl =. compj blclNames}
+\CommentTok{NB.}
+\CommentTok{NB.   compj ;:'the byte diet'}
+
+\CommentTok{NB. get word definitions}
+\KeywordTok{if.} \NormalTok{badrc dat}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{WORD}\FunctionTok{,}\NormalTok{NVTABLE}\RegionMarkerTok{)} \NormalTok{get }\DataTypeTok{y} \KeywordTok{do.} \NormalTok{dat }\KeywordTok{return.} \KeywordTok{else.} \NormalTok{dat}\CharTok{=.} \NormalTok{rv dat }\KeywordTok{end.}
+
+\CommentTok{NB. mask of non-nouns}
+\NormalTok{b}\CharTok{=.} \NormalTok{0 }\FunctionTok{<} \FunctionTok{;} \NormalTok{1 }\FunctionTok{\{}\OtherTok{"}\NormalTok{1 dat}
+
+\CommentTok{NB. compress non-nouns - remove any embedded tabs}
+\NormalTok{dat}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{compressj}\OtherTok{@:}\NormalTok{ctit}\OtherTok{&.}\FunctionTok{>} \RegionMarkerTok{(}\NormalTok{b}\FunctionTok{#\{:}\OtherTok{"}\NormalTok{1 dat}\RegionMarkerTok{)} \FunctionTok{-.}\OtherTok{&.}\FunctionTok{>} \NormalTok{TAB}\RegionMarkerTok{)} \RegionMarkerTok{(}\FunctionTok{<}\RegionMarkerTok{(}\FunctionTok{I.} \NormalTok{b}\RegionMarkerTok{)}\FunctionTok{;}\NormalTok{2}\RegionMarkerTok{)}\OtherTok{\}} \NormalTok{dat}
+
+\CommentTok{NB. generate packed script}
+\RegionMarkerTok{(}\NormalTok{WORD}\FunctionTok{,}\NormalTok{1}\RegionMarkerTok{)} \NormalTok{wttext_}\DecValTok{_}\NormalTok{MK dat}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{compressj}\AlertTok{=:}\index{compressj@\texttt{compressj}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*compressj v--  removes  all  white  space  from  J words  and}
+\CommentTok{NB. shortens local names. This process reduces the readability of}
+\CommentTok{NB. code and should only be applied to production code.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  cl =. compressj ct}
+\CommentTok{NB.}
+\CommentTok{NB.   compressj jcr 'verbname'}
+
+\CommentTok{NB. check for presence of white space only removal tag}
+\NormalTok{w}\CharTok{=.} \NormalTok{1 }\FunctionTok{e.} \NormalTok{CWSONLY }\FunctionTok{E.} \FunctionTok{,}\DataTypeTok{y}
+
+\CommentTok{NB. always remove white space}
+\DataTypeTok{u}\CharTok{=.} \NormalTok{dewhitejcr }\DataTypeTok{y}
+\KeywordTok{if.} \NormalTok{w }\KeywordTok{do.} \DataTypeTok{u} \KeywordTok{return.} \KeywordTok{end.}
+
+\CommentTok{NB. do not compress identifiers in code that cannot be}
+\CommentTok{NB. reliably classified by the namecats verb.}
+\KeywordTok{if.} \NormalTok{badrc }\DataTypeTok{m}\CharTok{=.} \NormalTok{1 namecats_}\DecValTok{_}\NormalTok{MK }\DataTypeTok{y} \KeywordTok{do.} \DataTypeTok{u} \KeywordTok{return.} \KeywordTok{end.}
+\NormalTok{d}\CharTok{=.} \FunctionTok{~.} \FunctionTok{;}\RegionMarkerTok{(}\FunctionTok{<}\NormalTok{2 3 4}\FunctionTok{;}\NormalTok{1}\RegionMarkerTok{)}\FunctionTok{\{}\DataTypeTok{m}\CharTok{=.} \NormalTok{rv }\DataTypeTok{m}
+
+\CommentTok{NB. local names less any single char names}
+\NormalTok{l}\CharTok{=.} \FunctionTok{;}\RegionMarkerTok{(}\FunctionTok{<}\NormalTok{1}\FunctionTok{;}\NormalTok{1}\RegionMarkerTok{)}\FunctionTok{\{}\DataTypeTok{m}
+\NormalTok{s}\CharTok{=.} \NormalTok{l }\FunctionTok{#}\OtherTok{~} \NormalTok{1 }\FunctionTok{=} \FunctionTok{#}\OtherTok{&}\FunctionTok{>} \NormalTok{l}
+\NormalTok{l}\CharTok{=.} \NormalTok{l }\FunctionTok{-.} \NormalTok{s}
+
+\CommentTok{NB. remove object references}
+\NormalTok{l}\CharTok{=.} \NormalTok{l }\FunctionTok{-.} \NormalTok{exobrefs l}\FunctionTok{,;}\RegionMarkerTok{(}\FunctionTok{<}\NormalTok{0}\FunctionTok{;}\NormalTok{1}\RegionMarkerTok{)}\FunctionTok{\{}\DataTypeTok{m}
+
+\CommentTok{NB. local names less any declared and for. names}
+\KeywordTok{if.} \NormalTok{0}\FunctionTok{=#}\DataTypeTok{m}\CharTok{=.} \NormalTok{l }\FunctionTok{-.} \NormalTok{d }\KeywordTok{do.} \DataTypeTok{u} \KeywordTok{return.} \KeywordTok{end.}
+
+\CommentTok{NB. remove any names with embedded locale references}
+\KeywordTok{if.} \NormalTok{0}\FunctionTok{=#}\DataTypeTok{m}\CharTok{=.} \DataTypeTok{m} \FunctionTok{#}\OtherTok{~} \FunctionTok{-.} \NormalTok{islocref}\OtherTok{&}\FunctionTok{>} \DataTypeTok{m} \KeywordTok{do.} \DataTypeTok{u} \KeywordTok{return.} \KeywordTok{end.}
+
+\CommentTok{NB. form replacements from any remaining chars !(*)=. SHORTNAMES}
+\CommentTok{NB. J arguments m n x y u v are not on SHORTNAMES}
+\KeywordTok{if.} \NormalTok{0}\FunctionTok{=#}\NormalTok{r}\CharTok{=.} \NormalTok{SHORTNAMES }\FunctionTok{-.} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \NormalTok{s }\KeywordTok{do.} \DataTypeTok{u} \KeywordTok{return.} \KeywordTok{end.}
+\KeywordTok{if.} \RegionMarkerTok{(}\FunctionTok{#}\NormalTok{r}\RegionMarkerTok{)} \FunctionTok{<} \FunctionTok{#}\DataTypeTok{m} \KeywordTok{do.}
+  \CommentTok{NB. we have more replacements than available SHORTNAMES}
+  \CommentTok{NB. form base (#r) numbers using SHORTNAMES digits}
+  \NormalTok{bnr}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{#}\NormalTok{r}\RegionMarkerTok{)}\OtherTok{&}\FunctionTok{#.}\OtherTok{@}\RegionMarkerTok{((}\FunctionTok{;}\NormalTok{r}\RegionMarkerTok{)}\OtherTok{&}\FunctionTok{i.}\RegionMarkerTok{)}\OtherTok{^:}\NormalTok{_}\DecValTok{1}
+  \NormalTok{r}\CharTok{=.} \NormalTok{r}\FunctionTok{,<}\OtherTok{"}\NormalTok{1}\RegionMarkerTok{(}\FunctionTok{#}\NormalTok{r}\RegionMarkerTok{)} \FunctionTok{\}.} \NormalTok{bnr }\FunctionTok{i.} \FunctionTok{#}\DataTypeTok{m}
+\KeywordTok{end.}
+\NormalTok{r}\CharTok{=.} \FunctionTok{;} \StringTok{'/'} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \DataTypeTok{m} \FunctionTok{,.} \RegionMarkerTok{(}\FunctionTok{#}\DataTypeTok{m}\RegionMarkerTok{)} \FunctionTok{\{.} \NormalTok{r}
+
+\CommentTok{NB. replace tokens}
+\NormalTok{r changetok }\DataTypeTok{u}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{createut}\AlertTok{=:}\index{createut@\texttt{createut}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*createut v-- initializes utility objects.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  createut blObrefs}
+\CommentTok{NB.}
+\CommentTok{NB.   createut__UT JOD;ST;MK;UT;<S0}
+
+\CommentTok{NB. object references !(*)=. JOD ST MK UT SO}
+\StringTok{'JOD ST MK UT SO'}\AlertTok{=:}\index{00multiple@\texttt{'...'=:}} \DataTypeTok{y}
+
+\CommentTok{NB. set shortnames !(*)=. SHORTNAMES}
+\NormalTok{SHORTNAMES}\AlertTok{=:}\index{SHORTNAMES@\texttt{SHORTNAMES}} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \FunctionTok{<}\OtherTok{"}\NormalTok{0 }\FunctionTok{[} \NormalTok{5}\DecValTok{2} \FunctionTok{\{.} \NormalTok{NAMEALPHA}
+\NormalTok{SHORTNAMES}\AlertTok{=:}\index{SHORTNAMES@\texttt{SHORTNAMES}} \NormalTok{SHORTNAMES }\FunctionTok{-.} \FunctionTok{;:}\StringTok{'m n x y u v'}
+
+\CommentTok{NB. set browser}
+\NormalTok{WWWBROWSER}\AlertTok{=:}\index{WWWBROWSER@\texttt{WWWBROWSER}} \NormalTok{setwwwbrowser 0}
+
+\CommentTok{NB. add to overall jod interface}
+\NormalTok{IZJODALL_}\DecValTok{_}\NormalTok{JOD}\AlertTok{=:}\index{IZJODALL\_\_JOD@\texttt{IZJODALL\_\_JOD}} \NormalTok{IZJODALL_}\DecValTok{_}\NormalTok{JOD}\FunctionTok{,}\NormalTok{IzJODutinterface}
+
+\CommentTok{NB. define direct (ijod) locale interface for utilities}
+\FunctionTok{".}\OtherTok{&.}\FunctionTok{>} \NormalTok{UT defzface IzJODutinterface}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. convert LF delimited character lists to character tables}
+\NormalTok{ctit}\AlertTok{=:}\index{ctit@\texttt{ctit}}\FunctionTok{[:} \FunctionTok{]}\OtherTok{;.}\NormalTok{_}\DecValTok{2} \FunctionTok{]} \FunctionTok{,} \RegionMarkerTok{(}\NormalTok{1}\DecValTok{0}\FunctionTok{\{a.}\RegionMarkerTok{)}\OtherTok{"}\NormalTok{_}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. display JOD result without return code}
+\NormalTok{de}\AlertTok{=:}\index{de@\texttt{de}}\NormalTok{list}\OtherTok{@:}\FunctionTok{\}.}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{dewhitejcr}\AlertTok{=:}\index{dewhitejcr@\texttt{dewhitejcr}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*dewhitejcr  v--  removes  all redundant  blanks from  J code.}
+\CommentTok{NB. Result is a character list in linear representation format.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  cl =. dewhitejcr ct}
+\CommentTok{NB.}
+\CommentTok{NB.   dewhitejcr jcr 'anyword'}
+
+\NormalTok{tt}\CharTok{=.} \FunctionTok{;:}\OtherTok{&.}\FunctionTok{>} \FunctionTok{<}\OtherTok{"}\NormalTok{1 }\RegionMarkerTok{(}\NormalTok{ljust}\OtherTok{@:}\NormalTok{decomm}\RegionMarkerTok{)} \DataTypeTok{y}  \CommentTok{NB. list of tokenized lines}
+\FunctionTok{;} \RegionMarkerTok{(}\NormalTok{blkaft}\OtherTok{&.}\FunctionTok{>} \NormalTok{tt}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \NormalTok{LF          }\CommentTok{NB. insert blanks, LF's and raise}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{dewhitejscript}\AlertTok{=:}\index{dewhitejscript@\texttt{dewhitejscript}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*dewhitejscript  v--  removes  all  redundant  blanks  from  J}
+\CommentTok{NB. scripts.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  dewhitejscript cl}
+\CommentTok{NB.}
+\CommentTok{NB.   dewhitejscript read 'c:\textbackslash{}any\textbackslash{}j\textbackslash{}script.ijs'}
+
+\CommentTok{NB. replace any tabs with single blanks}
+\DataTypeTok{y}\CharTok{=.} \StringTok{' '} \RegionMarkerTok{(}\FunctionTok{I.} \DataTypeTok{y}\FunctionTok{=}\NormalTok{TAB}\RegionMarkerTok{)}\OtherTok{\}} \DataTypeTok{y}
+
+\CommentTok{NB. remove blank lines and all comments from script}
+\DataTypeTok{y}\CharTok{=.} \FunctionTok{;:}\OtherTok{&.}\FunctionTok{>} \FunctionTok{<}\OtherTok{"}\NormalTok{1 decomm }\FunctionTok{]}\OtherTok{;.} \NormalTok{_}\DecValTok{1} \NormalTok{LF}\FunctionTok{,}\DataTypeTok{y}\FunctionTok{-.}\NormalTok{CR}
+
+\CommentTok{NB. remove redundant blanks in code}
+\FunctionTok{;} \RegionMarkerTok{(}\NormalTok{blkaft}\OtherTok{&.}\FunctionTok{>} \DataTypeTok{y}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \FunctionTok{<}\NormalTok{CRLF}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{disp}\AlertTok{=:}\index{disp@\texttt{disp}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*disp  v--  display  dictionary  objects  as text.  This  verb}
+\CommentTok{NB. returns  a character  list instead of  a the usual (rc;values}
+\CommentTok{NB. ...) boxed list.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  disp cl\textbar{}blcl}
+\CommentTok{NB. dyad:  iaObject disp cl\textbar{}blcl}
+
+\NormalTok{0 disp }\DataTypeTok{y}
+\OtherTok{:}
+\KeywordTok{if.} \NormalTok{badrc uv}\CharTok{=.} \DataTypeTok{x} \NormalTok{obtext }\DataTypeTok{y} \KeywordTok{do.} \NormalTok{uv }\KeywordTok{else.} \FunctionTok{>\{:}\NormalTok{uv }\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{doc}\AlertTok{=:}\index{doc@\texttt{doc}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*doc v-- formats document text  using  the conventions  of the}
+\CommentTok{NB. (docct) verb.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  doc clName}
+\CommentTok{NB.}
+\CommentTok{NB.   doc 'word'    NB. format leading block of explicit defn comments}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  iaObject doc clName}
+\CommentTok{NB.}
+\CommentTok{NB.   1 doc 'test'       NB. format test document text}
+\CommentTok{NB.   0 9 doc 'longdoc'  NB. format long word documentation text}
+
+\NormalTok{docword }\DataTypeTok{y}
+\OtherTok{:}
+\DataTypeTok{x} \NormalTok{doctext }\DataTypeTok{y}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{docct2}\AlertTok{=:}\index{docct2@\texttt{docct2}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*docct2 v-- formats leading comments.}
+\CommentTok{NB.}
+\CommentTok{NB. This verb formats the  leading comments in a character table.}
+\CommentTok{NB. There  are  three   basic  types  of  tables:  (1)  character}
+\CommentTok{NB. representations  of  explicit  words with  leading  contigous}
+\CommentTok{NB. comment blocks, (2) general J  scripts with leading contigous}
+\CommentTok{NB. comment  blocks,  (3)  long  JOD documentation  text  without}
+\CommentTok{NB. leading comments (no 'NB.'s).  Long documentation follows the}
+\CommentTok{NB. same formatting conventions without the leading 'NB.'s}
+\CommentTok{NB.}
+\CommentTok{NB. Result is a character table.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  ctFormatted =. (iaWidth;iaStarPos;iaBlockIdx;clPfx) docct2 ctText}
+\CommentTok{NB.}
+\CommentTok{NB.   (41;0;1;'NB.') docct2__UT__JODobj ];._1 LF,disp 'docct2'             NB.(1)}
+\CommentTok{NB.   (40;0;0;'NB.') docct2__UT__JODobj ];._1 LF,(4 disp 'scriptstub')-.CR NB.(2)}
+\CommentTok{NB.   (57;0;0;'') docct2__UT__JODobj ];._1 LF,(4 disp 'docstub')-.CR       NB.(3)}
+
+\CommentTok{NB. width, star-row, block-index, prefix}
+\StringTok{'wid star blidx pfx'}\CharTok{=.} \DataTypeTok{x}
+\NormalTok{plen}\CharTok{=.} \FunctionTok{#}\NormalTok{pfx}
+
+\CommentTok{NB. get any first block of comments}
+\KeywordTok{if.} \NormalTok{plen }\KeywordTok{do.}
+  \KeywordTok{if.} \FunctionTok{-.} \FunctionTok{+.}\OtherTok{/}\NormalTok{b1}\CharTok{=.} \FunctionTok{+.}\OtherTok{/"}\NormalTok{1 }\RegionMarkerTok{(}\FunctionTok{,:} \NormalTok{pfx}\RegionMarkerTok{)} \FunctionTok{E.} \DataTypeTok{y} \KeywordTok{do.} \DataTypeTok{y} \KeywordTok{return.} \KeywordTok{end.}
+  \NormalTok{txt}\CharTok{=.} \RegionMarkerTok{((}\NormalTok{firstone b1}\RegionMarkerTok{)} \FunctionTok{+.} \NormalTok{firstone }\FunctionTok{-.}\NormalTok{b1}\RegionMarkerTok{)} \FunctionTok{<}\OtherTok{;.}\NormalTok{1 }\DataTypeTok{y}
+\KeywordTok{else.}
+  \CommentTok{NB. the prefix is null - the first comment block is all text}
+  \NormalTok{txt}\CharTok{=.} \FunctionTok{<}\DataTypeTok{y}
+\KeywordTok{end.}
+
+\KeywordTok{if.} \NormalTok{blidx }\FunctionTok{>:} \FunctionTok{#}\NormalTok{txt }\KeywordTok{do.} \DataTypeTok{y} \KeywordTok{return.} \KeywordTok{else.} \NormalTok{blk}\CharTok{=.} \FunctionTok{>} \NormalTok{blidx }\FunctionTok{\{} \NormalTok{txt }\KeywordTok{end.}
+\KeywordTok{if.} \FunctionTok{+.}\OtherTok{/} \RegionMarkerTok{(}\NormalTok{star}\FunctionTok{,}\NormalTok{plen}\RegionMarkerTok{)} \FunctionTok{>:} \FunctionTok{$}\NormalTok{blk }\KeywordTok{do.} \DataTypeTok{y} \KeywordTok{return.} \KeywordTok{end.}
+
+\CommentTok{NB. apply formatting only to scriptdoc'ed text}
+\KeywordTok{if.} \NormalTok{SCRIPTDOCCHAR}\FunctionTok{=}\RegionMarkerTok{(}\FunctionTok{<}\NormalTok{star}\FunctionTok{;}\NormalTok{plen}\RegionMarkerTok{)}\FunctionTok{\{}\NormalTok{blk }\KeywordTok{do.}
+
+  \CommentTok{NB. clear scriptdoc mark remove any prefixes}
+  \NormalTok{blk}\CharTok{=.} \StringTok{' '} \RegionMarkerTok{(}\FunctionTok{<}\NormalTok{star}\FunctionTok{;}\NormalTok{plen}\RegionMarkerTok{)}\OtherTok{\}} \NormalTok{blk}
+  \KeywordTok{if.} \NormalTok{plen }\KeywordTok{do.} \NormalTok{blk}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{#}\NormalTok{pfx}\RegionMarkerTok{)} \FunctionTok{\}.}\OtherTok{"}\NormalTok{1 ljust blk }\KeywordTok{end.}
+
+  \CommentTok{NB. format comments remark for scriptdoc}
+  \StringTok{'head tail'}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{wid}\FunctionTok{;}\NormalTok{DOCUMENTMARKS}\RegionMarkerTok{)} \NormalTok{docfmt2 blk}
+  \NormalTok{head}\CharTok{=.} \NormalTok{SCRIPTDOCCHAR }\RegionMarkerTok{(}\FunctionTok{<}\NormalTok{star}\FunctionTok{;}\NormalTok{plen}\RegionMarkerTok{)}\OtherTok{\}} \RegionMarkerTok{(}\NormalTok{pfx}\FunctionTok{,}\StringTok{' '}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{"}\NormalTok{1 head}
+  \NormalTok{tail}\CharTok{=.} \NormalTok{pfx }\FunctionTok{,}\OtherTok{"}\NormalTok{1 tail}
+
+  \CommentTok{NB. return formatted text}
+  \FunctionTok{;} \RegionMarkerTok{(}\FunctionTok{<}\NormalTok{head}\FunctionTok{,}\NormalTok{tail}\RegionMarkerTok{)} \RegionMarkerTok{(}\NormalTok{blidx}\RegionMarkerTok{)}\OtherTok{\}} \NormalTok{txt}
+\KeywordTok{else.}
+  \DataTypeTok{y}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{docfmt2}\AlertTok{=:}\index{docfmt2@\texttt{docfmt2}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*docfmt2 v-- formats comment region.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  (iaWid ; blclMarks) docfmt2 ct}
+\CommentTok{NB.}
+\CommentTok{NB.  (67;MONADMARK;DYADMARK) docfmt2 5#,:'to comment or not to comment'}
+
+\CommentTok{NB. text width and n marks}
+\NormalTok{width}\CharTok{=.} \FunctionTok{>\{.} \DataTypeTok{x}
+\NormalTok{marks}\CharTok{=.} \FunctionTok{\}.} \DataTypeTok{x}
+
+\CommentTok{NB. leave all text following any marks alone}
+\NormalTok{b}\CharTok{=.} \FunctionTok{+.}\OtherTok{/"}\NormalTok{1 }\FunctionTok{+.}\OtherTok{/} \RegionMarkerTok{(}\FunctionTok{,:}\OtherTok{&.}\FunctionTok{>} \NormalTok{marks}\RegionMarkerTok{)} \FunctionTok{E.}\OtherTok{&}\FunctionTok{>} \FunctionTok{<}\DataTypeTok{y}
+\NormalTok{b}\CharTok{=.} \NormalTok{1 }\RegionMarkerTok{(}\NormalTok{0}\RegionMarkerTok{)}\OtherTok{\}} \NormalTok{firstone }\FunctionTok{+.}\OtherTok{/\textbackslash{}} \NormalTok{b}
+\StringTok{'head tail'} \CharTok{=.} \NormalTok{2 }\FunctionTok{\{.} \RegionMarkerTok{(}\NormalTok{b }\FunctionTok{<}\OtherTok{;.}\NormalTok{1 }\DataTypeTok{y}\RegionMarkerTok{)}\FunctionTok{,<i.}\NormalTok{0 0}
+
+\CommentTok{NB. format paragraphs of head}
+\NormalTok{head}\CharTok{=.} \NormalTok{ljust head}
+\NormalTok{head}\CharTok{=.} \NormalTok{width textform2}\OtherTok{&.}\FunctionTok{>} \RegionMarkerTok{(}\NormalTok{1}\RegionMarkerTok{(}\NormalTok{0}\RegionMarkerTok{)}\OtherTok{\}}\FunctionTok{*.}\OtherTok{/"}\NormalTok{1}\StringTok{' '}\FunctionTok{=}\NormalTok{head}\RegionMarkerTok{)}\FunctionTok{<}\OtherTok{;.}\NormalTok{1 head}
+
+\CommentTok{NB. remove null paragraphs, remerge and mark for scriptdoc}
+\NormalTok{head}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{0 }\FunctionTok{<} \FunctionTok{#}\OtherTok{&}\FunctionTok{>} \NormalTok{head}\RegionMarkerTok{)}\FunctionTok{#}\NormalTok{head}
+\NormalTok{head}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{-}\NormalTok{0}\FunctionTok{=#}\NormalTok{tail}\RegionMarkerTok{)} \FunctionTok{\}.} \FunctionTok{;}\NormalTok{head}\FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \StringTok{' '}
+
+\CommentTok{NB. return formatted text and unformatted tail}
+\NormalTok{head}\FunctionTok{;}\NormalTok{tail}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{doctext}\AlertTok{=:}\index{doctext@\texttt{doctext}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*doctext v-- formats long document, object and header text.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  iaObject doctext clName}
+\CommentTok{NB.}
+\CommentTok{NB.   0 doctext 'word'}
+\CommentTok{NB.   1 doctext 'test'}
+
+\KeywordTok{if.} \NormalTok{badcl }\DataTypeTok{y} \KeywordTok{do.} \NormalTok{jderr ERR0}\DecValTok{01}  \CommentTok{NB. errmsg: invalid options}
+\KeywordTok{elseif.} \NormalTok{badrc uv}\CharTok{=.} \NormalTok{checkput_}\DecValTok{_}\NormalTok{ST }\DataTypeTok{y}   \KeywordTok{do.} \NormalTok{uv}
+\KeywordTok{elseif.} \NormalTok{badrc uv}\CharTok{=.} \NormalTok{checknames_}\DecValTok{_}\NormalTok{ST }\DataTypeTok{y} \KeywordTok{do.} \NormalTok{uv}
+\KeywordTok{elseif.} \RegionMarkerTok{((}\NormalTok{1}\FunctionTok{=#}\DataTypeTok{x}\RegionMarkerTok{)} \FunctionTok{*.} \RegionMarkerTok{(}\FunctionTok{\{.}\DataTypeTok{x}\RegionMarkerTok{)} \FunctionTok{e.} \NormalTok{TEST}\FunctionTok{,}\NormalTok{MACRO}\RegionMarkerTok{)} \FunctionTok{+.} \DataTypeTok{x} \FunctionTok{e.} \RegionMarkerTok{(}\NormalTok{GROUP}\FunctionTok{,}\NormalTok{SUITE}\RegionMarkerTok{)} \FunctionTok{,.} \NormalTok{1  }\KeywordTok{do.}
+        \KeywordTok{if.} \NormalTok{badrc uv}\CharTok{=.} \DataTypeTok{x} \NormalTok{obtext }\DataTypeTok{y} \KeywordTok{do.} \NormalTok{uv }\KeywordTok{return.} \KeywordTok{else.} \NormalTok{uv}\CharTok{=.} \FunctionTok{>\{:}\NormalTok{uv }\KeywordTok{end.}
+        \CommentTok{NB. format leading comments of test, macro and group/suite header scripts}
+        \NormalTok{DL}\CharTok{=.}\FunctionTok{\{:\{.}\NormalTok{DPATH_}\DecValTok{_}\NormalTok{ST}
+        \NormalTok{uv}\CharTok{=.} \NormalTok{ctl }\RegionMarkerTok{(}\NormalTok{DOCUMENTWIDTH_}\DecValTok{_}\NormalTok{DL}\FunctionTok{;}\NormalTok{0}\FunctionTok{;}\NormalTok{0}\FunctionTok{;}\StringTok{'NB.'}\RegionMarkerTok{)} \NormalTok{docct2 }\FunctionTok{]}\OtherTok{;.}\NormalTok{_}\DecValTok{1} \NormalTok{LF}\FunctionTok{,}\NormalTok{uv}\FunctionTok{-.}\NormalTok{CR}
+        \KeywordTok{if.} \DataTypeTok{x}\FunctionTok{-:}\NormalTok{MACRO }\KeywordTok{do.}
+          \CommentTok{NB. format only J script macros}
+          \KeywordTok{if.} \NormalTok{badrc uv2}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{MACRO}\FunctionTok{,}\NormalTok{INCLASS}\RegionMarkerTok{)} \NormalTok{get }\DataTypeTok{y} \KeywordTok{do.} \NormalTok{uv2 }\KeywordTok{return.} \KeywordTok{end.}
+          \CommentTok{NB. errmsg: macro is not a J script - not formatted}
+          \KeywordTok{if.} \NormalTok{JSCRIPT}\FunctionTok{=>\{:}\NormalTok{uv2 }\KeywordTok{do.} \DataTypeTok{x} \NormalTok{put }\DataTypeTok{y}\FunctionTok{;}\NormalTok{JSCRIPT}\FunctionTok{;}\NormalTok{uv }\KeywordTok{else.} \NormalTok{jderr ERR0}\DecValTok{261} \KeywordTok{end.}
+        \KeywordTok{else.}
+          \DataTypeTok{x} \NormalTok{put }\DataTypeTok{y}\FunctionTok{;}\NormalTok{uv}
+        \KeywordTok{end.}
+\KeywordTok{elseif.} \FunctionTok{-.} \RegionMarkerTok{(}\FunctionTok{<}\DataTypeTok{x}\RegionMarkerTok{)} \FunctionTok{e.} \FunctionTok{\{}\NormalTok{OBJECTNC}\FunctionTok{;}\NormalTok{DOCUMENT }\KeywordTok{do.} \NormalTok{jderr ERR0}\DecValTok{01}
+\KeywordTok{elseif.} \DataTypeTok{y}\CharTok{=.} \FunctionTok{\}.} \NormalTok{uv}
+        \NormalTok{DL}\CharTok{=.}\FunctionTok{\{:\{.}\NormalTok{DPATH_}\DecValTok{_}\NormalTok{ST}
+        \NormalTok{badrc uv}\CharTok{=.} \RegionMarkerTok{((}\DataTypeTok{x}\CharTok{=.}\FunctionTok{\{.}\DataTypeTok{x}\RegionMarkerTok{)}\FunctionTok{;<}\NormalTok{DL}\RegionMarkerTok{)} \NormalTok{inputdict_}\DecValTok{_}\NormalTok{ST }\DataTypeTok{y} \KeywordTok{do.} \NormalTok{uv}
+\KeywordTok{elseif.} \NormalTok{badrc uv}\CharTok{=.} \DataTypeTok{x} \NormalTok{getdocument_}\DecValTok{_}\NormalTok{ST }\DataTypeTok{y} \KeywordTok{do.} \NormalTok{uv}
+\KeywordTok{elseif.do.}
+  \CommentTok{NB. document text using same formatting}
+  \CommentTok{NB. conventions applied to words.}
+  \NormalTok{uv}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{1}\FunctionTok{;}\NormalTok{0 1}\RegionMarkerTok{)}\FunctionTok{\{::} \NormalTok{uv}
+  \NormalTok{uv}\CharTok{=.} \FunctionTok{]}\OtherTok{;.} \NormalTok{_}\DecValTok{2} \RegionMarkerTok{(}\NormalTok{uv }\FunctionTok{-.} \NormalTok{CR}\RegionMarkerTok{)}\FunctionTok{,}\NormalTok{LF}
+  \NormalTok{uv}\CharTok{=.} \NormalTok{ctl }\FunctionTok{;} \RegionMarkerTok{(}\NormalTok{DOCUMENTWIDTH_}\DecValTok{_}\NormalTok{DL}\FunctionTok{;}\NormalTok{DOCUMENTMARKS}\RegionMarkerTok{)} \NormalTok{docfmt2 uv}
+  \RegionMarkerTok{(}\DataTypeTok{x}\FunctionTok{,}\NormalTok{DOCUMENT}\RegionMarkerTok{)} \NormalTok{put }\DataTypeTok{y}\FunctionTok{,<}\NormalTok{uv}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{docword}\AlertTok{=:}\index{docword@\texttt{docword}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*docword v-- formats the leading  comment block  in dictionary}
+\CommentTok{NB. verbs, adverbs and conjunctions.  Nouns do not have  internal}
+\CommentTok{NB. documentation. Attempts  to  document  a noun  results in  an}
+\CommentTok{NB. error.}
+\CommentTok{NB.}
+\CommentTok{NB. Note: nouns do have  external  documentation in  the form  of}
+\CommentTok{NB. short explanations and supplemental document text. See  (put)}
+\CommentTok{NB. and (get).}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  docword clName}
+
+\KeywordTok{if.} \NormalTok{badcl }\DataTypeTok{y} \KeywordTok{do.} \NormalTok{jderr ERR0}\DecValTok{01}
+\KeywordTok{elseif.} \NormalTok{badrc uv}\CharTok{=.} \NormalTok{checkput_}\DecValTok{_}\NormalTok{ST }\DataTypeTok{y} \KeywordTok{do.} \NormalTok{uv}
+\KeywordTok{elseif.} \NormalTok{badrc uv}\CharTok{=.} \NormalTok{checknames_}\DecValTok{_}\NormalTok{ST }\DataTypeTok{y} \KeywordTok{do.} \NormalTok{uv}
+\KeywordTok{elseif.} \DataTypeTok{y}\CharTok{=.} \FunctionTok{\}.} \NormalTok{uv}
+        \NormalTok{DL}\CharTok{=.}\FunctionTok{\{:\{.}\NormalTok{DPATH_}\DecValTok{_}\NormalTok{ST}
+        \NormalTok{badrc uv}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{WORD}\FunctionTok{;<}\NormalTok{DL}\RegionMarkerTok{)} \NormalTok{inputdict_}\DecValTok{_}\NormalTok{ST }\DataTypeTok{y} \KeywordTok{do.} \NormalTok{uv}
+\KeywordTok{elseif.} \NormalTok{badrc uv}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{WORD}\FunctionTok{,}\NormalTok{0}\RegionMarkerTok{)} \NormalTok{getobjects_}\DecValTok{_}\NormalTok{ST }\DataTypeTok{y} \KeywordTok{do.} \NormalTok{uv}
+\KeywordTok{elseif.} \NormalTok{0 }\FunctionTok{=} \RegionMarkerTok{(}\NormalTok{1}\FunctionTok{;}\NormalTok{0 1}\RegionMarkerTok{)}\FunctionTok{\{::} \NormalTok{uv }\KeywordTok{do.}
+  \CommentTok{NB. errmsg: is a noun no internal document}
+  \NormalTok{jderr }\StringTok{'<'}\FunctionTok{,}\RegionMarkerTok{(}\StringTok{' '} \FunctionTok{-.}\OtherTok{~} \FunctionTok{,>}\DataTypeTok{y}\RegionMarkerTok{)}\FunctionTok{,}\StringTok{'>'} \FunctionTok{,} \NormalTok{ERR0}\DecValTok{250}
+\KeywordTok{elseif.} \NormalTok{cr}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{1}\FunctionTok{;}\NormalTok{0 2}\RegionMarkerTok{)}\FunctionTok{\{::} \NormalTok{uv}
+        \NormalTok{cr}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{-}\NormalTok{LF }\FunctionTok{=} \FunctionTok{\{:}\NormalTok{cr}\RegionMarkerTok{)} \FunctionTok{\}.} \NormalTok{cr}\FunctionTok{,}\NormalTok{LF}
+        \CommentTok{NB. cr=. ctl DOCUMENTWIDTH__DL docct ];._2 cr  NB. OLDCODE}
+        \NormalTok{cr}\CharTok{=.} \NormalTok{ctl }\RegionMarkerTok{(}\NormalTok{DOCUMENTWIDTH_}\DecValTok{_}\NormalTok{DL}\FunctionTok{;}\NormalTok{0}\FunctionTok{;}\NormalTok{1}\FunctionTok{;}\StringTok{'NB.'}\RegionMarkerTok{)} \NormalTok{docct2 }\FunctionTok{]}\OtherTok{;.}\NormalTok{_}\DecValTok{2} \NormalTok{cr}
+        \NormalTok{uv}\CharTok{=.} \FunctionTok{,} \NormalTok{1 }\FunctionTok{\{::} \NormalTok{uv}
+        \NormalTok{uv}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{<}\NormalTok{cr}\RegionMarkerTok{)} \NormalTok{2}\OtherTok{\}} \NormalTok{uv}
+        \NormalTok{badrc msg}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{WORD}\FunctionTok{,}\NormalTok{NVTABLE}\RegionMarkerTok{)} \NormalTok{put uv }\KeywordTok{do.} \NormalTok{msg}
+\KeywordTok{elseif.do.}
+  \RegionMarkerTok{(}\NormalTok{ok }\StringTok{'<'}\FunctionTok{,}\RegionMarkerTok{(}\FunctionTok{>\{.}\NormalTok{uv}\RegionMarkerTok{)}\FunctionTok{,}\StringTok{'>'}\FunctionTok{,}\NormalTok{OK0}\DecValTok{250}\RegionMarkerTok{)}\FunctionTok{,\{:}\NormalTok{msg}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ed}\AlertTok{=:}\index{ed@\texttt{ed}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*ed v-- edit dictionary objects}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  ed cl\textbar{}blcl}
+\CommentTok{NB.}
+\CommentTok{NB.   ed 'wordname'}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  iaObject\textbar{}ilObjOpt ed cl\textbar{}blcl}
+\CommentTok{NB.}
+\CommentTok{NB.   1 ed 'testname'           NB. edit test}
+\CommentTok{NB.   0 9 ed 'worddocument'     NB. document text associated with word}
+\CommentTok{NB.   2 ed 'group'              NB. generate entire group script and edit}
+\CommentTok{NB.   2 1 ed 'grouptext'        NB. edit only group text}
+
+\NormalTok{0 ed }\DataTypeTok{y}
+\OtherTok{:}
+\KeywordTok{if.} \NormalTok{badrc uv}\CharTok{=.} \DataTypeTok{x} \NormalTok{obtext }\DataTypeTok{y} \KeywordTok{do.} \NormalTok{uv }\KeywordTok{return.} \KeywordTok{else.} \StringTok{'file text'}\CharTok{=.} \FunctionTok{\}.}\NormalTok{uv }\KeywordTok{end.}
+
+\KeywordTok{if.} \NormalTok{wex }\FunctionTok{<}\StringTok{'EDLOCALE'} \KeywordTok{do.}   \CommentTok{NB. !(*)=. EDLOCALE}
+  \CommentTok{NB. set up to define objects into specified locale if requested}
+  \NormalTok{pfx}\CharTok{=.}\StringTok{'18!:4 <'''}\FunctionTok{,}\NormalTok{EDLOCALE}\FunctionTok{,}\StringTok{''' [ CRLOC_ajodutil_=: 18!:5 '''' '}
+  \NormalTok{sfx}\CharTok{=.} \StringTok{'18!:4 CRLOC_ajodutil_'}
+  \NormalTok{text}\CharTok{=.} \NormalTok{pfx}\FunctionTok{,}\NormalTok{LF}\FunctionTok{,}\NormalTok{LF}\FunctionTok{,}\NormalTok{text}\FunctionTok{,}\NormalTok{LF}\FunctionTok{,}\NormalTok{LF}\FunctionTok{,}\NormalTok{sfx}
+\KeywordTok{end.}
+
+\CommentTok{NB. append user defined document command}
+\CommentTok{NB. the pattern \{~N~\} is a name placeholder, e.g.}
+\CommentTok{NB.   DOCUMENTCOMMAND_ijod_ =: 'showpass pr ''\{~N~\}'''}
+\CommentTok{NB. append only when editing single words}
+\KeywordTok{if.} \RegionMarkerTok{(}\DataTypeTok{x} \FunctionTok{-:} \NormalTok{0}\RegionMarkerTok{)} \FunctionTok{*.} \NormalTok{wex }\FunctionTok{<}\StringTok{'DOCUMENTCOMMAND_ijod_'} \KeywordTok{do.}
+  \NormalTok{text}\CharTok{=.} \NormalTok{text}\FunctionTok{,}\NormalTok{LF}\FunctionTok{,}\NormalTok{LF}\FunctionTok{,}\RegionMarkerTok{(}\StringTok{'/\{~N~\}/'}\FunctionTok{,}\NormalTok{file}\RegionMarkerTok{)} \NormalTok{changestr DOCUMENTCOMMAND_ijod_}
+\KeywordTok{end.}
+
+\NormalTok{file et text}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{et}\AlertTok{=:}\index{et@\texttt{et}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*et v-- edit text}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  et clText}
+\CommentTok{NB. dyad:  clFile et clText}
+
+\NormalTok{EDTEMP et }\DataTypeTok{y}  \CommentTok{NB. default edit file}
+\OtherTok{:}
+\CommentTok{NB. write to J temp directory - created by J install}
+\KeywordTok{try.}
+  \RegionMarkerTok{(}\NormalTok{toHOST }\DataTypeTok{y}\RegionMarkerTok{)} \NormalTok{write file}\CharTok{=.} \NormalTok{jpath }\StringTok{'~temp/'} \FunctionTok{,} \DataTypeTok{x} \FunctionTok{,} \NormalTok{IJS}
+
+  \KeywordTok{if.} \NormalTok{0 }\FunctionTok{e.} \NormalTok{wex }\FunctionTok{;:}\StringTok{'IFJHS IFJ6 IFGTK'} \KeywordTok{do.}
+    \CommentTok{NB. probably on a J 6.0x system}
+    \NormalTok{smopen_jijs_ file   }\CommentTok{NB. J 6.0x}
+  \KeywordTok{else.}
+    \CommentTok{NB. open in various J7/6 editors !(*)=. IFJHS IFGTK IFJ6 IFIOS}
+    \KeywordTok{if.} \NormalTok{IFJHS     }\KeywordTok{do.} \NormalTok{open_jhs_ file}
+    \KeywordTok{elseif.} \NormalTok{IFGTK }\KeywordTok{do.} \NormalTok{open_jgtk_ file}
+    \KeywordTok{elseif.} \NormalTok{IFJ6  }\KeywordTok{do.} \NormalTok{smopen_jijs_ file   }\CommentTok{NB. J 6.0x}
+    \KeywordTok{elseif.} \NormalTok{IFIOS }\KeywordTok{do.} \NormalTok{je_z_ file          }\CommentTok{NB. iPhone/iPad}
+    \KeywordTok{elseif.do.} \NormalTok{jderr ERR0}\DecValTok{262}  \CommentTok{NB. errmsg: not supported on current J system}
+    \KeywordTok{end.}
+  \KeywordTok{end.}
+
+\KeywordTok{catch.} \NormalTok{jderr ERR0}\DecValTok{255}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. extract object references from blcl of names}
+\NormalTok{exobrefs}\AlertTok{=:}\index{exobrefs@\texttt{exobrefs}}\FunctionTok{a:}\OtherTok{"}\NormalTok{_ }\FunctionTok{-.}\OtherTok{~} \FunctionTok{[:} \FunctionTok{~.} \FunctionTok{[:} \FunctionTok{;} \FunctionTok{[:} \FunctionTok{<}\OtherTok{;.}\NormalTok{_}\DecValTok{1}\OtherTok{&.}\FunctionTok{>} \RegionMarkerTok{(}\FunctionTok{[:} \FunctionTok{+.}\OtherTok{/\textbackslash{}&.}\FunctionTok{>} \RegionMarkerTok{(}\FunctionTok{<}\StringTok{'__'}\RegionMarkerTok{)}\OtherTok{"}\NormalTok{_ }\FunctionTok{E.}\OtherTok{&.}\FunctionTok{>} \FunctionTok{]}\RegionMarkerTok{)} \FunctionTok{#}\OtherTok{&.}\FunctionTok{>} \FunctionTok{]}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{gt}\AlertTok{=:}\index{gt@\texttt{gt}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*gt v-- get J script text from J temp directory.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  gt cl\textbar{}zl}
+\CommentTok{NB.}
+\CommentTok{NB.   gt ''  NB. read text in 99 file}
+\CommentTok{NB.   gt 'whatever'}
+
+\KeywordTok{if.} \NormalTok{isempty }\DataTypeTok{y} \KeywordTok{do.} \DataTypeTok{y}\CharTok{=.}\StringTok{'99'} \KeywordTok{end.}
+\CommentTok{NB. use J temporary edit directory}
+\CommentTok{NB. (jpath) is a J system utility loaded by standard profile}
+\KeywordTok{try.}   \NormalTok{read jpath  }\StringTok{'~temp\textbackslash{}'}  \FunctionTok{,}\DataTypeTok{y} \FunctionTok{,} \NormalTok{IJS}
+\KeywordTok{catch.} \NormalTok{jderr ERR0}\DecValTok{254}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. formats (jodhelp) command line and spawns browser or pdfreader}
+\NormalTok{jodfork}\AlertTok{=:}\index{jodfork@\texttt{jodfork}}\FunctionTok{[:} \NormalTok{fork_jtask_ }\FunctionTok{[:} \FunctionTok{;} \NormalTok{1 0 2 }\FunctionTok{\{} \StringTok{' '} \FunctionTok{;} \NormalTok{qt}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{jodhelp}\AlertTok{=:}\index{jodhelp@\texttt{jodhelp}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*jodhelp v-- display help for JOD words.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  jodhelp zl \textbar{} cl}
+\CommentTok{NB.}
+\CommentTok{NB.   jodhelp ''       NB. display help index}
+\CommentTok{NB.   jodhelp 'get'    NB. (get) help}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  uuIgnore jodhelp uuIgnore}
+\CommentTok{NB.        clPDF jodhelp uuIgnore}
+\CommentTok{NB.}
+\CommentTok{NB.   jodhelp~ 0  NB. list know help topics}
+\CommentTok{NB.}
+\CommentTok{NB.   'PDF' jodhelp 0  NB. open PDF}
+\CommentTok{NB.   jodhelp~ 'PDF'}
+
+\NormalTok{www}\CharTok{=.} \NormalTok{wwwbrowser 0}
+\KeywordTok{if.} \NormalTok{badcl }\DataTypeTok{y} \KeywordTok{do.} \NormalTok{jderr ERR0}\DecValTok{257} \CommentTok{NB. errmsg: invalid help word}
+\KeywordTok{elseif.} \NormalTok{IFWIN }\FunctionTok{*.} \FunctionTok{-.}\NormalTok{fex }\FunctionTok{<}\NormalTok{www }\KeywordTok{do.} \RegionMarkerTok{(}\NormalTok{jderr ERR0}\DecValTok{258}\RegionMarkerTok{)}\FunctionTok{,<}\NormalTok{www  }\CommentTok{NB. errmsg: browser not found}
+\KeywordTok{elseif.} \FunctionTok{#}\DataTypeTok{y}  \KeywordTok{do.}
+  \NormalTok{word}\CharTok{=.} \FunctionTok{<}\NormalTok{alltrim }\DataTypeTok{y}
+  \KeywordTok{if.} \RegionMarkerTok{(}\FunctionTok{\{:$}\NormalTok{JODHELP}\RegionMarkerTok{)}\FunctionTok{=}\NormalTok{pos}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{0}\FunctionTok{\{}\NormalTok{JODHELP}\RegionMarkerTok{)} \FunctionTok{i.} \NormalTok{word }\KeywordTok{do.}
+    \RegionMarkerTok{(}\NormalTok{jderr ERR0}\DecValTok{259}\RegionMarkerTok{)}\FunctionTok{,}\NormalTok{word }\CommentTok{NB. errmsg: no help for}
+  \KeywordTok{else.}
+    \NormalTok{jodfork www }\FunctionTok{;} \NormalTok{pos}\FunctionTok{\{}\NormalTok{1}\FunctionTok{\{}\NormalTok{JODHELP}
+    \RegionMarkerTok{(}\NormalTok{ok OK0}\DecValTok{253}\RegionMarkerTok{)}\FunctionTok{,}\NormalTok{word }\CommentTok{NB. msg: starting browser help}
+  \KeywordTok{end.}
+\KeywordTok{elseif.do.}
+  \CommentTok{NB. HARDCODE: jod index is first in list}
+  \NormalTok{ok OK0}\DecValTok{254} \FunctionTok{[} \NormalTok{jodfork www }\FunctionTok{;} \NormalTok{0}\FunctionTok{\{}\NormalTok{1}\FunctionTok{\{}\NormalTok{JODHELP}
+\KeywordTok{end.}
+\OtherTok{:}
+\KeywordTok{if.} \DataTypeTok{x} \FunctionTok{-:} \NormalTok{PDF }\KeywordTok{do.}
+  \NormalTok{jodpdf}\CharTok{=.} \NormalTok{jpath }\StringTok{'~addons\textbackslash{}general\textbackslash{}joddocument\textbackslash{}pdfdoc\textbackslash{}jod.pdf'}
+  \KeywordTok{if.} \NormalTok{fex}\FunctionTok{<}\NormalTok{jodpdf }\KeywordTok{do.}
+    \CommentTok{NB. jod.pdf is installed and local}
+    \NormalTok{pdfrdr}\CharTok{=.} \NormalTok{pdfreader 0}
+    \KeywordTok{if.} \NormalTok{UNAME}\FunctionTok{-:}\StringTok{'Darwin'} \KeywordTok{do.}
+      \CommentTok{NB. require 'task' !(*)=. shell}
+      \NormalTok{ok OK0}\DecValTok{255} \FunctionTok{[} \NormalTok{shell pdfrdr}\FunctionTok{,}\StringTok{' '}\FunctionTok{,}\NormalTok{qt jodpdf }\CommentTok{NB. msg starting PDF reader}
+    \KeywordTok{elseif.} \NormalTok{fex}\FunctionTok{<}\NormalTok{pdfrdr }\KeywordTok{do.}
+      \CommentTok{NB. spawn PDF browse task - requires configured PDF reader on host}
+      \NormalTok{ok OK0}\DecValTok{255} \FunctionTok{[} \NormalTok{jodfork pdfrdr}\FunctionTok{;}\NormalTok{jodpdf}
+    \KeywordTok{elseif.do.}
+      \RegionMarkerTok{(}\NormalTok{jderr ERR0}\DecValTok{260}\RegionMarkerTok{)}\FunctionTok{,<}\NormalTok{pdfrdr }\CommentTok{NB. errmsg: PDF reader not found}
+    \KeywordTok{end.}
+  \KeywordTok{else.}
+    \CommentTok{NB. jod.pdf is not installed advise user to download joddocument addon}
+    \NormalTok{ok OK0}\DecValTok{256} \CommentTok{NB. msg: jod.pdf not installed - use JAL to install the addon general/joddocument}
+  \KeywordTok{end.}
+\KeywordTok{else.}
+  \CommentTok{NB. display available help topics}
+  \FunctionTok{/:}\OtherTok{~} \NormalTok{0}\FunctionTok{\{}\NormalTok{JODHELP}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. left justify table}
+\NormalTok{ljust}\AlertTok{=:}\index{ljust@\texttt{ljust}}\StringTok{' '}\OtherTok{&}\FunctionTok{$:} \OtherTok{:}\RegionMarkerTok{(}\FunctionTok{]} \FunctionTok{\textbar{}.}\OtherTok{"}\NormalTok{_}\DecValTok{1}\OtherTok{~} \FunctionTok{i.}\OtherTok{"}\NormalTok{1}\OtherTok{&}\NormalTok{0}\OtherTok{@}\RegionMarkerTok{(}\FunctionTok{]} \FunctionTok{e.} \FunctionTok{[}\RegionMarkerTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{obtext}\AlertTok{=:}\index{obtext@\texttt{obtext}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*obtext v-- assembles and returns object text}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  bt =. iaObject obtext blcl}
+
+\KeywordTok{if.} \NormalTok{badrc text}\CharTok{=.} \NormalTok{checkopen_}\DecValTok{_}\NormalTok{ST }\DataTypeTok{y} \KeywordTok{do.} \NormalTok{text }\KeywordTok{return.} \KeywordTok{end.}
+\KeywordTok{select.} \DataTypeTok{x}
+\KeywordTok{case.} \NormalTok{WORD }\KeywordTok{do.}
+  \KeywordTok{if.} \NormalTok{badrc }\DataTypeTok{y}\CharTok{=.} \NormalTok{checknames_}\DecValTok{_}\NormalTok{ST }\DataTypeTok{y} \KeywordTok{do.} \DataTypeTok{y} \KeywordTok{return.} \KeywordTok{else.} \DataTypeTok{y}\CharTok{=.} \FunctionTok{\}.}\DataTypeTok{y} \KeywordTok{end.}
+  \KeywordTok{if.} \NormalTok{badrc text}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{WORD}\FunctionTok{,}\NormalTok{NVTABLE}\RegionMarkerTok{)} \NormalTok{get }\DataTypeTok{y} \KeywordTok{do.} \NormalTok{text }\KeywordTok{return.} \KeywordTok{end.}
+  \KeywordTok{if.} \NormalTok{badrc text}\CharTok{=.} \NormalTok{WORD wttext_}\DecValTok{_}\NormalTok{MK rv text }\KeywordTok{do.} \NormalTok{text }\KeywordTok{return.} \KeywordTok{else.} \NormalTok{text}\CharTok{=.} \NormalTok{rv text }\KeywordTok{end.}
+  \NormalTok{file}\CharTok{=.} \FunctionTok{>\{.}\DataTypeTok{y}
+\KeywordTok{case.} \NormalTok{DICTIONARY }\KeywordTok{do.}
+  \KeywordTok{if.} \NormalTok{badrc text}\CharTok{=.} \NormalTok{DICTIONARY get }\StringTok{''} \KeywordTok{do.} \NormalTok{text }\KeywordTok{return.} \KeywordTok{else.} \NormalTok{text}\CharTok{=.} \NormalTok{rv text }\KeywordTok{end.}
+  \NormalTok{file}\CharTok{=.} \RegionMarkerTok{(}\StringTok{' '} \FunctionTok{-.}\OtherTok{~} \FunctionTok{;}\NormalTok{0}\FunctionTok{\{}\NormalTok{0}\FunctionTok{\{}\NormalTok{DPATH_}\DecValTok{_}\NormalTok{ST_}\DecValTok{_}\NormalTok{JODobj}\RegionMarkerTok{)}\FunctionTok{,}\StringTok{'_DTXT'} \CommentTok{NB. HARDCODE document text suffix}
+\KeywordTok{case.} \NormalTok{SUITE}\FunctionTok{;}\NormalTok{GROUP }\KeywordTok{do.}
+  \KeywordTok{if.} \NormalTok{badrc text}\CharTok{=.} \RegionMarkerTok{(}\DataTypeTok{x}\FunctionTok{,}\NormalTok{2}\RegionMarkerTok{)} \NormalTok{make }\DataTypeTok{y} \KeywordTok{do.} \NormalTok{text }\KeywordTok{return.} \KeywordTok{else.} \NormalTok{text}\CharTok{=.} \NormalTok{rv text }\KeywordTok{end.}
+  \NormalTok{file}\CharTok{=.} \DataTypeTok{y} \FunctionTok{-.} \StringTok{' '}
+\KeywordTok{case.} \NormalTok{TEST}\FunctionTok{;}\NormalTok{MACRO }\KeywordTok{do.}
+  \KeywordTok{if.} \NormalTok{badrc }\DataTypeTok{y}\CharTok{=.} \NormalTok{checknames_}\DecValTok{_}\NormalTok{ST }\DataTypeTok{y} \KeywordTok{do.} \DataTypeTok{y} \KeywordTok{return.} \KeywordTok{else.} \DataTypeTok{y}\CharTok{=.} \FunctionTok{\}.}\DataTypeTok{y} \KeywordTok{end.}
+  \KeywordTok{if.} \NormalTok{badrc text}\CharTok{=.} \DataTypeTok{x} \NormalTok{get }\DataTypeTok{y} \KeywordTok{do.} \NormalTok{text }\KeywordTok{return.} \KeywordTok{end.}
+  \KeywordTok{if.} \NormalTok{badrc text}\CharTok{=.} \DataTypeTok{x} \NormalTok{wttext_}\DecValTok{_}\NormalTok{MK rv text }\KeywordTok{do.} \NormalTok{text }\KeywordTok{return.} \KeywordTok{else.} \NormalTok{text}\CharTok{=.} \NormalTok{rv text }\KeywordTok{end.}
+  \NormalTok{file}\CharTok{=.} \FunctionTok{>\{.}\DataTypeTok{y}
+\KeywordTok{case.do.}
+  \KeywordTok{if.} \RegionMarkerTok{(}\FunctionTok{<}\DataTypeTok{x}\RegionMarkerTok{)} \FunctionTok{e.} \FunctionTok{\{}\RegionMarkerTok{(}\NormalTok{SUITE}\FunctionTok{,}\NormalTok{GROUP}\RegionMarkerTok{)}\FunctionTok{;}\NormalTok{1  }\KeywordTok{do.}  \CommentTok{NB. HARDCODE 1}
+    \CommentTok{NB. group and suite headers are frequently edited}
+    \KeywordTok{if.} \NormalTok{badcl }\DataTypeTok{y} \KeywordTok{do.} \NormalTok{jderr ERR0154_}\DecValTok{_}\NormalTok{MK }\KeywordTok{return.} \KeywordTok{end.}
+    \KeywordTok{if.} \NormalTok{badrc uv}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{\{.}\DataTypeTok{x}\RegionMarkerTok{)} \NormalTok{get }\DataTypeTok{y} \KeywordTok{do.} \NormalTok{uv }\KeywordTok{return.} \KeywordTok{else.} \StringTok{'file text'}\CharTok{=.} \FunctionTok{,} \NormalTok{rv uv }\KeywordTok{end.}
+  \KeywordTok{elseif.} \RegionMarkerTok{(}\FunctionTok{<}\DataTypeTok{x}\RegionMarkerTok{)} \FunctionTok{e.} \FunctionTok{,\{}\NormalTok{OBJECTNC}\FunctionTok{;}\NormalTok{DOCUMENT}\FunctionTok{,}\NormalTok{EXPLAIN }\KeywordTok{do.}
+    \CommentTok{NB. get object documentation text}
+    \KeywordTok{if.} \NormalTok{badrc uv}\CharTok{=.} \DataTypeTok{x} \NormalTok{get }\DataTypeTok{y} \KeywordTok{do.} \NormalTok{uv }\KeywordTok{return.}
+    \KeywordTok{else.}
+      \CommentTok{NB. merge all document texts}
+      \NormalTok{file}\CharTok{=.} \FunctionTok{>\{.\{.} \NormalTok{uv}\CharTok{=.} \NormalTok{rv uv}
+      \NormalTok{text}\CharTok{=.} \FunctionTok{;} \RegionMarkerTok{(}\FunctionTok{\{:}\OtherTok{"}\NormalTok{1 uv}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \FunctionTok{<}\NormalTok{2}\FunctionTok{#}\NormalTok{LF  }\CommentTok{NB. HARDCODE 2}
+     \KeywordTok{end.}
+  \KeywordTok{elseif.do.}
+    \NormalTok{jderr ERR0}\DecValTok{01} \KeywordTok{return.} \CommentTok{NB. errmsg: invalid option(s)}
+  \KeywordTok{end.}
+\KeywordTok{end.}
+\NormalTok{ok file}\FunctionTok{;}\NormalTok{text}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{pdfreader}\AlertTok{=:}\index{pdfreader@\texttt{pdfreader}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*pdfreader v-- returns a pdf reader from available options.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  clPDFExe =. pdfreader uuIgnore}
+
+\CommentTok{NB. prefer J's pdf readers otherwise take JOD reader !(*)=. PDFREADER}
+\KeywordTok{if.} \NormalTok{wex}\FunctionTok{<}\StringTok{'PDFREADER__UT__JODobj'} \KeywordTok{do.} \NormalTok{pdfrdr}\CharTok{=.} \NormalTok{PDFREADER_}\DecValTok{_}\NormalTok{UT_}\DecValTok{_}\NormalTok{JODobj }\KeywordTok{else.} \NormalTok{pdfrdr}\CharTok{=.}\StringTok{''} \KeywordTok{end.}
+
+\CommentTok{NB. on Mac's use the open command for PDF's}
+\KeywordTok{if.}     \NormalTok{UNAME}\FunctionTok{-:}\StringTok{'Darwin'}    \KeywordTok{do.} \NormalTok{pdfrdr}\CharTok{=.} \NormalTok{PDFREADERMAC}
+\KeywordTok{elseif.} \NormalTok{wex}\FunctionTok{<}\StringTok{'PDFReader_j_'} \KeywordTok{do.} \KeywordTok{if.} \NormalTok{0}\FunctionTok{<#}\NormalTok{PDFReader_}\DecValTok{j_} \KeywordTok{do.} \NormalTok{pdfrdr}\CharTok{=.} \NormalTok{PDFReader_}\DecValTok{j_} \KeywordTok{end.} \CommentTok{NB. J 7.0x}
+\KeywordTok{elseif.} \NormalTok{wex}\FunctionTok{<}\StringTok{'PDFREADER_j_'} \KeywordTok{do.} \KeywordTok{if.} \NormalTok{0}\FunctionTok{<#}\NormalTok{PDFREADER_}\DecValTok{j_} \KeywordTok{do.} \NormalTok{pdfrdr}\CharTok{=.} \NormalTok{PDFREADER_}\DecValTok{j_} \KeywordTok{end.} \CommentTok{NB. J 6.0x}
+\KeywordTok{end.}
+
+\NormalTok{pdfrdr}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{reb}\AlertTok{=:}\index{reb@\texttt{reb}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*reb v-- removes redundant blanks - leading, trailing multiple}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  reb cl}
+\CommentTok{NB. dyad:  ua reb ul}
+
+\StringTok{' '} \NormalTok{reb }\DataTypeTok{y}
+\OtherTok{:}
+\DataTypeTok{y}\CharTok{=.} \DataTypeTok{x} \FunctionTok{,} \DataTypeTok{y}
+\NormalTok{b}\CharTok{=.} \DataTypeTok{x} \FunctionTok{=} \DataTypeTok{y}
+\FunctionTok{\}.}\RegionMarkerTok{(}\NormalTok{b}\FunctionTok{*:} \NormalTok{1}\FunctionTok{\textbar{}.}\NormalTok{b}\RegionMarkerTok{)}\FunctionTok{#}\DataTypeTok{y}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{revo}\AlertTok{=:}\index{revo@\texttt{revo}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*revo v-- recently revised objects. Lists recently changed put}
+\CommentTok{NB. dictionary objects in order of latest to oldest.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  revo zl \textbar{} cl}
+\CommentTok{NB.}
+\CommentTok{NB.   revo ''     NB. all put dictionary words in revision order}
+\CommentTok{NB.   revo 'pat'  NB. recently changed words beginning with 'pat'}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  iaObject revo zl \textbar{} cl}
+\CommentTok{NB.}
+\CommentTok{NB.   1 revo ''   NB. all revised tests}
+\CommentTok{NB.   2 revo 'g'  NB. recently changed groups beginning with 'g'}
+
+\NormalTok{WORD revo }\DataTypeTok{y}  \CommentTok{NB. word default}
+\OtherTok{:}
+\KeywordTok{if.} \NormalTok{badil }\DataTypeTok{x} \KeywordTok{do.} \NormalTok{jderr ERR0}\DecValTok{01}
+\KeywordTok{elseif.} \NormalTok{badrc uv}\CharTok{=.} \RegionMarkerTok{((}\DataTypeTok{x}\CharTok{=.}\FunctionTok{\{.}\DataTypeTok{x}\RegionMarkerTok{)}\FunctionTok{,}\NormalTok{_}\DecValTok{1}\RegionMarkerTok{)} \NormalTok{dnl }\DataTypeTok{y} \KeywordTok{do.} \NormalTok{uv  }\CommentTok{NB. HARDCODE _1}
+\KeywordTok{elseif.} \NormalTok{isempty new}\CharTok{=.}\NormalTok{rv uv }\KeywordTok{do.} \NormalTok{ok new  }\CommentTok{NB. no matches}
+\KeywordTok{elseif.do.}
+  \NormalTok{age}\CharTok{=.} \NormalTok{rv }\RegionMarkerTok{(}\DataTypeTok{x}\FunctionTok{,}\NormalTok{INPUT}\RegionMarkerTok{)} \NormalTok{get new    }\CommentTok{NB. last put timestamps}
+  \NormalTok{ok }\RegionMarkerTok{(}\FunctionTok{\textbackslash{}:} \NormalTok{age}\RegionMarkerTok{)} \FunctionTok{\{} \NormalTok{new}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{rm}\AlertTok{=:}\index{rm@\texttt{rm}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*rm v-- runs J macro scripts}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  rm cl\textbar{}blcl}
+\CommentTok{NB. dyad:  pa rm cl\textbar{}blcl}
+
+\NormalTok{0 rm }\DataTypeTok{y}
+\OtherTok{:}
+\KeywordTok{if.} \NormalTok{badrc uv}\CharTok{=.} \NormalTok{MACRO get }\DataTypeTok{y} \KeywordTok{do.} \NormalTok{uv }\KeywordTok{return.} \KeywordTok{end.}
+\NormalTok{uv}\CharTok{=.} \NormalTok{rv uv}
+
+\KeywordTok{if.} \FunctionTok{*.}\OtherTok{/}\DataTypeTok{m}\CharTok{=.} \NormalTok{JSCRIPT }\FunctionTok{=} \FunctionTok{;} \NormalTok{1 }\FunctionTok{\{}\OtherTok{"}\NormalTok{1 uv }\KeywordTok{do.}
+
+  \NormalTok{scr}\CharTok{=.} \FunctionTok{;}\RegionMarkerTok{(}\FunctionTok{\{:}\OtherTok{"}\NormalTok{1 uv}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \NormalTok{LF}
+  \NormalTok{curr}\CharTok{=.} \NormalTok{1}\DecValTok{8}\OtherTok{!:}\NormalTok{5 }\StringTok{''}
+
+  \KeywordTok{try.}
+    \CommentTok{NB. run from base, (display default, suppress x.-:1) stop on errors}
+    \NormalTok{1}\DecValTok{8}\OtherTok{!:}\NormalTok{4 }\FunctionTok{<}\StringTok{'base'}
+    \KeywordTok{if.} \DataTypeTok{x}\FunctionTok{-:}\NormalTok{1 }\KeywordTok{do.} \NormalTok{0}\OtherTok{!:}\NormalTok{1}\DecValTok{00} \NormalTok{scr }\KeywordTok{else.} \NormalTok{0}\OtherTok{!:}\NormalTok{1}\DecValTok{01} \NormalTok{scr }\KeywordTok{end.}
+    \NormalTok{1}\DecValTok{8}\OtherTok{!:}\NormalTok{4 curr}
+  \KeywordTok{catchd.}
+    \NormalTok{1}\DecValTok{8}\OtherTok{!:}\NormalTok{4 curr  }\CommentTok{NB. restore locale}
+    \RegionMarkerTok{(}\NormalTok{jderr ERR0}\DecValTok{256}\RegionMarkerTok{)}\FunctionTok{,<}\NormalTok{1}\DecValTok{3}\OtherTok{!:}\NormalTok{1}\DecValTok{2} \StringTok{''} \KeywordTok{return.}
+  \KeywordTok{end.}
+
+\KeywordTok{else.}
+  \CommentTok{NB. errmsg: not J script(s)}
+  \RegionMarkerTok{(}\NormalTok{jderr ERR0}\DecValTok{252}\RegionMarkerTok{)}\FunctionTok{,}\RegionMarkerTok{(}\FunctionTok{-.}\DataTypeTok{m}\RegionMarkerTok{)}\FunctionTok{#\{.}\OtherTok{"}\NormalTok{1 uv}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{rtt}\AlertTok{=:}\index{rtt@\texttt{rtt}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*rtt v-- runs J test scripts}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  rtt cl\textbar{}blcl}
+\CommentTok{NB.}
+\CommentTok{NB.   rtt 'runmytautology'}
+\CommentTok{NB.   rtt ;: 'run these tautology tests in order'}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:}
+\CommentTok{NB.}
+\CommentTok{NB.   0 rtt 'tautology'}
+\CommentTok{NB.   1 rtt 'silenttautology'}
+\CommentTok{NB.   2 rtt 'plaintest'}
+\CommentTok{NB.   3 rtt 'suite'   NB. make and run tautology test suite}
+\CommentTok{NB.   4 rtt 'suite'   NB. make suite and run silently}
+
+\NormalTok{0 rtt }\DataTypeTok{y}
+\OtherTok{:}
+
+\CommentTok{NB. HARDCODE: option codes}
+\KeywordTok{if.} \RegionMarkerTok{(}\NormalTok{3}\FunctionTok{-:}\DataTypeTok{x}\RegionMarkerTok{)} \FunctionTok{+.} \NormalTok{4}\FunctionTok{-:}\DataTypeTok{x} \KeywordTok{do.}
+  \KeywordTok{if.} \NormalTok{badrc uv}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{SUITE}\FunctionTok{,}\NormalTok{_}\DecValTok{2}\RegionMarkerTok{)} \NormalTok{make }\DataTypeTok{y} \KeywordTok{do.} \NormalTok{uv }\KeywordTok{return.} \KeywordTok{end.}
+  \NormalTok{scr}\CharTok{=.}\NormalTok{rv uv}
+  \DataTypeTok{x}\CharTok{=.} \DataTypeTok{x}\FunctionTok{-}\NormalTok{3 }\CommentTok{NB. run option}
+\KeywordTok{else.}
+  \KeywordTok{if.} \NormalTok{badrc uv}\CharTok{=.} \NormalTok{TEST get }\DataTypeTok{y} \KeywordTok{do.} \NormalTok{uv }\KeywordTok{return.} \KeywordTok{end.}
+  \NormalTok{uv}\CharTok{=.} \NormalTok{rv uv}
+  \NormalTok{scr}\CharTok{=.} \FunctionTok{;}\RegionMarkerTok{(}\FunctionTok{\{:}\OtherTok{"}\NormalTok{1 uv}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \NormalTok{LF}
+\KeywordTok{end.}
+
+\NormalTok{curr}\CharTok{=.} \NormalTok{1}\DecValTok{8}\OtherTok{!:}\NormalTok{5 }\StringTok{''}
+
+\CommentTok{NB. run from base, (display default, suppress x-:1), stop on errors}
+\NormalTok{1}\DecValTok{8}\OtherTok{!:}\NormalTok{4 }\FunctionTok{<}\StringTok{'base'}
+\KeywordTok{try.}
+  \KeywordTok{if.} \NormalTok{0}\FunctionTok{-:}\DataTypeTok{x}     \KeywordTok{do.} \NormalTok{0}\OtherTok{!:}\NormalTok{2 scr}
+  \CommentTok{NB. Note: silent execution that fails suppresses all output}
+  \KeywordTok{elseif.} \NormalTok{1}\FunctionTok{-:}\DataTypeTok{x} \KeywordTok{do.} \RegionMarkerTok{(}\FunctionTok{]} \FunctionTok{[} \NormalTok{1}\OtherTok{!:}\NormalTok{2}\OtherTok{&}\NormalTok{2}\RegionMarkerTok{)} \NormalTok{0}\OtherTok{!:}\NormalTok{3 scr}
+  \KeywordTok{elseif.} \NormalTok{2}\FunctionTok{-:}\DataTypeTok{x} \KeywordTok{do.} \NormalTok{0}\OtherTok{!:}\NormalTok{0}\DecValTok{01} \NormalTok{scr}
+  \KeywordTok{elseif.do.}
+    \NormalTok{1}\DecValTok{8}\OtherTok{!:}\NormalTok{4 curr}
+    \NormalTok{jderr ERR0}\DecValTok{01} \KeywordTok{return.}
+  \KeywordTok{end.}
+\KeywordTok{catchd.}
+  \NormalTok{1}\DecValTok{8}\OtherTok{!:}\NormalTok{4 curr}
+  \RegionMarkerTok{(}\NormalTok{jderr ERR0}\DecValTok{256}\RegionMarkerTok{)}\FunctionTok{,<}\NormalTok{1}\DecValTok{3}\OtherTok{!:}\NormalTok{1}\DecValTok{2} \StringTok{''} \KeywordTok{return.}
+\KeywordTok{end.}
+
+\CommentTok{NB. back to original locale}
+\NormalTok{1}\DecValTok{8}\OtherTok{!:}\NormalTok{4 curr}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{setwwwbrowser}\AlertTok{=:}\index{setwwwbrowser@\texttt{setwwwbrowser}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*setwwwbrowser v-- tests and sets the WWW browser.}
+\CommentTok{NB.}
+\CommentTok{NB. This  verb  performs simple tests on purported  browsers  and}
+\CommentTok{NB. sets the first browser passing the test. This way you can set}
+\CommentTok{NB. a preferred browser but also maintain some fall backs.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  clBrowser =. setwwwbrowser uuIgnore}
+
+\KeywordTok{if.} \NormalTok{IFWIN }\KeywordTok{do.}
+  \KeywordTok{if.}     \NormalTok{fex }\FunctionTok{<}\NormalTok{WWW0 }\KeywordTok{do.} \NormalTok{WWW0}
+  \KeywordTok{elseif.} \NormalTok{fex }\FunctionTok{<}\NormalTok{WWW1 }\KeywordTok{do.} \NormalTok{WWW1}
+  \KeywordTok{elseif.do.} \StringTok{''}
+  \KeywordTok{end.}
+\KeywordTok{else.}
+  \CommentTok{NB. linux browsers - should open with command lines like:}
+  \CommentTok{NB.   chrominum-browser http://www.jsoftware.com}
+  \NormalTok{WWW0linux}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{textform2}\AlertTok{=:}\index{textform2@\texttt{textform2}}\NormalTok{6}\DecValTok{3}\OtherTok{&}\FunctionTok{$:} \OtherTok{:}\RegionMarkerTok{(}\NormalTok{4 }\OtherTok{:} \NormalTok{0}\RegionMarkerTok{)}
+
+\CommentTok{NB.*textform2 v-- wraps and justifies character table (y).}
+\CommentTok{NB.}
+\CommentTok{NB. This  verb forms an  (n*len)  character matrix. The blanks in}
+\CommentTok{NB. each  row of the output matrix are padded so that the line is}
+\CommentTok{NB. right  and left justified.  The number  of rows in the output}
+\CommentTok{NB. table depends upon how many are needed to hold the input data}
+\CommentTok{NB. in the justified format.}
+\CommentTok{NB.}
+\CommentTok{NB. Note: This verb is  a verbatim translation of  an APL utility}
+\CommentTok{NB. and has not been optimized for J.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  cmWrap =. textform2 c[0..2]Text}
+\CommentTok{NB.}
+\CommentTok{NB.   textform2 1000$' How can I justify this ehh. '}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  cmWrap =. iaWidth textform2 c[0..2]Text}
+\CommentTok{NB.}
+\CommentTok{NB.   50 textform2 10#,:' four score and seven years ago our '}
+
+\NormalTok{i}\CharTok{=.} \NormalTok{0}
+\DataTypeTok{v}\CharTok{=.} \NormalTok{reb }\FunctionTok{,} \DataTypeTok{y} \FunctionTok{,}\OtherTok{"}\NormalTok{1 }\StringTok{' '}
+\NormalTok{j}\CharTok{=.} \FunctionTok{#}\DataTypeTok{v}
+\NormalTok{b}\CharTok{=.} \NormalTok{j}\FunctionTok{$}\NormalTok{0}
+\KeywordTok{while.} \NormalTok{j }\FunctionTok{>} \NormalTok{a}\CharTok{=.} \NormalTok{i }\FunctionTok{+} \DataTypeTok{x} \KeywordTok{do.}
+  \NormalTok{k}\CharTok{=.}  \NormalTok{i }\FunctionTok{+} \FunctionTok{i.} \FunctionTok{>:}\NormalTok{a }\FunctionTok{-} \NormalTok{i}
+  \KeywordTok{if.} \FunctionTok{#}\NormalTok{c}\CharTok{=.} \RegionMarkerTok{(}\StringTok{' '} \FunctionTok{=} \NormalTok{k}\FunctionTok{\{}\DataTypeTok{v}\RegionMarkerTok{)}\FunctionTok{#}\NormalTok{k }\KeywordTok{do.}
+    \NormalTok{i}\CharTok{=.} \FunctionTok{>:} \FunctionTok{\{:} \NormalTok{c}
+    \NormalTok{g}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{\{:}\NormalTok{k}\RegionMarkerTok{)} \FunctionTok{-} \FunctionTok{<:}\NormalTok{i}
+    \NormalTok{c}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{1 }\FunctionTok{>.} \FunctionTok{<:#}\NormalTok{c}\RegionMarkerTok{)} \FunctionTok{\{.} \NormalTok{c}
+    \NormalTok{f}\CharTok{=.} \FunctionTok{#}\NormalTok{c}
+    \NormalTok{d}\CharTok{=.} \NormalTok{f }\FunctionTok{$} \FunctionTok{<.} \NormalTok{g}\FunctionTok{%}\NormalTok{f}
+    \NormalTok{d}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{>:\{.}\NormalTok{d}\RegionMarkerTok{)} \RegionMarkerTok{(}\FunctionTok{i.} \NormalTok{f}\FunctionTok{\textbar{}}\NormalTok{g}\RegionMarkerTok{)}\OtherTok{\}} \NormalTok{d}
+    \NormalTok{b}\CharTok{=.} \NormalTok{d }\RegionMarkerTok{((}\NormalTok{f}\FunctionTok{?}\NormalTok{f}\RegionMarkerTok{)}\FunctionTok{\{}\NormalTok{c}\RegionMarkerTok{)}\OtherTok{\}} \NormalTok{b}
+  \KeywordTok{else.}
+    \NormalTok{b}\CharTok{=.} \NormalTok{1 a}\OtherTok{\}} \NormalTok{b}
+    \NormalTok{i}\CharTok{=.} \NormalTok{a}
+  \KeywordTok{end.}
+\KeywordTok{end.}
+\DataTypeTok{v}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{>:}\NormalTok{b}\RegionMarkerTok{)} \FunctionTok{#} \DataTypeTok{v}
+\NormalTok{e}\CharTok{=.} \FunctionTok{>:} \DataTypeTok{x}
+\NormalTok{r}\CharTok{=.} \FunctionTok{>.}\RegionMarkerTok{(}\FunctionTok{#}\DataTypeTok{v}\RegionMarkerTok{)} \FunctionTok{%} \NormalTok{e}
+\RegionMarkerTok{(}\NormalTok{r}\FunctionTok{,}\DataTypeTok{x}\RegionMarkerTok{)} \FunctionTok{\{.} \RegionMarkerTok{(}\NormalTok{r}\FunctionTok{,}\NormalTok{e}\RegionMarkerTok{)}\FunctionTok{$}\RegionMarkerTok{(}\NormalTok{e}\FunctionTok{*}\NormalTok{r}\RegionMarkerTok{)}\FunctionTok{\{.}\DataTypeTok{v}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{wwwbrowser}\AlertTok{=:}\index{wwwbrowser@\texttt{wwwbrowser}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*wwwbrowser v-- returns a www browser from available options.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  clBrowserExe =. wwwbrowser uuIngore}
+
+\CommentTok{NB. prefer J's live configured browser otherwise take JOD's browser !(*)=. WWWBROWSER}
+\KeywordTok{if.} \NormalTok{wex}\FunctionTok{<}\StringTok{'WWWBROWSER__UT__JODobj'} \KeywordTok{do.} \NormalTok{www}\CharTok{=.} \NormalTok{WWWBROWSER_}\DecValTok{_}\NormalTok{UT_}\DecValTok{_}\NormalTok{JODobj }\KeywordTok{else.} \NormalTok{www}\CharTok{=.}\StringTok{''} \KeywordTok{end.}
+
+\CommentTok{NB. on Mac's use the open command to start a browser}
+\KeywordTok{if.}     \NormalTok{UNAME}\FunctionTok{-:}\StringTok{'Darwin'}  \KeywordTok{do.} \NormalTok{www}\CharTok{=.} \NormalTok{WWW0mac}
+\KeywordTok{elseif.} \NormalTok{wex}\FunctionTok{<}\StringTok{'Browser_j_'} \KeywordTok{do.} \KeywordTok{if.} \NormalTok{0}\FunctionTok{<#}\NormalTok{Browser_}\DecValTok{j_} \KeywordTok{do.} \NormalTok{www}\CharTok{=.} \NormalTok{Browser_}\DecValTok{j_} \KeywordTok{end.}  \CommentTok{NB. J 7.0x}
+\KeywordTok{elseif.} \NormalTok{wex}\FunctionTok{<}\StringTok{'BROWSER_j_'} \KeywordTok{do.} \KeywordTok{if.} \NormalTok{0}\FunctionTok{<#}\NormalTok{BROWSER_}\DecValTok{j_} \KeywordTok{do.} \NormalTok{www}\CharTok{=.} \NormalTok{BROWSER_}\DecValTok{j_} \KeywordTok{end.}  \CommentTok{NB. J 6.0x}
+\KeywordTok{end.}
+\NormalTok{www}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
