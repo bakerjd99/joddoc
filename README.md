@@ -16,6 +16,7 @@ building `jod.pdf` on Linux using [TeX Live](http://www.tug.org/texlive/).
 The following sequence of commands builds `jod.pdf`.
 
         latex jod
+        bibtex jod
         makeindex jod
         latex jod
         makeindex jod
