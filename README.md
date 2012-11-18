@@ -9,7 +9,7 @@ graphics files for building the JOD manual [`jod.pdf`](https://www.box.com/share
 A printed and bound manual version is available on 
 [Lulu](http://www.lulu.com/shop/john-baker/jod-j-object-dictionary/paperback/product-20076245.html).
 
-Builing `jod.pdf` requires a current `LaTeX` distribution.
+Building `jod.pdf` requires a current `LaTeX` distribution.
 I mainly use [MikTeX 2.9](http://www.miktex.org/) on Windows but I have tested
 building `jod.pdf` on Linux using [TeX Live](http://www.tug.org/texlive/).
 
