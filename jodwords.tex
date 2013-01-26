@@ -1402,10 +1402,16 @@ Key combinations like \texttt{CTRL-W} that run editor scripts depend on the J pl
 \subsection{\texttt{nt} --- edit a new test}\label{ss:nt}
 
 \hypertarget{il:nt}{\texttt{nt}} edits\index{edit!\texttt{nt}} a new test script in an edit window. 
-
 \texttt{nt} looks for the test script \texttt{teststub} on the path and inserts 
 \texttt{teststub} text in the edit window. \texttt{teststub} allows users to define dictionary specific
 custom script formats.
+
+\texttt{nt} searches \texttt{teststub} text and replaces the markers
+\verb|{~T~}|, \verb|{~A~}|, \verb|{~D~}| and \verb|{~SD~}| with optional
+\emph{title}, \emph{author}, \emph{date}, (\texttt{yyyymondd} format), and 
+\emph{short date}, (\texttt{yymondd} format). The dyad makes additional 
+delimited string replacements after processing
+markers.
 
 \begin{wordhead}
 \monad & nt clTestName \\
@@ -1414,22 +1420,35 @@ custom script formats.
   NB. open an edit window
   nt 'newtest'  
 
-  NB. define a custom test script
   testheader=: 0 : 0
-  NB.*{~T~} t-- test script header
+  NB.*{~T~} t-- custom test script header
   NB. 
   NB. This is my custom test script header.
   NB. The {~T~} strings are replaced with test
   NB. name and creation time {~D~}
   NB.
+  NB. author: {~A~}
   NB. created: {~D~}
   ) 
 
   NB. save custom header in put dictionary
   1 put 'teststub';testheader
+  
+  NB. CLASSAUTHOR replaces {~A~}
+  CLASSAUTHOR_ijod_=: 'Mansong Hydrogen'
 
   NB. edit a new test using the custom header
+  NB. where title {~T~} is set from the (y) argument
   nt 'customtest'
+\end{lstlisting}
+
+\begin{wordhead}
+\dyad & clReplacements nt clTestName \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt]
+  NB. apply string replacements, delimited by first
+  NB. character, to teststub text then open edit window
+  '#I#can#CHANGE#you' nt 'newtest' 
 \end{lstlisting}
 
 
