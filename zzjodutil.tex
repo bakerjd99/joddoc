@@ -422,6 +422,29 @@
 
 \begin{Shaded}
 \begin{Highlighting}[]
+\NormalTok{compclut}\AlertTok{=:}\index{compclut@\texttt{compclut}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*compclut  v-- removes  comments and  reduces  multiple  blank}
+\CommentTok{NB. lines to singles.}
+\CommentTok{NB.}
+\CommentTok{NB. This  verb removes  all  comments  from  J code  and  reduces}
+\CommentTok{NB. multiple blank  lines  to  one.  All  leading  whitespace  is}
+\CommentTok{NB. preserved.  This representation  is surprisingly  useful when}
+\CommentTok{NB. debugging and reading  code as it removes  annoying "literary}
+\CommentTok{NB. artifacts" while preserving the structure of code.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  cl =. compclut ctJcr}
+\CommentTok{NB.}
+\CommentTok{NB.  complut jcr 'compclut'}
+
+\NormalTok{t}\CharTok{=.} \NormalTok{0 decomm }\DataTypeTok{y}
+\NormalTok{ctl t }\FunctionTok{#}\OtherTok{~} \RegionMarkerTok{(}\FunctionTok{-.}\NormalTok{b}\RegionMarkerTok{)} \FunctionTok{+.} \NormalTok{firstone b}\CharTok{=.} \FunctionTok{*.}\OtherTok{/"}\NormalTok{1 }\StringTok{' '}\FunctionTok{=}\NormalTok{t}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
 \NormalTok{compj}\AlertTok{=:}\index{compj@\texttt{compj}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
 
 \CommentTok{NB.*compj v-- compresses nonnouns  by removing  white  space and}
@@ -439,6 +462,14 @@
 \CommentTok{NB. monad:  cl =. compj blclNames}
 \CommentTok{NB.}
 \CommentTok{NB.   compj ;:'the byte diet'}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  cl =. iaOption compj blclNames}
+\CommentTok{NB.}
+\CommentTok{NB.   1 compj ;:'remove comments preserving leading whitespace'}
+
+\NormalTok{0 compj }\DataTypeTok{y}
+\OtherTok{:}
+\KeywordTok{if.} \NormalTok{badil }\DataTypeTok{x} \KeywordTok{do.} \NormalTok{jderr ERR0}\DecValTok{01} \KeywordTok{return.} \KeywordTok{end.}
 
 \CommentTok{NB. get word definitions}
 \KeywordTok{if.} \NormalTok{badrc dat}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{WORD}\FunctionTok{,}\NormalTok{NVTABLE}\RegionMarkerTok{)} \NormalTok{get }\DataTypeTok{y} \KeywordTok{do.} \NormalTok{dat }\KeywordTok{return.} \KeywordTok{else.} \NormalTok{dat}\CharTok{=.} \NormalTok{rv dat }\KeywordTok{end.}
@@ -446,8 +477,11 @@
 \CommentTok{NB. mask of non-nouns}
 \NormalTok{b}\CharTok{=.} \NormalTok{0 }\FunctionTok{<} \FunctionTok{;} \NormalTok{1 }\FunctionTok{\{}\OtherTok{"}\NormalTok{1 dat}
 
+\CommentTok{NB. set compression}
+\NormalTok{cv}\CharTok{=.} \NormalTok{compressj}\OtherTok{`}\NormalTok{compclut }\OtherTok{@.} \RegionMarkerTok{(}\NormalTok{1 }\FunctionTok{-:} \DataTypeTok{x}\RegionMarkerTok{)}
+
 \CommentTok{NB. compress non-nouns - remove any embedded tabs}
-\NormalTok{dat}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{compressj}\OtherTok{@:}\NormalTok{ctit}\OtherTok{&.}\FunctionTok{>} \RegionMarkerTok{(}\NormalTok{b}\FunctionTok{#\{:}\OtherTok{"}\NormalTok{1 dat}\RegionMarkerTok{)} \FunctionTok{-.}\OtherTok{&.}\FunctionTok{>} \NormalTok{TAB}\RegionMarkerTok{)} \RegionMarkerTok{(}\FunctionTok{<}\RegionMarkerTok{(}\FunctionTok{I.} \NormalTok{b}\RegionMarkerTok{)}\FunctionTok{;}\NormalTok{2}\RegionMarkerTok{)}\OtherTok{\}} \NormalTok{dat}
+\NormalTok{dat}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{cv}\OtherTok{@:}\NormalTok{ctit}\OtherTok{&.}\FunctionTok{>} \RegionMarkerTok{(}\NormalTok{b}\FunctionTok{#\{:}\OtherTok{"}\NormalTok{1 dat}\RegionMarkerTok{)} \FunctionTok{-.}\OtherTok{&.}\FunctionTok{>} \NormalTok{TAB}\RegionMarkerTok{)} \RegionMarkerTok{(}\FunctionTok{<}\RegionMarkerTok{(}\FunctionTok{I.} \NormalTok{b}\RegionMarkerTok{)}\FunctionTok{;}\NormalTok{2}\RegionMarkerTok{)}\OtherTok{\}} \NormalTok{dat}
 
 \CommentTok{NB. generate packed script}
 \RegionMarkerTok{(}\NormalTok{WORD}\FunctionTok{,}\NormalTok{1}\RegionMarkerTok{)} \NormalTok{wttext_}\DecValTok{_}\NormalTok{MK dat}

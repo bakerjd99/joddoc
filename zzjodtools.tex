@@ -141,7 +141,7 @@
 \begin{Shaded}
 \begin{Highlighting}[]
 \CommentTok{NB. JODTOOLS version, make and date}
-\NormalTok{JODTOOLSVMD}\AlertTok{=:}\index{JODTOOLSVMD@\texttt{JODTOOLSVMD}}\StringTok{'0.9.90'}\FunctionTok{;}\NormalTok{1}\DecValTok{5}\FunctionTok{;}\StringTok{'3 Nov 2012 15:32:51'}
+\NormalTok{JODTOOLSVMD}\AlertTok{=:}\index{JODTOOLSVMD@\texttt{JODTOOLSVMD}}\StringTok{'0.9.92'}\FunctionTok{;}\NormalTok{4}\FunctionTok{;}\StringTok{'26 Jan 2013 13:08:51'}
 \end{Highlighting}
 \end{Shaded}
 
@@ -900,7 +900,8 @@
   \CommentTok{NB. insert any visible cl !(*)=. CLASSAUTHOR}
   \CommentTok{NB. NOTE: nouns in locale (ijod) are visible here}
   \KeywordTok{if.} \NormalTok{wex }\FunctionTok{<}\StringTok{'CLASSAUTHOR'} \KeywordTok{do.}
-    \KeywordTok{if.} \FunctionTok{-.}\NormalTok{badcl CLASSAUTHOR }\KeywordTok{do.} \NormalTok{test}\CharTok{=.} \NormalTok{test}\FunctionTok{,}\NormalTok{dl}\FunctionTok{,}\StringTok{'\{~A~\}'}\FunctionTok{,}\NormalTok{dl}\FunctionTok{,}\NormalTok{CLASSAUTHOR }\KeywordTok{end.}
+    \CommentTok{NB. (CLASSAUTHOR) is a cl without (dl)}
+    \KeywordTok{if.} \RegionMarkerTok{(}\FunctionTok{-.}\NormalTok{badcl CLASSAUTHOR}\RegionMarkerTok{)} \FunctionTok{*.} \FunctionTok{-.}\NormalTok{dl }\FunctionTok{e.} \NormalTok{CLASSAUTHOR }\KeywordTok{do.} \NormalTok{test}\CharTok{=.} \NormalTok{test}\FunctionTok{,}\NormalTok{dl}\FunctionTok{,}\StringTok{'\{~A~\}'}\FunctionTok{,}\NormalTok{dl}\FunctionTok{,}\NormalTok{CLASSAUTHOR }\KeywordTok{end.}
   \KeywordTok{end.}
   \NormalTok{name et }\RegionMarkerTok{(}\NormalTok{test}\FunctionTok{,}\DataTypeTok{x}\RegionMarkerTok{)} \NormalTok{changestr }\FunctionTok{>}\NormalTok{1}\FunctionTok{\{,}\NormalTok{s}
 \KeywordTok{else.}
