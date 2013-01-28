@@ -191,6 +191,16 @@ NB. !(*)=. THIS STUFF IS INSIDE AN OBJECT
   'rc script'=. compj }. grp 'group'
 \end{lstlisting}
 
+\begin{wordhead}
+\dyad & iaOption compj clName \argsep blclNames \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt]
+  NB. remove comments preserving leading whitespace and
+  NB. original identifiers - useful for reading code
+  NB. without distracting comments
+  >1{ 1 compj 'justthecode'   
+\end{lstlisting}
+
 \subsection{\texttt{del} --- delete objects}
 
 \hypertarget{il:del}{\texttt{del}} deletes dictionary objects. 
