@@ -466,7 +466,7 @@
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\NormalTok{JODVMD}\AlertTok{=:}\index{JODVMD@\texttt{JODVMD}}\StringTok{'0.9.90'}\FunctionTok{;}\NormalTok{1}\DecValTok{5}\FunctionTok{;}\StringTok{'3 Nov 2012 15:32:48'}
+\NormalTok{JODVMD}\AlertTok{=:}\index{JODVMD@\texttt{JODVMD}}\StringTok{'0.9.92'}\FunctionTok{;}\NormalTok{4}\FunctionTok{;}\StringTok{'26 Jan 2013 13:08:49'}
 \end{Highlighting}
 \end{Shaded}
 
@@ -1354,6 +1354,8 @@
     \KeywordTok{end.}
 
   \KeywordTok{elseif.} \FunctionTok{-.}\NormalTok{badbu }\DataTypeTok{y} \KeywordTok{do.}
+    \CommentTok{NB. parameter changes only allowed for put dictionaries}
+    \KeywordTok{if.} \NormalTok{badrc msg}\CharTok{=.} \NormalTok{checkput_}\DecValTok{_}\NormalTok{ST 0 }\KeywordTok{do.} \NormalTok{msg }\KeywordTok{return.} \KeywordTok{end.}
     \NormalTok{msg}\CharTok{=.} \NormalTok{ERR0}\DecValTok{19}  \CommentTok{NB. errmsg: invalid name/parameter}
     \KeywordTok{if.} \FunctionTok{-.} \RegionMarkerTok{(}\NormalTok{1}\FunctionTok{=#$} \DataTypeTok{y}\RegionMarkerTok{)} \FunctionTok{*.} \NormalTok{2}\FunctionTok{=#}\DataTypeTok{y} \KeywordTok{do.} \NormalTok{jderr msg }\KeywordTok{return.} \KeywordTok{end.}
     \KeywordTok{if.} \NormalTok{badjr dpt}\CharTok{=.} \NormalTok{jread WF_}\DecValTok{_}\NormalTok{DL}\FunctionTok{;}\NormalTok{CNPARMS_}\DecValTok{_}\NormalTok{ST }\KeywordTok{do.} \NormalTok{jderr ERR0}\DecValTok{88} \KeywordTok{return.} \KeywordTok{end.}
