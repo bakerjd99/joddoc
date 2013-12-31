@@ -1,4 +1,4 @@
-![](/jodgraphics/jodtinycube2.png) [joddoc README](http://bakerjd99.wordpress.com/the-jod-page/)
+![](/jodgraphics/jodtinycube2.png) [`joddoc` README](http://bakerjd99.wordpress.com/the-jod-page/)
 ===============================================================================================
 
 This repository contains the `LaTeX` source and supporting
