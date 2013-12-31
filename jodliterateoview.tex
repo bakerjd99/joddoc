@@ -1,0 +1,161 @@
+% this jodliterate overview
+\section{\texttt{jodliterate} Overview}
+
+\texttt{jodliterate} is a J utility script that generates
+\emph{literate} documents directly from JOD dictionary groups.
+
+\subsection{\texttt{jodliterate} Interface}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\hyperlink{grplit}{\NormalTok{grplit         }}\CommentTok{make latex for group (y)}
+\hyperlink{setjodliterate}{\NormalTok{setjodliterate }}\CommentTok{prepare for processing}
+\hyperlink{ifacesection}{\NormalTok{ifacesection   }}\CommentTok{interface section summary string}
+\end{Highlighting}
+\end{Shaded}
+
+
+\subsection{\texttt{jodliterate} and JOD}
+
+\texttt{jodliterate} makes some assumptions about the J code and
+document text it processes. It assumes:
+
+\begin{enumerate}[1.]
+\item
+  All source code is stored in JOD dictionaries.
+\item
+  JOD group documents \texttt{2 9 disp 'groupname'} are
+  \href{http://johnmacfarlane.net/pandoc/README.html\#pandocs-markdown}{pandoc
+  compatible markdown} text fragments. \emph{This is the most serious
+  limitation of \texttt{jodliterate}.} Most of my group documents are
+  not markdown. I am slowly converting them. If you compose group
+  documents use pandoc markdown and \texttt{jodliterate} will be a lot
+  more useful.
+\item
+  Any group class\footnote{A \emph{group class} is a JOD group with a
+    declared list of interface and root words:
+    \texttt{IFACEWORDS}\emph{groupname} and
+    \texttt{ROOTWORDS}\emph{groupname}. Root words allow
+    \texttt{allrefs} to find all the words that belong to the group.
+    Class groups typically load into locales. \texttt{jodliterate.ijs}
+    is an example of a class group.} interface is a simple J verbatim
+  block that is marked with a \LaTeX~section command. Examine this
+  group's document \texttt{2 9 disp 'jodliterate'} for an example.
+
+\begin{verbatim}
+% latex section 
+\subsection{\texttt{groupname} Interface}
+
+~~~~ { .j}
+grplit          NB. make latex for group (y)
+setjodliterate  NB. prepare for processing
+~~~~~  
+\end{verbatim}
+\item
+  Non-J code is confined to the JOD group header\footnote{This
+    limitation may be eased if it becomes a hindrance.} and is marked
+  with pseudo-pandoc delimiters. Everything in curly \texttt{\{\}}
+  brackets follows pandoc source code highlighting conventions.
+  \texttt{jodliterate}'s header contains \LaTeX~code that is marked like
+  this.
+
+\begin{verbatim}
+NB.<<~~~~ { .latex numberLines startFrom="1" }
+NB.>>~~~~ 
+\end{verbatim}
+\end{enumerate}
+
+\subsection{Running \texttt{jodliterate}}
+
+\texttt{jodliterate} runs on Windows, Linux and Mac versions of
+J.\footnote{\texttt{jodliterate} will run on Windows versions of J 6.02
+  and beyond. The Linux and Mac versions of \texttt{jodliterate} require
+  J 7.01 and beyond.}
+
+To use \texttt{jodliterate} you must:
+
+\begin{enumerate}[1.]
+\item
+  Install JOD.
+  \href{http://www.jsoftware.com/jwiki/Addons/general/jod}{JOD} is a J
+  addon. It is usually installed with
+  \href{http://www.jsoftware.com/jwiki/JAL}{JAL}.
+\item
+  Install JODSOURCE.
+  \href{http://www.jsoftware.com/jwiki/Addons/general/jodsource}{JODSOURCE}
+  is also a J addon. Install it with JAL.\footnote{On 64 bit versions of
+    J the standard JAL install of JODSOURCE may fail. See
+    \href{http://bakerjd99.wordpress.com/the-jod-page/\#comment-210}{The
+    Jod Page} for an alternate install method.} It contains the JOD
+  dictionaries required to build JOD. JODSOURCE also contains
+  \texttt{jodliterate.}
+\item
+  Setup a version of \href{http://johnmacfarlane.net/pandoc/}{pandoc}
+  that supports J syntax highlighting. See the blog post
+  \href{http://bakerjd99.wordpress.com/2012/09/20/pandoc-based-j-syntax-highlighting/}{Pandoc
+  based J Syntax Highlighting} for details.
+\item
+  Build \texttt{jodliterate.} \texttt{jodliterate} is a J group. JOD
+  makes J scripts from groups. To make \texttt{jodliterate} do:
+
+\begin{verbatim}
+require 'general/jod'
+od ;:'joddev jod utils' [ 3 od ''
+mls 'jodliterate'
+\end{verbatim}
+\item
+  Open the JOD dictionaries containing the group you want to document.
+
+\begin{verbatim}
+od ;:'joddev jod utils' [ 3 od ''
+\end{verbatim}
+\item
+  Load \texttt{jodliterate.} After making \texttt{jodliterate} it can be
+  loaded like any J script.
+
+\begin{verbatim}
+load 'jodliterate'
+\end{verbatim}
+\item
+  Set a working directory. \texttt{jodliterate} generates markdown and
+  \LaTeX~files. All such files are written to the directory specified by
+  \texttt{setjodliterate.}
+
+\begin{verbatim}
+setjodliterate 'c:\temp'          NB. windows
+setjodliterate '/home/john/temp'  NB. linux
+\end{verbatim}
+\item
+  Run \texttt{grplit} on the group you want to document. \texttt{grplit}
+  generates \LaTeX~files in the working directory. The root \LaTeX~file
+  is given the group name.
+
+\begin{verbatim}
+grplit 'jodliterate' NB. makes jodliterate.tex 
+\end{verbatim}
+\item
+  Use \LaTeX~to compile the files generated by \texttt{grplit.} Files
+  may be processed with \texttt{pdflatex}, \texttt{xelatex} or
+  \texttt{lualatex}. Your choice will be dictated by the presence of
+  Unicode characters. For more details see the preamble file
+  \texttt{JODLiteratePreamble.tex} in the working directory.
+\end{enumerate}
+
+There are some \LaTeX~settings you may want to adjust.
+
+\begin{enumerate}[1.]
+\item
+  Edit \texttt{JODLiteratePreamble.tex} to change the number of index
+  columns. The default is four but this may result in long names running
+  together. To decrease or increase index columns change:
+
+\begin{verbatim}
+\begin{multicols}{4}[\section*{\indexname}]
+\end{verbatim}
+\item
+  \texttt{jodliterate} wraps long source code lines. Wrapping is
+  controlled by \texttt{WRAPLIMIT}. The default is 110 characters.
+  Change this value if you change font or page size. Wrapped lines are
+  preceeded with the string \texttt{WRAPLEAD} with default
+  \AlertTok{\texttt{>...>}}.
+\end{enumerate}

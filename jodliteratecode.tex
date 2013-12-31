@@ -1,0 +1,1381 @@
+\section{\texttt{jodliterate} Source Code}
+
+\begin{JODGroupHeader}
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB.*jodliterate s-- generates literate source code documents directly from JOD groups.}
+\CommentTok{NB.}
+\CommentTok{NB. verbatim:}
+\CommentTok{NB.}
+\CommentTok{NB. http://bakerjd99.wordpress.com/2012/10/01/semi-literate-jod/}
+\CommentTok{NB.}
+\CommentTok{NB. interface word(s):}
+\CommentTok{NB. ------------------------------------------------------------------------------}
+\CommentTok{NB. grplit          make latex for group (y)}
+\CommentTok{NB. ifacesection    interface section summary string}
+\CommentTok{NB. setjodliterate  prepare for processing}
+\CommentTok{NB.}
+\CommentTok{NB. author:  John D. Baker}
+\CommentTok{NB. created: 2012oct01}
+\CommentTok{NB. ------------------------------------------------------------------------------}
+\CommentTok{NB. 12oct03 (x) grplit argument added to suppress root tex overwrites}
+\CommentTok{NB. 12oct04 group IFACEWORDSgroupname hyperlinked}
+\CommentTok{NB. 12oct05 replaced ;: parsing with (wfl) - handles bad j code}
+\CommentTok{NB. 12oct08 added error handling - replaced (write) with (writeas)}
+\CommentTok{NB. 12oct11 adjusted LaTeX preamble - changing monofonts}
+\CommentTok{NB. 12oct12 added (sbtokens) - useful for analyzing code text}
+\CommentTok{NB. 12oct17 added (wrapvrblong) - long source lines now wrapped}
+\CommentTok{NB. 13dec29 added to (jacks) GitHub repository}
+
+\NormalTok{coclass  }\StringTok{'ajodliterate'}
+\NormalTok{coinsert }\StringTok{'ijod'}
+
+\CommentTok{NB.*dependents}
+\CommentTok{NB. declared global here to avoid confusing LaTeX names with J names}
+\CommentTok{NB. (*)=: JLTITLETEX JLOVIEWTEX JLGRPLITTEX JODLiteratePreamble}
+
+\CommentTok{NB. Roger Hui's word formation state machine - similiar to ;: but}
+\CommentTok{NB. parses text with LFs, retains whitespace and handles open quotes.}
+
+\CommentTok{NB. hide script locals !(*)=. mfl sfl}
+\NormalTok{mfl}\CharTok{=.} \NormalTok{2}\DecValTok{56}\FunctionTok{$}\NormalTok{0                       }\CommentTok{NB. X other}
+\NormalTok{mfl}\CharTok{=.} \NormalTok{1  }\RegionMarkerTok{(}\NormalTok{9}\FunctionTok{,a.i.}\StringTok{' '}\RegionMarkerTok{)}        \OtherTok{\}}\NormalTok{mfl  }\CommentTok{NB. S whitespace (space and horizontal tab)}
+\NormalTok{mfl}\CharTok{=.} \NormalTok{2  }\RegionMarkerTok{((}\FunctionTok{a.i.}\StringTok{'Aa'}\RegionMarkerTok{)}\FunctionTok{+}\OtherTok{/}\FunctionTok{i.}\NormalTok{2}\DecValTok{6}\RegionMarkerTok{)} \OtherTok{\}}\NormalTok{mfl  }\CommentTok{NB. A A-Z a-z excluding N B}
+\NormalTok{mfl}\CharTok{=.} \NormalTok{3  }\RegionMarkerTok{(}\FunctionTok{a.i.}\StringTok{'N'}\RegionMarkerTok{)}          \OtherTok{\}}\NormalTok{mfl  }\CommentTok{NB. N the letter N}
+\NormalTok{mfl}\CharTok{=.} \NormalTok{4  }\RegionMarkerTok{(}\FunctionTok{a.i.}\StringTok{'B'}\RegionMarkerTok{)}          \OtherTok{\}}\NormalTok{mfl  }\CommentTok{NB. B the letter B}
+\NormalTok{mfl}\CharTok{=.} \NormalTok{5  }\RegionMarkerTok{(}\FunctionTok{a.i.}\StringTok{'0123456789_'}\RegionMarkerTok{)}\OtherTok{\}}\NormalTok{mfl  }\CommentTok{NB. 9 digits and _}
+\NormalTok{mfl}\CharTok{=.} \NormalTok{6  }\RegionMarkerTok{(}\FunctionTok{a.i.}\StringTok{'.'}\RegionMarkerTok{)}          \OtherTok{\}}\NormalTok{mfl  }\CommentTok{NB. D .}
+\NormalTok{mfl}\CharTok{=.} \NormalTok{7  }\RegionMarkerTok{(}\FunctionTok{a.i.}\StringTok{':'}\RegionMarkerTok{)}          \OtherTok{\}}\NormalTok{mfl  }\CommentTok{NB. C :}
+\NormalTok{mfl}\CharTok{=.} \NormalTok{8  }\RegionMarkerTok{(}\FunctionTok{a.i.}\StringTok{''''}\RegionMarkerTok{)}         \OtherTok{\}}\NormalTok{mfl  }\CommentTok{NB. Q quote}
+\NormalTok{mfl}\CharTok{=.} \NormalTok{9  }\RegionMarkerTok{(}\NormalTok{1}\DecValTok{3}\RegionMarkerTok{)}               \OtherTok{\}}\NormalTok{mfl  }\CommentTok{NB. CR}
+\NormalTok{mfl}\CharTok{=.} \NormalTok{1}\DecValTok{0} \RegionMarkerTok{(}\NormalTok{1}\DecValTok{0}\RegionMarkerTok{)}               \OtherTok{\}}\NormalTok{mfl  }\CommentTok{NB. LF}
+
+\NormalTok{sfl}\CharTok{=.} \NormalTok{_}\DecValTok{2}\FunctionTok{]}\OtherTok{\textbackslash{}"}\NormalTok{1 }\FunctionTok{\}.".}\OtherTok{;.}\NormalTok{_}\DecValTok{2} \RegionMarkerTok{(}\NormalTok{0 }\OtherTok{:} \NormalTok{0}\RegionMarkerTok{)}
+\StringTok{' X     S    A    N    B    9    D    C    Q    CR     LF  '}\FunctionTok{]}\NormalTok{0}
+ \NormalTok{1 1  1}\DecValTok{2} \NormalTok{1  2 1  3 1  2 1  6 1  1 1  1 1  7 1  1}\DecValTok{0} \NormalTok{1   1 1   }\CommentTok{NB. 0  initial}
+ \NormalTok{1 2  1}\DecValTok{2} \NormalTok{2  2 2  3 2  2 2  6 2  1 0  1 0  7 2  1}\DecValTok{0} \NormalTok{2   1 2   }\CommentTok{NB. 1  other}
+ \NormalTok{1 2  1}\DecValTok{2} \NormalTok{2  2 0  2 0  2 0  2 0  1 0  1 0  7 2  1}\DecValTok{0} \NormalTok{2   1 2   }\CommentTok{NB. 2  alp/num}
+ \NormalTok{1 2  1}\DecValTok{2} \NormalTok{2  2 0  2 0  4 0  2 0  1 0  1 0  7 2  1}\DecValTok{0} \NormalTok{2   1 2   }\CommentTok{NB. 3  N}
+ \NormalTok{1 2  1}\DecValTok{2} \NormalTok{2  2 0  2 0  2 0  2 0  5 0  1 0  7 2  1}\DecValTok{0} \NormalTok{2   1 2   }\CommentTok{NB. 4  NB}
+ \NormalTok{9 0   9 0  9 0  9 0  9 0  9 0  1 0  1 0  9 0  1}\DecValTok{0} \NormalTok{2   1 2   }\CommentTok{NB. 5  NB.}
+ \NormalTok{1 4  1}\DecValTok{3} \NormalTok{0  6 0  6 0  6 0  6 0  6 0  1 0  7 4  1}\DecValTok{0} \NormalTok{2   1 2   }\CommentTok{NB. 6  num}
+ \NormalTok{7 0   7 0  7 0  7 0  7 0  7 0  7 0  7 0  8 0  1}\DecValTok{0} \NormalTok{2   1 2   }\CommentTok{NB. 7  '}
+ \NormalTok{1 2  1}\DecValTok{1} \NormalTok{2  2 2  3 2  2 2  6 2  1 2  1 2  7 0  1}\DecValTok{0} \NormalTok{2   1 2   }\CommentTok{NB. 8  ''}
+ \NormalTok{9 0   9 0  9 0  9 0  9 0  9 0  9 0  9 0  9 0  1}\DecValTok{0} \NormalTok{2   1 2   }\CommentTok{NB. 9  comment}
+ \NormalTok{1 2  1}\DecValTok{1} \NormalTok{2  2 2  4 2  2 2  6 2  1 2  1 2  7 2  1}\DecValTok{0} \NormalTok{2  1}\DecValTok{1} \NormalTok{0   }\CommentTok{NB. 10 CR}
+ \NormalTok{1 2  1}\DecValTok{1} \NormalTok{2  2 2  4 2  2 2  6 2  1 2  1 2  7 2  1}\DecValTok{0} \NormalTok{2   1 2   }\CommentTok{NB. 11 CRLF}
+ \NormalTok{1 2  1}\DecValTok{2} \NormalTok{0  2 2  3 2  2 2  6 0  1 2  1 2  7 2  1}\DecValTok{0} \NormalTok{2   1 2   }\CommentTok{NB. 12 space}
+ \NormalTok{1 2  1}\DecValTok{3} \NormalTok{0  2 2  3 2  2 2  6 0  1 2  1 2  7 2  1}\DecValTok{0} \NormalTok{2   1 2   }\CommentTok{NB. 13 space after num}
+\RegionMarkerTok{)}
+
+\CommentTok{NB. word formation for lines}
+\NormalTok{wfl}\AlertTok{=:}\index{wfl@\texttt{wfl}} \RegionMarkerTok{(}\NormalTok{0}\FunctionTok{;}\NormalTok{sfl}\FunctionTok{;}\NormalTok{mfl}\RegionMarkerTok{)} \OtherTok{&} \FunctionTok{;:}
+
+\NormalTok{JLDIRECTORY}\AlertTok{=:}\index{JLDIRECTORY@\texttt{JLDIRECTORY}} \StringTok{''}
+\CommentTok{NB.*enddependents}
+
+
+\CommentTok{NB.<<~~~~ \{ .latex \}}
+
+\CommentTok{NB. group title and author - standard \textbackslash{}maketitle}
+\NormalTok{JLTITLETEX}\AlertTok{=:}\index{JLTITLETEX@\texttt{JLTITLETEX}} \NormalTok{0 }\OtherTok{:} \NormalTok{0}
+
+\FunctionTok{%} \NormalTok{latex author and title}
+\OtherTok{\textbackslash{}}\NormalTok{author}\FunctionTok{\{}\OtherTok{~}\FunctionTok{#}\OtherTok{~}\NormalTok{author}\OtherTok{~}\FunctionTok{#}\OtherTok{~\}}
+\OtherTok{\textbackslash{}}\NormalTok{title}\FunctionTok{\{}\OtherTok{\textbackslash{}}\NormalTok{texttt}\FunctionTok{\{}\OtherTok{~}\FunctionTok{#}\OtherTok{~}\NormalTok{group}\OtherTok{~}\FunctionTok{#}\OtherTok{~\}} \NormalTok{Group}\OtherTok{\}}
+\RegionMarkerTok{)}
+
+\CommentTok{NB. group overview header}
+\NormalTok{JLOVIEWTEX}\AlertTok{=:}\index{JLOVIEWTEX@\texttt{JLOVIEWTEX}} \NormalTok{0 }\OtherTok{:} \NormalTok{0}
+
+\FunctionTok{%} \NormalTok{this jodliterate overview}
+\OtherTok{\textbackslash{}}\NormalTok{section}\FunctionTok{\{}\OtherTok{\textbackslash{}}\NormalTok{texttt}\FunctionTok{\{}\OtherTok{~}\FunctionTok{#}\OtherTok{~}\NormalTok{group}\OtherTok{~}\FunctionTok{#}\OtherTok{~\}} \NormalTok{Overview}\OtherTok{\}}
+\RegionMarkerTok{)}
+
+\CommentTok{NB. group root tex - columns may need adjusting}
+\NormalTok{JLGRPLITTEX}\AlertTok{=:}\index{JLGRPLITTEX@\texttt{JLGRPLITTEX}} \NormalTok{0 }\OtherTok{:} \NormalTok{0}
+
+\FunctionTok{%} \NormalTok{Main jodliterate }\RegionMarkerTok{(}\NormalTok{grplit}\RegionMarkerTok{)} \NormalTok{latex fil}\FunctionTok{e.} \RegionMarkerTok{(}\NormalTok{grplit}\RegionMarkerTok{)} \NormalTok{generates }\OtherTok{"}\NormalTok{group}\OtherTok{"}
+\FunctionTok{%} \NormalTok{named versions of this file for each JOD group it processes}\OtherTok{.}
+
+\OtherTok{\textbackslash{}}\NormalTok{input}\FunctionTok{\{}\NormalTok{JODLiteratePreambl}\FunctionTok{e.}\NormalTok{tex}\OtherTok{\}}
+
+\OtherTok{\textbackslash{}}\NormalTok{input}\FunctionTok{\{}\OtherTok{~}\FunctionTok{#}\OtherTok{~}\NormalTok{group}\OtherTok{~}\FunctionTok{#}\OtherTok{~}\NormalTok{titl}\FunctionTok{e.}\NormalTok{tex}\OtherTok{\}}
+\OtherTok{\textbackslash{}}\NormalTok{maketitle}
+\OtherTok{\textbackslash{}}\NormalTok{tableofcontents}
+
+\OtherTok{\textbackslash{}}\NormalTok{newpage}
+\FunctionTok{%} \NormalTok{commands for adjusting distance}
+\FunctionTok{%} \NormalTok{between columns and inserting a rule}
+\FunctionTok{%}\OtherTok{\textbackslash{}}\NormalTok{setlength}\FunctionTok{\{}\OtherTok{\textbackslash{}}\NormalTok{columnsep}\OtherTok{\}}\FunctionTok{\{}\NormalTok{3em}\OtherTok{\}}
+\FunctionTok{%}\OtherTok{\textbackslash{}}\NormalTok{setlength}\FunctionTok{\{}\OtherTok{\textbackslash{}}\NormalTok{columnseprule}\OtherTok{\}}\FunctionTok{\{}\NormalTok{0}\OtherTok{.}\NormalTok{5pt}\OtherTok{\}}
+\FunctionTok{%}\OtherTok{\textbackslash{}}\NormalTok{twocolumn}
+\OtherTok{\textbackslash{}}\NormalTok{input}\FunctionTok{\{}\OtherTok{~}\FunctionTok{#}\OtherTok{~}\NormalTok{group}\OtherTok{~}\FunctionTok{#}\OtherTok{~}\NormalTok{oview}\OtherTok{.}\NormalTok{tex}\OtherTok{\}}
+
+\OtherTok{\textbackslash{}}\NormalTok{newpage}
+\FunctionTok{%}\OtherTok{\textbackslash{}}\NormalTok{onecolumn}
+\OtherTok{\textbackslash{}}\NormalTok{input}\FunctionTok{\{}\OtherTok{~}\FunctionTok{#}\OtherTok{~}\NormalTok{group}\OtherTok{~}\FunctionTok{#}\OtherTok{~}\NormalTok{cod}\FunctionTok{e.}\NormalTok{tex}\OtherTok{\}}
+
+\OtherTok{\textbackslash{}}\NormalTok{newpage}
+\OtherTok{\textbackslash{}}\NormalTok{phantomsection}
+\OtherTok{\textbackslash{}}\NormalTok{addcontentsline}\FunctionTok{\{}\NormalTok{toc}\OtherTok{\}}\FunctionTok{\{}\NormalTok{section}\OtherTok{\}}\FunctionTok{\{}\OtherTok{\textbackslash{}}\NormalTok{texttt}\FunctionTok{\{}\AlertTok{=:}\OtherTok{\}} \NormalTok{Index}\OtherTok{\}}
+\OtherTok{\textbackslash{}}\NormalTok{printindex}
+
+\OtherTok{\textbackslash{}}\NormalTok{end}\FunctionTok{\{}\NormalTok{document}\OtherTok{\}}
+\RegionMarkerTok{)}
+
+\CommentTok{NB. main jodliterate LaTeX preamble}
+\NormalTok{JODLiteratePreamble}\AlertTok{=:}\index{JODLiteratePreamble@\texttt{JODLiteratePreamble}} \NormalTok{0 }\OtherTok{:} \NormalTok{0}
+
+\FunctionTok{%} \NormalTok{jodliterate latex preambl}\FunctionTok{e.} 
+\FunctionTok{%} 
+\FunctionTok{%} \NormalTok{This file is a highly customized version of the preamble}
+\FunctionTok{%} \NormalTok{material generated by pandoc's }\FunctionTok{-}\NormalTok{s option when producing }
+\FunctionTok{%} \OtherTok{.}\NormalTok{tex outpu}\OtherTok{t.} \NormalTok{pandoc highlighting is overridden and}
+\FunctionTok{%} \NormalTok{the standard index is redefine}\OtherTok{d.} 
+
+\OtherTok{\textbackslash{}}\NormalTok{documentclass}\FunctionTok{[}\NormalTok{12pt}\FunctionTok{]\{}\NormalTok{article}\OtherTok{\}}
+
+\OtherTok{\textbackslash{}}\NormalTok{usepackage}\FunctionTok{[}\NormalTok{landscape}\FunctionTok{]\{}\NormalTok{geometry}\OtherTok{\}}
+\OtherTok{\textbackslash{}}\NormalTok{usepackage}\FunctionTok{[}\NormalTok{headings}\FunctionTok{]\{}\NormalTok{fullpage}\OtherTok{\}}
+\OtherTok{\textbackslash{}}\NormalTok{usepackage}\FunctionTok{\{}\NormalTok{lmodern}\OtherTok{\}}
+\OtherTok{\textbackslash{}}\NormalTok{usepackage}\FunctionTok{\{}\NormalTok{amssymb}\FunctionTok{,}\NormalTok{amsmath}\OtherTok{\}}
+\OtherTok{\textbackslash{}}\NormalTok{usepackage}\FunctionTok{\{}\NormalTok{ifxetex}\FunctionTok{,}\NormalTok{ifluatex}\OtherTok{\}}
+
+\FunctionTok{%} \NormalTok{provides }\OtherTok{\textbackslash{}}\NormalTok{textsubscript}
+\OtherTok{\textbackslash{}}\NormalTok{usepackage}\FunctionTok{\{}\NormalTok{fixltx2e}\OtherTok{\}} 
+
+\FunctionTok{%} \NormalTok{use microtype if available}
+\OtherTok{\textbackslash{}}\NormalTok{IfFileExists}\FunctionTok{\{}\NormalTok{microtyp}\FunctionTok{e.}\NormalTok{sty}\OtherTok{\}}\FunctionTok{\{}\OtherTok{\textbackslash{}}\NormalTok{usepackage}\FunctionTok{\{}\NormalTok{microtype}\OtherTok{\}\}}\FunctionTok{\{}\OtherTok{\}}
+\OtherTok{\textbackslash{}}\NormalTok{ifnum 0}\OtherTok{\textbackslash{}}\NormalTok{ifxetex 1}\OtherTok{\textbackslash{}}\NormalTok{fi}\OtherTok{\textbackslash{}}\NormalTok{ifluatex 1}\OtherTok{\textbackslash{}}\NormalTok{fi}\FunctionTok{=}\NormalTok{0 }\FunctionTok{%} \NormalTok{if pdftex}
+  \OtherTok{\textbackslash{}}\NormalTok{usepackage}\FunctionTok{[}\NormalTok{utf8}\FunctionTok{]\{}\NormalTok{inputenc}\OtherTok{\}}
+\OtherTok{\textbackslash{}}\NormalTok{else }\FunctionTok{%} \NormalTok{if luatex or xelatex}
+  \OtherTok{\textbackslash{}}\NormalTok{usepackage}\FunctionTok{\{}\NormalTok{fontspec}\OtherTok{\}}
+  \OtherTok{\textbackslash{}}\NormalTok{ifxetex}
+    \OtherTok{\textbackslash{}}\NormalTok{usepackage}\FunctionTok{\{}\NormalTok{xltxtra}\FunctionTok{,}\NormalTok{xunicode}\OtherTok{\}}
+  \OtherTok{\textbackslash{}}\NormalTok{fi}
+  \OtherTok{\textbackslash{}}\NormalTok{defaultfontfeatures}\FunctionTok{\{}\NormalTok{Mapping}\FunctionTok{=}\NormalTok{tex}\FunctionTok{-}\NormalTok{text}\FunctionTok{,}\NormalTok{Scale}\FunctionTok{=}\NormalTok{MatchLowercase}\OtherTok{\}}
+  \FunctionTok{%} \NormalTok{replace EUROUC with unicode euro character }
+  \FunctionTok{%} \NormalTok{if you need this character }\FunctionTok{-} \NormalTok{the presence of}
+  \FunctionTok{%} \NormalTok{this single character in the preamble forces use of xelatex}\FunctionTok{,} \NormalTok{lualated}
+  \FunctionTok{%}\OtherTok{\textbackslash{}}\NormalTok{newcommand}\FunctionTok{\{}\OtherTok{\textbackslash{}}\NormalTok{euro}\OtherTok{\}}\FunctionTok{\{}\NormalTok{EUROUC}\OtherTok{\}}   
+  \FunctionTok{%} \NormalTok{can set other monospace fonts if they're available}
+  \FunctionTok{%} \NormalTok{I rather like Source Code Pro see}\OtherTok{:}
+  \FunctionTok{%} \NormalTok{htt}\FunctionTok{p:}\OtherTok{//}\NormalTok{blogs}\OtherTok{.}\NormalTok{adob}\FunctionTok{e.}\NormalTok{com}\OtherTok{/}\NormalTok{typblography}\OtherTok{/}\NormalTok{2}\DecValTok{012}\OtherTok{/}\NormalTok{0}\DecValTok{9}\OtherTok{/}\NormalTok{source}\FunctionTok{-}\NormalTok{code}\FunctionTok{-}\NormalTok{pr}\FunctionTok{o.}\NormalTok{html}
+  \FunctionTok{%}\OtherTok{\textbackslash{}}\NormalTok{setmonofont}\FunctionTok{\{}\NormalTok{FreeMono}\OtherTok{\}}
+  \FunctionTok{%}\OtherTok{\textbackslash{}}\NormalTok{setmonofont}\FunctionTok{\{}\NormalTok{Source Code Pro}\OtherTok{\}}
+\OtherTok{\textbackslash{}}\NormalTok{fi}
+
+\FunctionTok{%} \NormalTok{Redefine labelwidth for lists}\FunctionTok{;} \NormalTok{otherwise}\FunctionTok{,} \NormalTok{the enumerate package will cause}
+\FunctionTok{%} \NormalTok{markers to extend beyond the left margin}\OtherTok{.}
+\OtherTok{\textbackslash{}}\NormalTok{makeatletter}\OtherTok{\textbackslash{}}\NormalTok{AtBeginDocument}\FunctionTok{\{%}
+  \OtherTok{\textbackslash{}}\NormalTok{renewcommand}\FunctionTok{\{}\OtherTok{\textbackslash{}@}\NormalTok{listi}\OtherTok{\}}
+    \FunctionTok{\{}\OtherTok{\textbackslash{}}\NormalTok{setlength}\FunctionTok{\{}\OtherTok{\textbackslash{}}\NormalTok{labelwidth}\OtherTok{\}}\FunctionTok{\{}\NormalTok{4em}\OtherTok{\}\}}
+\OtherTok{\}\textbackslash{}}\NormalTok{makeatother}
+\OtherTok{\textbackslash{}}\NormalTok{usepackage}\FunctionTok{\{}\NormalTok{enumerate}\OtherTok{\}}
+
+\FunctionTok{%} \NormalTok{build document index}
+\OtherTok{\textbackslash{}}\NormalTok{usepackage}\FunctionTok{\{}\NormalTok{makeidx}\OtherTok{\}}
+
+\FunctionTok{%} \NormalTok{colors}
+\OtherTok{\textbackslash{}}\NormalTok{usepackage}\FunctionTok{\{}\NormalTok{color}\OtherTok{\}}
+\OtherTok{\textbackslash{}}\NormalTok{definecolor}\FunctionTok{\{}\NormalTok{shadecolor}\OtherTok{\}}\FunctionTok{\{}\NormalTok{RGB}\OtherTok{\}}\FunctionTok{\{}\NormalTok{2}\DecValTok{48}\FunctionTok{,}\NormalTok{2}\DecValTok{48}\FunctionTok{,}\NormalTok{2}\DecValTok{48}\OtherTok{\}}
+\FunctionTok{%} \NormalTok{j control structures }
+\OtherTok{\textbackslash{}}\NormalTok{definecolor}\FunctionTok{\{}\NormalTok{keywcolor}\OtherTok{\}}\FunctionTok{\{}\NormalTok{rgb}\OtherTok{\}}\FunctionTok{\{}\NormalTok{0}\DecValTok{.13}\FunctionTok{,}\NormalTok{0}\DecValTok{.29}\FunctionTok{,}\NormalTok{0}\DecValTok{.53}\OtherTok{\}}
+\FunctionTok{%} \NormalTok{j explicit arguments }\DataTypeTok{x} \DataTypeTok{y} \DataTypeTok{m} \DataTypeTok{n} \DataTypeTok{u} \DataTypeTok{v}
+\OtherTok{\textbackslash{}}\NormalTok{definecolor}\FunctionTok{\{}\NormalTok{datacolor}\OtherTok{\}}\FunctionTok{\{}\NormalTok{rgb}\OtherTok{\}}\FunctionTok{\{}\NormalTok{0}\DecValTok{.13}\FunctionTok{,}\NormalTok{0}\DecValTok{.29}\FunctionTok{,}\NormalTok{0}\DecValTok{.53}\OtherTok{\}}
+\FunctionTok{%} \NormalTok{j numbers }\FunctionTok{-} \NormalTok{all types see }\FunctionTok{j.}\NormalTok{xml}
+\OtherTok{\textbackslash{}}\NormalTok{definecolor}\FunctionTok{\{}\NormalTok{decvcolor}\OtherTok{\}}\FunctionTok{\{}\NormalTok{rgb}\OtherTok{\}}\FunctionTok{\{}\NormalTok{0}\DecValTok{.00}\FunctionTok{,}\NormalTok{0}\DecValTok{.00}\FunctionTok{,}\NormalTok{0}\DecValTok{.81}\OtherTok{\}}
+\OtherTok{\textbackslash{}}\NormalTok{definecolor}\FunctionTok{\{}\NormalTok{basencolor}\OtherTok{\}}\FunctionTok{\{}\NormalTok{rgb}\OtherTok{\}}\FunctionTok{\{}\NormalTok{0}\DecValTok{.00}\FunctionTok{,}\NormalTok{0}\DecValTok{.00}\FunctionTok{,}\NormalTok{0}\DecValTok{.81}\OtherTok{\}}
+\OtherTok{\textbackslash{}}\NormalTok{definecolor}\FunctionTok{\{}\NormalTok{floatcolor}\OtherTok{\}}\FunctionTok{\{}\NormalTok{rgb}\OtherTok{\}}\FunctionTok{\{}\NormalTok{0}\DecValTok{.00}\FunctionTok{,}\NormalTok{0}\DecValTok{.00}\FunctionTok{,}\NormalTok{0}\DecValTok{.81}\OtherTok{\}}
+\FunctionTok{%} \NormalTok{j local assignments}
+\OtherTok{\textbackslash{}}\NormalTok{definecolor}\FunctionTok{\{}\NormalTok{charcolor}\OtherTok{\}}\FunctionTok{\{}\NormalTok{rgb}\OtherTok{\}}\FunctionTok{\{}\NormalTok{0}\DecValTok{.31}\FunctionTok{,}\NormalTok{0}\DecValTok{.60}\FunctionTok{,}\NormalTok{0}\DecValTok{.02}\OtherTok{\}}
+\OtherTok{\textbackslash{}}\NormalTok{definecolor}\FunctionTok{\{}\NormalTok{stringcolor}\OtherTok{\}}\FunctionTok{\{}\NormalTok{rgb}\OtherTok{\}}\FunctionTok{\{}\NormalTok{0}\DecValTok{.31}\FunctionTok{,}\NormalTok{0}\DecValTok{.60}\FunctionTok{,}\NormalTok{0}\DecValTok{.02}\OtherTok{\}}
+\OtherTok{\textbackslash{}}\NormalTok{definecolor}\FunctionTok{\{}\NormalTok{commentcolor}\OtherTok{\}}\FunctionTok{\{}\NormalTok{rgb}\OtherTok{\}}\FunctionTok{\{}\NormalTok{0}\DecValTok{.56}\FunctionTok{,}\NormalTok{0}\DecValTok{.35}\FunctionTok{,}\NormalTok{0}\DecValTok{.01}\OtherTok{\}}
+\FunctionTok{%} \NormalTok{primitive adverbs and conjunctions}
+\FunctionTok{%}\OtherTok{\textbackslash{}}\NormalTok{definecolor}\FunctionTok{\{}\NormalTok{othercolor}\OtherTok{\}}\FunctionTok{\{}\NormalTok{rgb}\OtherTok{\}}\FunctionTok{\{}\NormalTok{0}\DecValTok{.56}\FunctionTok{,}\NormalTok{0}\DecValTok{.35}\FunctionTok{,}\NormalTok{0}\DecValTok{.01}\OtherTok{\}}   
+\OtherTok{\textbackslash{}}\NormalTok{definecolor}\FunctionTok{\{}\NormalTok{othercolor}\OtherTok{\}}\FunctionTok{\{}\NormalTok{RGB}\OtherTok{\}}\FunctionTok{\{}\NormalTok{0}\FunctionTok{,}\NormalTok{0}\FunctionTok{,}\NormalTok{2}\DecValTok{55}\OtherTok{\}}
+\FunctionTok{%} \NormalTok{global assignments}
+\OtherTok{\textbackslash{}}\NormalTok{definecolor}\FunctionTok{\{}\NormalTok{alertcolor}\OtherTok{\}}\FunctionTok{\{}\NormalTok{rgb}\OtherTok{\}}\FunctionTok{\{}\NormalTok{0}\DecValTok{.94}\FunctionTok{,}\NormalTok{0}\DecValTok{.16}\FunctionTok{,}\NormalTok{0}\DecValTok{.16}\OtherTok{\}}
+\FunctionTok{%} \NormalTok{primitive J verbs and noun names}
+\OtherTok{\textbackslash{}}\NormalTok{definecolor}\FunctionTok{\{}\NormalTok{funccolor}\OtherTok{\}}\FunctionTok{\{}\NormalTok{rgb}\OtherTok{\}}\FunctionTok{\{}\NormalTok{0}\DecValTok{.00}\FunctionTok{,}\NormalTok{0}\DecValTok{.00}\FunctionTok{,}\NormalTok{0}\DecValTok{.00}\OtherTok{\}}     
+
+\OtherTok{\textbackslash{}}\NormalTok{usepackage}\FunctionTok{\{}\NormalTok{fancyvrb}\OtherTok{\}}
+\OtherTok{\textbackslash{}}\NormalTok{DefineShortVerb}\FunctionTok{[}\NormalTok{commandchars}\FunctionTok{=}\OtherTok{\textbackslash{}\textbackslash{}\textbackslash{}}\FunctionTok{\{}\OtherTok{\textbackslash{}\}}\FunctionTok{]\{}\OtherTok{\textbackslash{}}\FunctionTok{\textbar{}}\OtherTok{\}}
+\OtherTok{\textbackslash{}}\NormalTok{DefineVerbatimEnvironment}\FunctionTok{\{}\NormalTok{Highlighting}\OtherTok{\}}\FunctionTok{\{}\NormalTok{Verbatim}\OtherTok{\}}\FunctionTok{\{}\NormalTok{commandchars}\FunctionTok{=}\OtherTok{\textbackslash{}\textbackslash{}\textbackslash{}}\FunctionTok{\{}\OtherTok{\textbackslash{}\}\}}
+\FunctionTok{%} \NormalTok{Add }\StringTok{',fontsize=\textbackslash{}small'} \NormalTok{for more characters per line}
+
+\FunctionTok{%} \NormalTok{pandoc generated syntax coloring commands }\FunctionTok{-} \NormalTok{names}
+\FunctionTok{%} \NormalTok{are fixed in generated code but definitions may }
+\FunctionTok{%} \NormalTok{be set to any valid text formatting command}
+\OtherTok{\textbackslash{}}\NormalTok{usepackage}\FunctionTok{\{}\NormalTok{framed}\OtherTok{\}}
+\OtherTok{\textbackslash{}}\NormalTok{newenvironment}\FunctionTok{\{}\NormalTok{Shaded}\OtherTok{\}}\FunctionTok{\{}\OtherTok{\}}\FunctionTok{\{}\OtherTok{\}}
+\OtherTok{\textbackslash{}}\NormalTok{newcommand}\FunctionTok{\{}\OtherTok{\textbackslash{}}\NormalTok{KeywordTok}\OtherTok{\}}\FunctionTok{[}\NormalTok{1}\FunctionTok{]\{}\OtherTok{\textbackslash{}}\NormalTok{textcolor}\FunctionTok{\{}\NormalTok{keywcolor}\OtherTok{\}}\FunctionTok{\{}\OtherTok{\textbackslash{}}\NormalTok{textbf}\FunctionTok{\{\{#}\NormalTok{1}\OtherTok{\}\}\}\}}
+\FunctionTok{%} \NormalTok{works better with Source Code Pro}
+\FunctionTok{%}\OtherTok{\textbackslash{}}\NormalTok{newcommand}\FunctionTok{\{}\OtherTok{\textbackslash{}}\NormalTok{KeywordTok}\OtherTok{\}}\FunctionTok{[}\NormalTok{1}\FunctionTok{]\{}\OtherTok{\textbackslash{}}\NormalTok{textcolor}\FunctionTok{\{}\NormalTok{keywcolor}\OtherTok{\}}\FunctionTok{\{\{#}\NormalTok{1}\OtherTok{\}\}\}}
+\OtherTok{\textbackslash{}}\NormalTok{newcommand}\FunctionTok{\{}\OtherTok{\textbackslash{}}\NormalTok{DataTypeTok}\OtherTok{\}}\FunctionTok{[}\NormalTok{1}\FunctionTok{]\{}\OtherTok{\textbackslash{}}\NormalTok{textcolor}\FunctionTok{\{}\NormalTok{datacolor}\OtherTok{\}}\FunctionTok{\{\{#}\NormalTok{1}\OtherTok{\}\}\}}
+\FunctionTok{%}\OtherTok{\textbackslash{}}\NormalTok{newcommand}\FunctionTok{\{}\OtherTok{\textbackslash{}}\NormalTok{DecValTok}\OtherTok{\}}\FunctionTok{[}\NormalTok{1}\FunctionTok{]\{}\OtherTok{\textbackslash{}}\NormalTok{textcolor}\FunctionTok{\{}\NormalTok{decvcolor}\OtherTok{\}}\FunctionTok{\{\{#}\NormalTok{1}\OtherTok{\}\}\}}
+\OtherTok{\textbackslash{}}\NormalTok{newcommand}\FunctionTok{\{}\OtherTok{\textbackslash{}}\NormalTok{DecValTok}\OtherTok{\}}\FunctionTok{[}\NormalTok{1}\FunctionTok{]\{\{#}\NormalTok{1}\OtherTok{\}\}} 
+\OtherTok{\textbackslash{}}\NormalTok{newcommand}\FunctionTok{\{}\OtherTok{\textbackslash{}}\NormalTok{BaseNTok}\OtherTok{\}}\FunctionTok{[}\NormalTok{1}\FunctionTok{]\{}\OtherTok{\textbackslash{}}\NormalTok{textcolor}\FunctionTok{\{}\NormalTok{basencolor}\OtherTok{\}}\FunctionTok{\{\{#}\NormalTok{1}\OtherTok{\}\}\}}
+\OtherTok{\textbackslash{}}\NormalTok{newcommand}\FunctionTok{\{}\OtherTok{\textbackslash{}}\NormalTok{FloatTok}\OtherTok{\}}\FunctionTok{[}\NormalTok{1}\FunctionTok{]\{}\OtherTok{\textbackslash{}}\NormalTok{textcolor}\FunctionTok{\{}\NormalTok{floatcolor}\OtherTok{\}}\FunctionTok{\{\{#}\NormalTok{1}\OtherTok{\}\}\}}
+\OtherTok{\textbackslash{}}\NormalTok{newcommand}\FunctionTok{\{}\OtherTok{\textbackslash{}}\NormalTok{CharTok}\OtherTok{\}}\FunctionTok{[}\NormalTok{1}\FunctionTok{]\{}\OtherTok{\textbackslash{}}\NormalTok{textcolor}\FunctionTok{\{}\NormalTok{charcolor}\OtherTok{\}}\FunctionTok{\{}\OtherTok{\textbackslash{}}\NormalTok{textbf}\FunctionTok{\{\{#}\NormalTok{1}\OtherTok{\}\}\}\}}
+\OtherTok{\textbackslash{}}\NormalTok{newcommand}\FunctionTok{\{}\OtherTok{\textbackslash{}}\NormalTok{StringTok}\OtherTok{\}}\FunctionTok{[}\NormalTok{1}\FunctionTok{]\{}\OtherTok{\textbackslash{}}\NormalTok{textcolor}\FunctionTok{\{}\NormalTok{stringcolor}\OtherTok{\}}\FunctionTok{\{\{#}\NormalTok{1}\OtherTok{\}\}\}}
+\OtherTok{\textbackslash{}}\NormalTok{newcommand}\FunctionTok{\{}\OtherTok{\textbackslash{}}\NormalTok{CommentTok}\OtherTok{\}}\FunctionTok{[}\NormalTok{1}\FunctionTok{]\{}\OtherTok{\textbackslash{}}\NormalTok{textcolor}\FunctionTok{\{}\NormalTok{commentcolor}\OtherTok{\}}\FunctionTok{\{}\OtherTok{\textbackslash{}}\NormalTok{textit}\FunctionTok{\{\{#}\NormalTok{1}\OtherTok{\}\}\}\}}
+\OtherTok{\textbackslash{}}\NormalTok{newcommand}\FunctionTok{\{}\OtherTok{\textbackslash{}}\NormalTok{OtherTok}\OtherTok{\}}\FunctionTok{[}\NormalTok{1}\FunctionTok{]\{}\OtherTok{\textbackslash{}}\NormalTok{textcolor}\FunctionTok{\{}\NormalTok{othercolor}\OtherTok{\}}\FunctionTok{\{\{#}\NormalTok{1}\OtherTok{\}\}\}} 
+\OtherTok{\textbackslash{}}\NormalTok{newcommand}\FunctionTok{\{}\OtherTok{\textbackslash{}}\NormalTok{AlertTok}\OtherTok{\}}\FunctionTok{[}\NormalTok{1}\FunctionTok{]\{}\OtherTok{\textbackslash{}}\NormalTok{textcolor}\FunctionTok{\{}\NormalTok{alertcolor}\OtherTok{\}}\FunctionTok{\{}\OtherTok{\textbackslash{}}\NormalTok{textbf}\FunctionTok{\{\{#}\NormalTok{1}\OtherTok{\}\}\}\}}
+\FunctionTok{%}\OtherTok{\textbackslash{}}\NormalTok{newcommand}\FunctionTok{\{}\OtherTok{\textbackslash{}}\NormalTok{FunctionTok}\OtherTok{\}}\FunctionTok{[}\NormalTok{1}\FunctionTok{]\{}\OtherTok{\textbackslash{}}\NormalTok{textcolor}\FunctionTok{\{}\NormalTok{funccolor}\OtherTok{\}}\FunctionTok{\{\{#}\NormalTok{1}\OtherTok{\}\}\}}
+\OtherTok{\textbackslash{}}\NormalTok{newcommand}\FunctionTok{\{}\OtherTok{\textbackslash{}}\NormalTok{FunctionTok}\OtherTok{\}}\FunctionTok{[}\NormalTok{1}\FunctionTok{]\{\{#}\NormalTok{1}\OtherTok{\}\}}
+\OtherTok{\textbackslash{}}\NormalTok{newcommand}\FunctionTok{\{}\OtherTok{\textbackslash{}}\NormalTok{RegionMarkerTok}\OtherTok{\}}\FunctionTok{[}\NormalTok{1}\FunctionTok{]\{\{#}\NormalTok{1}\OtherTok{\}\}}
+\OtherTok{\textbackslash{}}\NormalTok{newcommand}\FunctionTok{\{}\OtherTok{\textbackslash{}}\NormalTok{ErrorTok}\OtherTok{\}}\FunctionTok{[}\NormalTok{1}\FunctionTok{]\{}\OtherTok{\textbackslash{}}\NormalTok{textbf}\FunctionTok{\{\{#}\NormalTok{1}\OtherTok{\}\}\}}
+\OtherTok{\textbackslash{}}\NormalTok{newcommand}\FunctionTok{\{}\OtherTok{\textbackslash{}}\NormalTok{NormalTok}\OtherTok{\}}\FunctionTok{[}\NormalTok{1}\FunctionTok{]\{\{#}\NormalTok{1}\OtherTok{\}\}}
+
+\FunctionTok{%} \NormalTok{JOD oriented auxiliary commands for post processing pandoc generated latex}
+\OtherTok{\textbackslash{}}\NormalTok{newenvironment}\FunctionTok{\{}\NormalTok{JODGroupHeader}\OtherTok{\}}\FunctionTok{\{}\OtherTok{\}}\FunctionTok{\{}\OtherTok{\}}
+\OtherTok{\textbackslash{}}\NormalTok{newenvironment}\FunctionTok{\{}\NormalTok{JODPostProcessor}\OtherTok{\}}\FunctionTok{\{}\OtherTok{\}}\FunctionTok{\{}\OtherTok{\}}
+
+\OtherTok{\textbackslash{}}\NormalTok{usepackage}\FunctionTok{\{}\NormalTok{fancyhdr}\OtherTok{\}}
+\OtherTok{\textbackslash{}}\NormalTok{pagestyle}\FunctionTok{\{}\NormalTok{fancy}\OtherTok{\}}
+
+\OtherTok{\textbackslash{}}\NormalTok{ifxetex}
+  \OtherTok{\textbackslash{}}\NormalTok{usepackage}\FunctionTok{[}\NormalTok{setpagesize}\FunctionTok{=}\NormalTok{false}\FunctionTok{,} \FunctionTok{%} \NormalTok{page size defined by xetex}
+              \NormalTok{unicode}\FunctionTok{=}\NormalTok{false}\FunctionTok{,}     \FunctionTok{%} \NormalTok{unicode breaks when used with xetex}
+              \NormalTok{xetex}\FunctionTok{]\{}\NormalTok{hyperref}\OtherTok{\}}
+\OtherTok{\textbackslash{}}\NormalTok{else}
+  \OtherTok{\textbackslash{}}\NormalTok{usepackage}\FunctionTok{[}\NormalTok{unicode}\FunctionTok{=}\NormalTok{true}\FunctionTok{]\{}\NormalTok{hyperref}\OtherTok{\}}
+\OtherTok{\textbackslash{}}\NormalTok{fi}
+
+\OtherTok{\textbackslash{}}\NormalTok{hypersetup}\FunctionTok{\{}\NormalTok{breaklinks}\FunctionTok{=}\NormalTok{true}\FunctionTok{,}
+            \NormalTok{bookmarks}\FunctionTok{=}\NormalTok{true}\FunctionTok{,}
+            \NormalTok{pdfauthor}\FunctionTok{=\{}\OtherTok{\}}\FunctionTok{,}
+            \NormalTok{pdftitle}\FunctionTok{=\{}\OtherTok{\}}\FunctionTok{,}
+            \NormalTok{colorlinks}\FunctionTok{=}\NormalTok{true}\FunctionTok{,}
+            \NormalTok{urlcolor}\FunctionTok{=}\NormalTok{blue}\FunctionTok{,}
+            \NormalTok{linkcolor}\FunctionTok{=}\NormalTok{magenta}\FunctionTok{,}
+            \NormalTok{pdfborder}\FunctionTok{=\{}\NormalTok{0 0 0}\OtherTok{\}\}}
+\OtherTok{\textbackslash{}}\NormalTok{setlength}\FunctionTok{\{}\OtherTok{\textbackslash{}}\NormalTok{parindent}\OtherTok{\}}\FunctionTok{\{}\NormalTok{0pt}\OtherTok{\}}
+\OtherTok{\textbackslash{}}\NormalTok{setlength}\FunctionTok{\{}\OtherTok{\textbackslash{}}\NormalTok{parskip}\OtherTok{\}}\FunctionTok{\{}\NormalTok{6pt plus 2pt minus 1pt}\OtherTok{\}}
+\OtherTok{\textbackslash{}}\NormalTok{setlength}\FunctionTok{\{}\OtherTok{\textbackslash{}}\NormalTok{emergencystretch}\OtherTok{\}}\FunctionTok{\{}\NormalTok{3em}\OtherTok{\}}  \FunctionTok{%} \NormalTok{prevent overfull lines}
+\OtherTok{\textbackslash{}}\NormalTok{setcounter}\FunctionTok{\{}\NormalTok{secnumdepth}\OtherTok{\}}\FunctionTok{\{}\NormalTok{0}\OtherTok{\}}
+
+\FunctionTok{%} \NormalTok{reset latex index to use four columns }\FunctionTok{-} \NormalTok{default is two}
+\FunctionTok{%} \NormalTok{which results in lots of wasted page space in landscape}
+\FunctionTok{%} \NormalTok{NOTE}\OtherTok{:} \NormalTok{adjust if index names run together }
+\FunctionTok{%} \NormalTok{from}\OtherTok{:} \NormalTok{htt}\FunctionTok{p:}\OtherTok{//}\NormalTok{www}\OtherTok{.}\NormalTok{latex}\FunctionTok{-}\NormalTok{community}\OtherTok{.}\NormalTok{org}\OtherTok{/}\NormalTok{viewtopic}\OtherTok{.}\NormalTok{php}\FunctionTok{?}\NormalTok{f}\FunctionTok{=}\NormalTok{4}\OtherTok{&}\NormalTok{t}\FunctionTok{=}\NormalTok{1}\DecValTok{735}
+\OtherTok{\textbackslash{}}\NormalTok{usepackage}\FunctionTok{\{}\NormalTok{multicol}\OtherTok{\}}
+\OtherTok{\textbackslash{}}\NormalTok{makeatletter}
+\OtherTok{\textbackslash{}}\NormalTok{renewenvironment}\FunctionTok{\{}\NormalTok{theindex}\OtherTok{\}}
+  \FunctionTok{\{}\OtherTok{\textbackslash{}}\NormalTok{if}\OtherTok{@}\NormalTok{twocolumn}
+      \OtherTok{\textbackslash{}@}\NormalTok{restonecolfalse}
+   \OtherTok{\textbackslash{}}\NormalTok{else}
+      \OtherTok{\textbackslash{}@}\NormalTok{restonecoltrue}
+   \OtherTok{\textbackslash{}}\NormalTok{fi}
+   \OtherTok{\textbackslash{}}\NormalTok{setlength}\FunctionTok{\{}\OtherTok{\textbackslash{}}\NormalTok{columnseprule}\OtherTok{\}}\FunctionTok{\{}\NormalTok{0pt}\OtherTok{\}}
+   \OtherTok{\textbackslash{}}\NormalTok{setlength}\FunctionTok{\{}\OtherTok{\textbackslash{}}\NormalTok{columnsep}\OtherTok{\}}\FunctionTok{\{}\NormalTok{35pt}\OtherTok{\}}
+   \OtherTok{\textbackslash{}}\NormalTok{begin}\FunctionTok{\{}\NormalTok{multicols}\OtherTok{\}}\FunctionTok{\{}\NormalTok{4}\OtherTok{\}}\FunctionTok{[}\OtherTok{\textbackslash{}}\NormalTok{section}\FunctionTok{*\{}\OtherTok{\textbackslash{}}\NormalTok{indexname}\OtherTok{\}}\FunctionTok{]}
+   \OtherTok{\textbackslash{}}\NormalTok{markboth}\FunctionTok{\{}\OtherTok{\textbackslash{}}\NormalTok{MakeUppercase}\OtherTok{\textbackslash{}}\NormalTok{indexname}\OtherTok{\}}\FunctionTok{%}
+            \FunctionTok{\{}\OtherTok{\textbackslash{}}\NormalTok{MakeUppercase}\OtherTok{\textbackslash{}}\NormalTok{indexname}\OtherTok{\}}\FunctionTok{%}
+   \OtherTok{\textbackslash{}}\NormalTok{thispagestyle}\FunctionTok{\{}\NormalTok{plain}\OtherTok{\}}
+   \OtherTok{\textbackslash{}}\NormalTok{setlength}\FunctionTok{\{}\OtherTok{\textbackslash{}}\NormalTok{parindent}\OtherTok{\}}\FunctionTok{\{}\NormalTok{0pt}\OtherTok{\}}
+   \OtherTok{\textbackslash{}}\NormalTok{setlength}\FunctionTok{\{}\OtherTok{\textbackslash{}}\NormalTok{parskip}\OtherTok{\}}\FunctionTok{\{}\NormalTok{0pt plus 0}\OtherTok{.}\NormalTok{3pt}\OtherTok{\}}
+   \OtherTok{\textbackslash{}}\NormalTok{relax}
+   \OtherTok{\textbackslash{}}\NormalTok{let}\OtherTok{\textbackslash{}}\NormalTok{item}\OtherTok{\textbackslash{}@}\NormalTok{idxitem}\OtherTok{\}}\FunctionTok{%}
+  \FunctionTok{\{}\OtherTok{\textbackslash{}}\NormalTok{end}\FunctionTok{\{}\NormalTok{multicols}\OtherTok{\}\textbackslash{}}\NormalTok{if}\OtherTok{@}\NormalTok{restonecol}\OtherTok{\textbackslash{}}\NormalTok{onecolumn}\OtherTok{\textbackslash{}}\NormalTok{else}\OtherTok{\textbackslash{}}\NormalTok{clearpage}\OtherTok{\textbackslash{}}\NormalTok{fi}\OtherTok{\}}
+\OtherTok{\textbackslash{}}\NormalTok{makeatother}
+
+\OtherTok{\textbackslash{}}\NormalTok{makeindex}
+
+\OtherTok{\textbackslash{}}\NormalTok{begin}\FunctionTok{\{}\NormalTok{document}\OtherTok{\}}
+
+\RegionMarkerTok{)}
+\CommentTok{NB.>>~~~~}
+
+\CommentTok{NB.*end-header}
+\end{Highlighting}
+\end{Shaded}
+
+\end{JODGroupHeader}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. pandoc highlight string from '=:=:' mark}
+\NormalTok{BEGININDEX}\AlertTok{=:}\index{BEGININDEX@\texttt{BEGININDEX}}\StringTok{'\textbackslash{}AlertTok\{=:=:\}'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. marks start of JOD group header in pandoc latex}
+\NormalTok{BEGINJODHEADER}\AlertTok{=:}\index{BEGINJODHEADER@\texttt{BEGINJODHEADER}}\StringTok{'\textbackslash{}begin\{JODGroupHeader\}'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. marks start of JOD group postprocessor in pandoc latex}
+\NormalTok{BEGINJODPOSTP}\AlertTok{=:}\index{BEGINJODPOSTP@\texttt{BEGINJODPOSTP}}\StringTok{'\textbackslash{}begin\{JODPostProcessor\}'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. marks the start of J script text that is not J}
+\NormalTok{BEGINNOTJ}\AlertTok{=:}\index{BEGINNOTJ@\texttt{BEGINNOTJ}}\StringTok{'NB.<<~~~~'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. carriage return character}
+\NormalTok{CR}\AlertTok{=:}\index{CR@\texttt{CR}}\NormalTok{1}\DecValTok{3}\FunctionTok{\{a.}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. pandoc highlight string from '=.=.' mark}
+\NormalTok{ENDINDEX}\AlertTok{=:}\index{ENDINDEX@\texttt{ENDINDEX}}\StringTok{'\textbackslash{}CharTok\{=.=.\}'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. marks end of JOD group header in pandoc latex}
+\NormalTok{ENDJODHEADER}\AlertTok{=:}\index{ENDJODHEADER@\texttt{ENDJODHEADER}}\StringTok{'\textbackslash{}end\{JODGroupHeader\}'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. marks end of JOD group postprocessor in pandoc latex}
+\NormalTok{ENDJODPOSTP}\AlertTok{=:}\index{ENDJODPOSTP@\texttt{ENDJODPOSTP}}\StringTok{'\textbackslash{}end\{JODPostProcessor\}'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. marks the end of J script text that is not J}
+\NormalTok{ENDNOTJ}\AlertTok{=:}\index{ENDNOTJ@\texttt{ENDNOTJ}}\StringTok{'NB.>>~~~~'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. interface word list name prefix}
+\NormalTok{IFACEWORDSPFX}\AlertTok{=:}\index{IFACEWORDSPFX@\texttt{IFACEWORDSPFX}}\StringTok{'IFACEWORDS'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. interface words (IFACEWORDSjodliterate) group}
+\NormalTok{IFACEWORDSjodliterate}\AlertTok{=:}\index{IFACEWORDSjodliterate@\texttt{IFACEWORDSjodliterate}}\FunctionTok{<}\OtherTok{;.}\NormalTok{_}\DecValTok{1} \StringTok{' grplit setjodliterate ifacesection'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. jodliterate author - inserted in latex \textbackslash{}author\{\}}
+\NormalTok{JLAUTHOR}\AlertTok{=:}\index{JLAUTHOR@\texttt{JLAUTHOR}}\StringTok{'John D. Baker'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. suffix of jodliterate code file}
+\NormalTok{JLCODEFILE}\AlertTok{=:}\index{JLCODEFILE@\texttt{JLCODEFILE}}\StringTok{'code.tex'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. suffix of jodliterate overview file}
+\NormalTok{JLOVIEWFILE}\AlertTok{=:}\index{JLOVIEWFILE@\texttt{JLOVIEWFILE}}\StringTok{'oview.tex'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. suffix of jodliterate title file}
+\NormalTok{JLTITLEFILE}\AlertTok{=:}\index{JLTITLEFILE@\texttt{JLTITLEFILE}}\StringTok{'title.tex'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. temporary latex file}
+\NormalTok{LATEXTMP}\AlertTok{=:}\index{LATEXTMP@\texttt{LATEXTMP}}\StringTok{'jltemp.tex'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. line feed character}
+\NormalTok{LF}\AlertTok{=:}\index{LF@\texttt{LF}}\NormalTok{1}\DecValTok{0}\FunctionTok{\{a.}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. marks start of J code for pandoc -- requires pandoc with j syntax coloring}
+\NormalTok{MARKDOWNHEAD}\AlertTok{=:}\index{MARKDOWNHEAD@\texttt{MARKDOWNHEAD}}\StringTok{'~~~~ \{ .j \}'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. marks end J code for pandoc}
+\NormalTok{MARKDOWNTAIL}\AlertTok{=:}\index{MARKDOWNTAIL@\texttt{MARKDOWNTAIL}}\StringTok{'~~~~'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. temporary markdown file}
+\NormalTok{MARKDOWNTMP}\AlertTok{=:}\index{MARKDOWNTMP@\texttt{MARKDOWNTMP}}\StringTok{'jltemp.markdown'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. root words (ROOTWORDSjodliterate) group}
+\NormalTok{ROOTWORDSjodliterate}\AlertTok{=:}\index{ROOTWORDSjodliterate@\texttt{ROOTWORDSjodliterate}}\FunctionTok{<}\OtherTok{;.}\NormalTok{_}\DecValTok{1} \StringTok{' IFACEWORDSjodliterate ROOTWORDSjodliterate grplit sbtokens setjodliterate'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. white space characters}
+\NormalTok{WHITESPACE}\AlertTok{=:}\index{WHITESPACE@\texttt{WHITESPACE}}\NormalTok{1}\DecValTok{0} \NormalTok{1}\DecValTok{3} \NormalTok{9 3}\DecValTok{2}\FunctionTok{\{a.}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. leading >... line wrap mark}
+\NormalTok{WRAPLEAD}\AlertTok{=:}\index{WRAPLEAD@\texttt{WRAPLEAD}}\StringTok{'>..>'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. maximum number of code listing characters - adjust for given LaTeX pagesize}
+\NormalTok{WRAPLIMIT}\AlertTok{=:}\index{WRAPLIMIT@\texttt{WRAPLIMIT}}\NormalTok{1}\DecValTok{10}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. invalid j string marking start of wrapped line - cannot contain '=:'}
+\NormalTok{WRAPPREFIX}\AlertTok{=:}\index{WRAPPREFIX@\texttt{WRAPPREFIX}}\StringTok{')=.)=.'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. pandoc LaTeX fragment from (WRAPPREFIX) - these strings must correspond}
+\NormalTok{WRAPPREFIXTEX}\AlertTok{=:}\index{WRAPPREFIXTEX@\texttt{WRAPPREFIXTEX}}\StringTok{'\textbackslash{}RegionMarkerTok\{)\}\textbackslash{}CharTok\{=.\}\textbackslash{}RegionMarkerTok\{)\}\textbackslash{}CharTok\{=.\}'}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. retains string after first occurrence of (x)}
+\NormalTok{afterstr}\AlertTok{=:}\index{afterstr@\texttt{afterstr}}\FunctionTok{]} \FunctionTok{\}.}\OtherTok{~} \FunctionTok{#}\OtherTok{@}\FunctionTok{[} \FunctionTok{+} \NormalTok{1}\OtherTok{&}\RegionMarkerTok{(}\FunctionTok{i.}\OtherTok{~}\RegionMarkerTok{)}\OtherTok{@}\RegionMarkerTok{(}\FunctionTok{[} \FunctionTok{E.} \FunctionTok{]}\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. trims all leading and trailing blanks}
+\NormalTok{alltrim}\AlertTok{=:}\index{alltrim@\texttt{alltrim}}\FunctionTok{]} \FunctionTok{#}\OtherTok{~} \FunctionTok{[:} \FunctionTok{-.} \FunctionTok{[:} \RegionMarkerTok{(}\FunctionTok{*.}\OtherTok{/\textbackslash{}.} \FunctionTok{+.} \FunctionTok{*.}\OtherTok{/\textbackslash{}}\RegionMarkerTok{)} \StringTok{' '}\OtherTok{&}\FunctionTok{=}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. retains string before first occurrence of (x)}
+\NormalTok{beforestr}\AlertTok{=:}\index{beforestr@\texttt{beforestr}}\FunctionTok{]} \FunctionTok{\{.}\OtherTok{~} \NormalTok{1}\OtherTok{&}\RegionMarkerTok{(}\FunctionTok{i.}\OtherTok{~}\RegionMarkerTok{)}\OtherTok{@}\RegionMarkerTok{(}\FunctionTok{[} \FunctionTok{E.} \FunctionTok{]}\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{betweenstrs}\AlertTok{=:}\index{betweenstrs@\texttt{betweenstrs}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*betweenstrs v-- select sublists between  nonnested delimiters}
+\CommentTok{NB. discarding delimiters.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  blcl =. (clStart;clEnd) betweenstrs cl}
+\CommentTok{NB.        blnl =. (nlStart;nlEnd) betweenstrs nl}
+\CommentTok{NB.}
+\CommentTok{NB.   ('start';'end') betweenstrs 'start yada yada end boo hoo start ahh end'}
+\CommentTok{NB.}
+\CommentTok{NB.   NB. also applies to numeric delimiters}
+\CommentTok{NB.   (1 1;2 2) betweenstrs 1 1 66 666 2 2 7 87 1 1 0 2 2}
+
+\StringTok{'s e'}\CharTok{=.} \DataTypeTok{x}
+\NormalTok{llst}\CharTok{=.} \RegionMarkerTok{((}\FunctionTok{-#}\NormalTok{s}\RegionMarkerTok{)} \RegionMarkerTok{(}\FunctionTok{\textbar{}.}\OtherTok{!.}\NormalTok{0}\RegionMarkerTok{)} \NormalTok{s }\FunctionTok{E.} \DataTypeTok{y}\RegionMarkerTok{)} \FunctionTok{+.} \NormalTok{e }\FunctionTok{E.} \DataTypeTok{y}
+\NormalTok{mask}\CharTok{=.} \FunctionTok{~:}\OtherTok{/\textbackslash{}} \NormalTok{llst}
+\RegionMarkerTok{(}\NormalTok{mask}\FunctionTok{#}\NormalTok{llst}\RegionMarkerTok{)} \FunctionTok{<}\OtherTok{;.}\NormalTok{1 mask}\FunctionTok{#}\DataTypeTok{y}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. boxes open nouns}
+\NormalTok{boxopen}\AlertTok{=:}\index{boxopen@\texttt{boxopen}}\FunctionTok{<}\OtherTok{^:}\RegionMarkerTok{(}\FunctionTok{L.} \FunctionTok{=} \FunctionTok{0:}\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{changestr}\AlertTok{=:}\index{changestr@\texttt{changestr}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*changestr v-- replaces substrings - see long documentation.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  clReps changestr cl}
+\CommentTok{NB.}
+\CommentTok{NB.   NB. first character delimits replacements}
+\CommentTok{NB.   '/change/becomes/me/ehh' changestr 'blah blah ...'}
+
+\NormalTok{pairs}\CharTok{=.} \NormalTok{2 }\FunctionTok{\{.}\OtherTok{"}\RegionMarkerTok{(}\NormalTok{1}\RegionMarkerTok{)} \NormalTok{_}\DecValTok{2} \FunctionTok{[}\OtherTok{\textbackslash{}} \FunctionTok{<}\OtherTok{;.}\NormalTok{_}\DecValTok{1} \DataTypeTok{x}      \CommentTok{NB. change table}
+\NormalTok{cnt}\CharTok{=.}\NormalTok{_}\DecValTok{1} \FunctionTok{[} \NormalTok{lim}\CharTok{=.} \FunctionTok{#} \NormalTok{pairs}
+\KeywordTok{while.} \NormalTok{lim }\FunctionTok{>} \NormalTok{cnt}\CharTok{=.}\FunctionTok{>:}\NormalTok{cnt }\KeywordTok{do.}         \CommentTok{NB. process each change pair}
+  \StringTok{'t c'}\CharTok{=.} \NormalTok{cnt }\FunctionTok{\{} \NormalTok{pairs               }\CommentTok{NB. /target/change}
+  \KeywordTok{if.} \FunctionTok{+.}\OtherTok{/}\NormalTok{b}\CharTok{=.} \NormalTok{t }\FunctionTok{E.} \DataTypeTok{y} \KeywordTok{do.}             \CommentTok{NB. next if no target}
+    \NormalTok{r}\CharTok{=.} \FunctionTok{I.} \NormalTok{b                        }\CommentTok{NB. target starts}
+    \StringTok{'l q'}\CharTok{=.} \FunctionTok{#}\OtherTok{&}\FunctionTok{>} \NormalTok{cnt }\FunctionTok{\{} \NormalTok{pairs         }\CommentTok{NB. lengths}
+    \NormalTok{p}\CharTok{=.} \NormalTok{r }\FunctionTok{+} \NormalTok{0}\FunctionTok{,+}\OtherTok{/\textbackslash{}}\RegionMarkerTok{(}\FunctionTok{<:#} \NormalTok{r}\RegionMarkerTok{)}\FunctionTok{$} \NormalTok{d}\CharTok{=.} \NormalTok{q }\FunctionTok{-} \NormalTok{l }\CommentTok{NB. change starts}
+    \NormalTok{s}\CharTok{=.} \FunctionTok{*} \NormalTok{d                         }\CommentTok{NB. reduce < and > to =}
+    \KeywordTok{if.} \NormalTok{s }\FunctionTok{=} \NormalTok{_}\DecValTok{1} \KeywordTok{do.}
+      \NormalTok{b}\CharTok{=.} \NormalTok{1 }\FunctionTok{#}\OtherTok{~} \FunctionTok{#} \NormalTok{b}
+      \NormalTok{b}\CharTok{=.} \RegionMarkerTok{((}\NormalTok{l }\FunctionTok{*} \FunctionTok{#} \NormalTok{r}\RegionMarkerTok{)}\FunctionTok{$} \NormalTok{1 0 }\FunctionTok{#}\OtherTok{~} \NormalTok{q}\FunctionTok{,}\NormalTok{l}\FunctionTok{-}\NormalTok{q}\RegionMarkerTok{)} \RegionMarkerTok{(}\FunctionTok{,}\NormalTok{r }\FunctionTok{+}\OtherTok{/} \FunctionTok{i.} \NormalTok{l}\RegionMarkerTok{)}\OtherTok{\}} \NormalTok{b}
+      \DataTypeTok{y}\CharTok{=.} \NormalTok{b }\FunctionTok{#} \DataTypeTok{y}
+      \KeywordTok{if.} \NormalTok{q }\FunctionTok{=} \NormalTok{0 }\KeywordTok{do.} \KeywordTok{continue.} \KeywordTok{end.}  \CommentTok{NB. next for deletions}
+    \KeywordTok{elseif.} \NormalTok{s }\FunctionTok{=} \NormalTok{1 }\KeywordTok{do.}
+      \DataTypeTok{y}\CharTok{=.} \DataTypeTok{y} \FunctionTok{#}\OtherTok{~} \FunctionTok{>:} \NormalTok{d r}\OtherTok{\}} \NormalTok{b            }\CommentTok{NB. first target char replicated}
+    \KeywordTok{end.}
+    \DataTypeTok{y}\CharTok{=.}\RegionMarkerTok{(}\NormalTok{c }\FunctionTok{$}\OtherTok{~} \NormalTok{q }\FunctionTok{*#} \NormalTok{r}\RegionMarkerTok{)} \RegionMarkerTok{(}\FunctionTok{,}\NormalTok{p }\FunctionTok{+}\OtherTok{/}\FunctionTok{i.} \NormalTok{q}\RegionMarkerTok{)}\OtherTok{\}} \DataTypeTok{y}  \CommentTok{NB. insert replacements}
+  \KeywordTok{end.}
+\KeywordTok{end.} \DataTypeTok{y}                              \CommentTok{NB. altered string}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. character table to newline delimited list}
+\NormalTok{ctl}\AlertTok{=:}\index{ctl@\texttt{ctl}}\FunctionTok{\}.}\OtherTok{@}\RegionMarkerTok{(}\FunctionTok{,}\OtherTok{@}\RegionMarkerTok{(}\NormalTok{1}\OtherTok{&}\RegionMarkerTok{(}\FunctionTok{,}\OtherTok{"}\NormalTok{1}\RegionMarkerTok{)}\OtherTok{@}\RegionMarkerTok{(}\FunctionTok{-.}\OtherTok{@}\RegionMarkerTok{(}\FunctionTok{*.}\OtherTok{/\textbackslash{}."}\NormalTok{1}\OtherTok{@}\RegionMarkerTok{(}\FunctionTok{=}\OtherTok{&}\StringTok{' '}\OtherTok{@}\FunctionTok{]}\RegionMarkerTok{))))} \FunctionTok{#} \FunctionTok{,}\OtherTok{@}\RegionMarkerTok{((}\NormalTok{1}\DecValTok{0}\FunctionTok{\{a.}\RegionMarkerTok{)}\OtherTok{&}\RegionMarkerTok{(}\FunctionTok{,}\OtherTok{"}\NormalTok{1}\RegionMarkerTok{)}\OtherTok{@}\FunctionTok{]}\RegionMarkerTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{cutnestidx}\AlertTok{=:}\index{cutnestidx@\texttt{cutnestidx}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*cutnestidx v-- cut list into nested runs and other.}
+\CommentTok{NB.}
+\CommentTok{NB. Nested runs are delimited by begin and end tags. This verb is}
+\CommentTok{NB. oriented toward XML parsing where typical begin  end tags are}
+\CommentTok{NB. <ul>  </ul>  and tags  with  attributes  like: <hoo  boy="2">}
+\CommentTok{NB. </hoo>}
+\CommentTok{NB.}
+\CommentTok{NB. This verb can process numeric lists but care must be taken to}
+\CommentTok{NB. insure the pad item (1\{.0$y) does  not  match begin  and  end}
+\CommentTok{NB. values.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  (ilIdx ;< blcl) =. (clStart;clEnd) cutnestidx cl}
+\CommentTok{NB.        (ilIdx ;< blnl) =. (nlStart;nlEnd) cutnestidx nl}
+\CommentTok{NB.}
+\CommentTok{NB.   xml=. 'yada <ol><li>one</li><ol><li>sub one</li></ol></ol> boo'}
+\CommentTok{NB.   ('<ol';'</ol>') cutnestidx xml}
+\CommentTok{NB.}
+\CommentTok{NB.   88 99 cutnestidx (i.5),88,(10?10),99 88 5 5 5 5 5 99}
+
+\KeywordTok{if.} \FunctionTok{#}\DataTypeTok{y} \KeywordTok{do.}
+  \StringTok{'s e'}\CharTok{=.} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \DataTypeTok{x}                \CommentTok{NB. start end lists}
+  \NormalTok{ut}\CharTok{=.} \NormalTok{1}\FunctionTok{\{.}\NormalTok{0}\FunctionTok{$}\DataTypeTok{y}                   \CommentTok{NB. padding}
+  \KeywordTok{assert.} \FunctionTok{-.}\NormalTok{s }\FunctionTok{-:} \NormalTok{e              }\CommentTok{NB. they must differ}
+  \KeywordTok{assert.} \FunctionTok{-.}\RegionMarkerTok{(}\NormalTok{s }\FunctionTok{-:}\NormalTok{ut}\RegionMarkerTok{)} \FunctionTok{+.} \NormalTok{e}\FunctionTok{-:}\NormalTok{ut}
+  \NormalTok{sp}\CharTok{=.} \NormalTok{s }\FunctionTok{E.} \NormalTok{ut}\CharTok{=.}\DataTypeTok{y}\FunctionTok{,}\NormalTok{ut            }\CommentTok{NB. start mask}
+
+  \CommentTok{NB. quit if no delimiters}
+  \KeywordTok{if.} \FunctionTok{-.}\NormalTok{1 }\FunctionTok{e.} \NormalTok{sp }\KeywordTok{do.} \RegionMarkerTok{(}\FunctionTok{i.}\NormalTok{0}\RegionMarkerTok{)}\FunctionTok{;<<}\DataTypeTok{y} \KeywordTok{return.} \KeywordTok{end.}
+
+  \NormalTok{ep}\CharTok{=.} \NormalTok{e }\FunctionTok{E.} \NormalTok{ut                  }\CommentTok{NB. end mask}
+  \KeywordTok{assert.} \RegionMarkerTok{(}\FunctionTok{+}\OtherTok{/}\NormalTok{sp}\RegionMarkerTok{)} \FunctionTok{=} \FunctionTok{+}\OtherTok{/}\NormalTok{ep         }\CommentTok{NB. basic balance}
+  \NormalTok{dp}\CharTok{=.} \NormalTok{sp }\FunctionTok{+} \FunctionTok{-} \NormalTok{ep                }\CommentTok{NB. start end marks}
+  \KeywordTok{assert.} \NormalTok{0 }\FunctionTok{*.}\OtherTok{/} \OtherTok{.} \FunctionTok{<:} \FunctionTok{+}\OtherTok{/\textbackslash{}} \NormalTok{dp     }\CommentTok{NB. nested balance}
+  \NormalTok{ep}\CharTok{=.} \FunctionTok{I.} \NormalTok{_}\DecValTok{1}\FunctionTok{=}\NormalTok{dp }\FunctionTok{[} \NormalTok{sp}\CharTok{=.} \FunctionTok{I.} \NormalTok{1}\FunctionTok{=}\NormalTok{dp  }\CommentTok{NB. start end indexes}
+  \NormalTok{ut}\CharTok{=.} \FunctionTok{+}\OtherTok{/\textbackslash{}}\NormalTok{dp }\FunctionTok{-.} \NormalTok{0               }\CommentTok{NB. scanned marks}
+  \NormalTok{dp}\CharTok{=.} \FunctionTok{/:}\OtherTok{~} \NormalTok{sp}\FunctionTok{,}\NormalTok{ep                }\CommentTok{NB. all indexes}
+  \NormalTok{sp}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{firstones 1}\FunctionTok{<:}\NormalTok{ut}\RegionMarkerTok{)}\FunctionTok{#}\NormalTok{dp     }\CommentTok{NB. starts of nested}
+  \NormalTok{ep}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{#}\NormalTok{e}\RegionMarkerTok{)}\FunctionTok{+}\RegionMarkerTok{(}\NormalTok{0}\FunctionTok{=}\NormalTok{ut}\RegionMarkerTok{)}\FunctionTok{#}\NormalTok{dp           }\CommentTok{NB. starts of other}
+  \NormalTok{dp}\CharTok{=.} \FunctionTok{/:}\OtherTok{~} \FunctionTok{~.}\NormalTok{0}\FunctionTok{,}\NormalTok{sp}\FunctionTok{,}\NormalTok{ep            }\CommentTok{NB. cut starts}
+  \NormalTok{ut}\CharTok{=.} \FunctionTok{\}:} \NormalTok{1 dp}\OtherTok{\}} \RegionMarkerTok{(}\FunctionTok{>:#}\DataTypeTok{y}\RegionMarkerTok{)}\FunctionTok{#}\NormalTok{0        }\CommentTok{NB. cut mask}
+  \RegionMarkerTok{(}\NormalTok{dp }\FunctionTok{i.} \NormalTok{sp}\RegionMarkerTok{)}\FunctionTok{;<}\NormalTok{ut }\FunctionTok{<}\OtherTok{;.}\NormalTok{1 }\DataTypeTok{y}         \CommentTok{NB. nest indexes cut list}
+\KeywordTok{else.}
+  \RegionMarkerTok{(}\FunctionTok{i.}\NormalTok{0}\RegionMarkerTok{)}\FunctionTok{;<<}\DataTypeTok{y}                     \CommentTok{NB. empty arg result}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{decomm}\AlertTok{=:}\index{decomm@\texttt{decomm}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*decomm v--  removes comments  from j words. The (x) argument}
+\CommentTok{NB. specifies whether all blank lines are removed or retained.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  decomm ctWord}
+\CommentTok{NB.}
+\CommentTok{NB.   decomm jcr 'decomm'  NB. decomment self}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  pa decomm ctWord}
+\CommentTok{NB.}
+\CommentTok{NB.   1 decomm jcr 'decomm'  NB. remove blanks (default)}
+\CommentTok{NB.   0 decomm jcr 'decomm'  NB. retain all blank lines}
+
+\NormalTok{1 decomm }\DataTypeTok{y}
+\OtherTok{:}
+\CommentTok{NB. mask of unquoted comment starts}
+\NormalTok{c}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{$}\DataTypeTok{y}\RegionMarkerTok{)}\FunctionTok{$}\StringTok{'NB.'} \FunctionTok{E.} \FunctionTok{,}\DataTypeTok{y}
+\NormalTok{c}\CharTok{=.} \FunctionTok{+.}\OtherTok{/\textbackslash{}"}\NormalTok{1 c }\FunctionTok{>} \FunctionTok{~:}\OtherTok{/\textbackslash{}"}\NormalTok{1 }\DataTypeTok{y} \FunctionTok{e.} \StringTok{''''}
+\DataTypeTok{y}\CharTok{=.} \FunctionTok{,}\DataTypeTok{y}
+
+\CommentTok{NB. blank out comments}
+\DataTypeTok{y}\CharTok{=.} \StringTok{' '} \RegionMarkerTok{(}\FunctionTok{I.} \FunctionTok{,}\NormalTok{c}\RegionMarkerTok{)}\OtherTok{\}} \DataTypeTok{y}
+\DataTypeTok{y}\CharTok{=.} \DataTypeTok{y} \FunctionTok{$}\OtherTok{~} \FunctionTok{$}\NormalTok{c}
+
+\CommentTok{NB. remove blank lines - default}
+\KeywordTok{if.} \DataTypeTok{x} \KeywordTok{do.} \DataTypeTok{y} \FunctionTok{#}\OtherTok{~} \DataTypeTok{y} \FunctionTok{+.}\OtherTok{/} \OtherTok{.} \FunctionTok{~:} \StringTok{' '} \KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. boxes UTF8 names}
+\NormalTok{fboxname}\AlertTok{=:}\index{fboxname@\texttt{fboxname}}\RegionMarkerTok{(}\FunctionTok{[:} \FunctionTok{<} \NormalTok{8 }\FunctionTok{u:} \FunctionTok{>}\RegionMarkerTok{)} \OtherTok{::}\FunctionTok{]}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. erase files - cl \textbar{} blcl of path file names}
+\NormalTok{ferase}\AlertTok{=:}\index{ferase@\texttt{ferase}}\NormalTok{1}\OtherTok{!:}\NormalTok{5}\DecValTok{5} \OtherTok{::}\RegionMarkerTok{(}\FunctionTok{_1:}\RegionMarkerTok{)}\OtherTok{@}\RegionMarkerTok{(}\NormalTok{fboxname}\OtherTok{&}\FunctionTok{>}\RegionMarkerTok{)}\OtherTok{@}\NormalTok{boxopen}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. 1 if file exists 0 otherwise}
+\NormalTok{fexist}\AlertTok{=:}\index{fexist@\texttt{fexist}}\FunctionTok{1:}\OtherTok{@}\RegionMarkerTok{(}\NormalTok{1}\OtherTok{!:}\NormalTok{4}\RegionMarkerTok{)} \OtherTok{::}\FunctionTok{0:}\OtherTok{@}\RegionMarkerTok{(}\NormalTok{fboxname}\OtherTok{&}\FunctionTok{>}\RegionMarkerTok{)}\OtherTok{@}\NormalTok{boxopen}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. 0's all but first 1 in runs of 1's - like (firstone) but differs for nulls}
+\NormalTok{firstones}\AlertTok{=:}\index{firstones@\texttt{firstones}}\FunctionTok{>} \RegionMarkerTok{(}\FunctionTok{0:} \FunctionTok{,} \FunctionTok{\}:}\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{formifacetex}\AlertTok{=:}\index{formifacetex@\texttt{formifacetex}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*formifacetex v-- formats hyperlinked and highlighted interface words.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  cl =. formifacetex blclIwords}
+
+\CommentTok{NB. jod refs !(*)=. get}
+\NormalTok{head}\CharTok{=.} \StringTok{'\textbackslash{}begin\{Shaded\}'}\FunctionTok{,}\NormalTok{LF}\FunctionTok{,}\StringTok{'\textbackslash{}begin\{Highlighting\}[]'}\FunctionTok{,}\NormalTok{LF}
+\NormalTok{tail}\CharTok{=.} \StringTok{'\textbackslash{}end\{Highlighting\}'}\FunctionTok{,}\NormalTok{LF}\FunctionTok{,}\StringTok{'\textbackslash{}end\{Shaded\}'}\FunctionTok{,}\NormalTok{LF}
+\NormalTok{ctok}\CharTok{=.} \StringTok{'\textbackslash{}CommentTok\{'}
+\NormalTok{ntok}\CharTok{=.} \StringTok{'\textbackslash{}NormalTok\{'}
+\NormalTok{href}\CharTok{=.} \StringTok{'\textbackslash{}hyperlink\{'}
+
+\CommentTok{NB. fetch current short descriptions}
+\StringTok{'rc tab'}\CharTok{=.} \NormalTok{0 8 get }\DataTypeTok{y}
+\NormalTok{words}\CharTok{=.} \NormalTok{0 }\FunctionTok{\{}\OtherTok{"}\NormalTok{1 tab}
+\NormalTok{desc}\CharTok{=.}  \NormalTok{1 }\FunctionTok{\{}\OtherTok{"}\NormalTok{1 tab}
+
+\CommentTok{NB. set hyperlinks on words - colors on comments}
+\NormalTok{words}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{<}\NormalTok{href}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \NormalTok{words }\FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \RegionMarkerTok{(}\FunctionTok{<}\StringTok{'\}\{'}\FunctionTok{,}\NormalTok{ntok}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \RegionMarkerTok{(}\FunctionTok{<}\OtherTok{"}\NormalTok{1 }\RegionMarkerTok{(}\FunctionTok{>}\NormalTok{words}\RegionMarkerTok{)}\FunctionTok{,}\OtherTok{"}\NormalTok{1 }\StringTok{' '}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \FunctionTok{<}\StringTok{'\}\}'}
+\NormalTok{desc}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{<}\NormalTok{ctok}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \RegionMarkerTok{(}\NormalTok{alltrim}\OtherTok{&.}\FunctionTok{>} \NormalTok{desc}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \StringTok{'\}'}
+\NormalTok{tex}\CharTok{=.} \FunctionTok{;}\NormalTok{words }\FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \NormalTok{desc }\FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \NormalTok{LF}
+\NormalTok{head}\FunctionTok{,}\NormalTok{tex}\FunctionTok{,}\NormalTok{tail}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{formtexindexes}\AlertTok{=:}\index{formtexindexes@\texttt{formtexindexes}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*formtexindexes v-- format latex index commands from global marks.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  blcl =. formtexindexes blclMarked}
+
+\CommentTok{NB. extract =:=: =.=. marked text}
+\NormalTok{inames}\CharTok{=.} \FunctionTok{;}\OtherTok{@}\RegionMarkerTok{(}\StringTok{'\{\}'}\OtherTok{&}\NormalTok{betweenstrs}\RegionMarkerTok{)}\OtherTok{&.}\FunctionTok{>} \RegionMarkerTok{(}\FunctionTok{-#}\NormalTok{ENDINDEX}\RegionMarkerTok{)} \FunctionTok{\}.}\OtherTok{&.}\FunctionTok{>} \RegionMarkerTok{(}\FunctionTok{#}\NormalTok{BEGININDEX}\RegionMarkerTok{)} \FunctionTok{\}.}\OtherTok{&.}\FunctionTok{>} \DataTypeTok{y}
+
+\CommentTok{NB. find any indirect ()=: and multiple ''=: assignments}
+\StringTok{'pma pia'}\CharTok{=.} \FunctionTok{I.}\OtherTok{&.}\FunctionTok{>} \FunctionTok{<}\OtherTok{"}\NormalTok{1 }\StringTok{''')'} \FunctionTok{=}\OtherTok{/} \FunctionTok{\{:}\OtherTok{@}\RegionMarkerTok{(}\FunctionTok{-.}\OtherTok{&}\StringTok{' '}\RegionMarkerTok{)}\OtherTok{&}\FunctionTok{>} \NormalTok{inames}
+
+\CommentTok{NB. form latex index commands}
+\NormalTok{indexes}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{<}\StringTok{'\textbackslash{}AlertTok\{=:\}\textbackslash{}index\{'}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \NormalTok{inames }\FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \RegionMarkerTok{(}\FunctionTok{<}\StringTok{'@\textbackslash{}texttt\{'}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \NormalTok{inames }\FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \FunctionTok{<}\StringTok{'\}\}'}
+
+\CommentTok{NB. replace indirect and multiple assignments with fixed proxies}
+\NormalTok{indexes}\CharTok{=.} \RegionMarkerTok{((}\FunctionTok{#}\NormalTok{pma}\RegionMarkerTok{)} \FunctionTok{#} \FunctionTok{<}\StringTok{'\textbackslash{}AlertTok\{=:\}\textbackslash{}index\{00multiple@\textbackslash{}texttt\{''...''=:\}\}'}\RegionMarkerTok{)} \NormalTok{pma}\OtherTok{\}} \NormalTok{indexes}
+\NormalTok{indexes}\CharTok{=.} \RegionMarkerTok{((}\FunctionTok{#}\NormalTok{pia}\RegionMarkerTok{)} \FunctionTok{#} \FunctionTok{<}\StringTok{'\textbackslash{}AlertTok\{=:\}\textbackslash{}index\{01indirect@\textbackslash{}texttt\{(...)=:\}\}'}\RegionMarkerTok{)} \NormalTok{pia}\OtherTok{\}} \NormalTok{indexes}
+
+\CommentTok{NB. adjust j locative chars _ they give latex indexing grief}
+\KeywordTok{if.} \FunctionTok{#}\NormalTok{pos}\CharTok{=.} \FunctionTok{I.} \StringTok{'_'}\OtherTok{&}\FunctionTok{e.}\OtherTok{&}\FunctionTok{>} \NormalTok{indexes }\KeywordTok{do.}
+  \NormalTok{indexes}\CharTok{=.} \RegionMarkerTok{(}\StringTok{'#_#\textbackslash{}_'}\OtherTok{&}\NormalTok{changestr}\OtherTok{&.}\FunctionTok{>} \NormalTok{pos}\FunctionTok{\{}\NormalTok{indexes}\RegionMarkerTok{)} \NormalTok{pos}\OtherTok{\}} \NormalTok{indexes}
+\KeywordTok{end.}
+
+\NormalTok{indexes}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. size of file in bytes}
+\NormalTok{fsize}\AlertTok{=:}\index{fsize@\texttt{fsize}}\NormalTok{1}\OtherTok{!:}\NormalTok{4 }\OtherTok{::}\RegionMarkerTok{(}\FunctionTok{_1:}\RegionMarkerTok{)}\OtherTok{@}\RegionMarkerTok{(}\NormalTok{fboxname}\OtherTok{&}\FunctionTok{>}\RegionMarkerTok{)}\OtherTok{@}\NormalTok{boxopen}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{gbodylatex}\AlertTok{=:}\index{gbodylatex@\texttt{gbodylatex}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*gbodylatex v-- group body latex.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  clTex =. gbodylatex clGroupname}
+
+\KeywordTok{if.} \FunctionTok{#}\NormalTok{mtxt}\CharTok{=.} \NormalTok{markdfrgroup }\DataTypeTok{y} \KeywordTok{do.} \NormalTok{latexfrmarkd mtxt }\KeywordTok{else.} \StringTok{''} \KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{gheadlatex}\AlertTok{=:}\index{gheadlatex@\texttt{gheadlatex}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*gheadlatex v-- group header latex.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  clTex =. gheadlatex clGroupname}
+
+\KeywordTok{if.} \FunctionTok{#}\NormalTok{mtxt}\CharTok{=.} \NormalTok{markdfrghead }\DataTypeTok{y} \KeywordTok{do.}
+  \NormalTok{BEGINJODHEADER}\FunctionTok{,}\NormalTok{LF}\FunctionTok{,}\RegionMarkerTok{(}\NormalTok{tlf latexfrmarkd mtxt}\RegionMarkerTok{)}\FunctionTok{,}\NormalTok{ENDJODHEADER}\FunctionTok{,}\NormalTok{2}\FunctionTok{#}\NormalTok{LF}
+\KeywordTok{else.}
+  \StringTok{''}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{gpostlatex}\AlertTok{=:}\index{gpostlatex@\texttt{gpostlatex}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*gpostlatex v-- group post processor latex.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  clTex =. gpostlatex clGroupname}
+
+\KeywordTok{if.} \FunctionTok{#}\NormalTok{mtxt}\CharTok{=.} \NormalTok{markdfrgpost }\DataTypeTok{y} \KeywordTok{do.}
+  \NormalTok{BEGINJODPOSTP}\FunctionTok{,}\NormalTok{LF}\FunctionTok{,}\RegionMarkerTok{(}\NormalTok{tlf latexfrmarkd mtxt}\RegionMarkerTok{)}\FunctionTok{,}\NormalTok{ENDJODPOSTP}
+\KeywordTok{else.}
+  \StringTok{''}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{grouplatex}\AlertTok{=:}\index{grouplatex@\texttt{grouplatex}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*grouplatex v-- group latex with pandoc syntax highlighting.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  clTex =. grouplatex clGroupname}
+\CommentTok{NB.}
+\CommentTok{NB.   NB. requires open JOD dictionary with a 'jod' group}
+\CommentTok{NB.   gtex=. grouplatex 'jod'}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  clTex =. paIndex grouplatex clGroupname}
+\CommentTok{NB.}
+\CommentTok{NB.   0 grouplatex 'jod' NB. do not replace marks with index}
+
+\NormalTok{1 grouplatex }\DataTypeTok{y}
+\OtherTok{:}
+\CommentTok{NB. jod refs !(*)=. badrc_ajod_ grp jderr_ajod_}
+\KeywordTok{if.} \NormalTok{badrc_ajod_ gnames}\CharTok{=.} \NormalTok{grp }\DataTypeTok{y} \KeywordTok{do.} \NormalTok{gnames }\KeywordTok{return.} \KeywordTok{end.}
+
+\NormalTok{ltx}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{gheadlatex }\FunctionTok{;} \NormalTok{gbodylatex }\FunctionTok{;} \NormalTok{gpostlatex}\RegionMarkerTok{)} \DataTypeTok{y}
+\NormalTok{ltx}\CharTok{=.} \FunctionTok{]}\OtherTok{`}\NormalTok{indexgrouptex}\OtherTok{@.}\RegionMarkerTok{(}\NormalTok{1 }\FunctionTok{-:} \DataTypeTok{x}\RegionMarkerTok{)} \FunctionTok{;} \NormalTok{tlf}\OtherTok{&.}\FunctionTok{>} \NormalTok{ltx }\FunctionTok{-.} \FunctionTok{a:}
+\NormalTok{ltx}\CharTok{=.} \RegionMarkerTok{(}\StringTok{'#'}\FunctionTok{,}\NormalTok{WRAPPREFIXTEX}\FunctionTok{,}\StringTok{'#\textbackslash{}AlertTok\{'}\FunctionTok{,}\NormalTok{WRAPLEAD}\FunctionTok{,}\StringTok{'\}'}\RegionMarkerTok{)} \NormalTok{changestr ltx}
+\StringTok{'\textbackslash{}section\{\textbackslash{}texttt\{'}\FunctionTok{,}\RegionMarkerTok{(}\NormalTok{alltrim }\DataTypeTok{y}\RegionMarkerTok{)}\FunctionTok{,}\StringTok{'\} Source Code\}'}\FunctionTok{,}\NormalTok{LF}\FunctionTok{,}\NormalTok{LF}\FunctionTok{,}\NormalTok{ltx}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\hypertarget{grplit}{\NormalTok{grplit}}\AlertTok{=:}\index{grplit@\texttt{grplit}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*grplit v-- make latex for group (y).}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  (paRc ; blclTeXfiles) =. grplit clGroupname}
+\CommentTok{NB.}
+\CommentTok{NB.   grplit 'jodliterate'  NB. document self}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  (paRc ; blclTeXfiles) =. paOw grplit glGroupname}
+\CommentTok{NB.}
+\CommentTok{NB.   NB. do not overwrite root tex - allows for latex tweaking}
+\CommentTok{NB.   0 grplit 'jodliterate'}
+
+\NormalTok{1 grplit }\DataTypeTok{y}
+\OtherTok{:}
+\CommentTok{NB. jod refs !(*)=. badrc_ajod_ get grp jderr_ajod_ ok_ajod_}
+\KeywordTok{try.}
+
+\KeywordTok{if.} \NormalTok{3}\FunctionTok{~:}\RegionMarkerTok{(}\NormalTok{4}\OtherTok{!:}\NormalTok{0}\RegionMarkerTok{)} \FunctionTok{<}\StringTok{'badrc_ajod_'} \KeywordTok{do.} \NormalTok{0}\FunctionTok{;}\StringTok{'!error: jod is not loaded'} \KeywordTok{return.} \KeywordTok{end.}
+\KeywordTok{if.} \NormalTok{0}\FunctionTok{=#}\NormalTok{JLDIRECTORY  }\KeywordTok{do.} \NormalTok{0}\FunctionTok{;}\StringTok{'!error: working directory is not set'} \KeywordTok{return.} \KeywordTok{end.}
+\NormalTok{group}\CharTok{=.} \DataTypeTok{y} \FunctionTok{-.} \StringTok{' '}
+\KeywordTok{if.} \NormalTok{badrc_ajod_ gdoc}\CharTok{=.} \NormalTok{2 9 get group }\KeywordTok{do.} \NormalTok{gdoc }\KeywordTok{return.} \KeywordTok{end.}
+
+\CommentTok{NB. latex from any group document markdown}
+\NormalTok{hype}\CharTok{=.} \NormalTok{0}
+\KeywordTok{if.} \FunctionTok{#}\NormalTok{gdoc}\CharTok{=.} \FunctionTok{;\{:,>}\NormalTok{1}\FunctionTok{\{}\NormalTok{gdoc }\KeywordTok{do.}
+  \NormalTok{gdoc}\CharTok{=.} \NormalTok{latexfrmarkd gdoc}
+  \KeywordTok{if.} \NormalTok{badrc_ajod_ glist}\CharTok{=.} \NormalTok{grp group }\KeywordTok{do.} \NormalTok{glist }\KeywordTok{return.} \KeywordTok{end.}
+  \NormalTok{ifstr}\CharTok{=.} \NormalTok{ifacesection group}
+  \KeywordTok{if.} \RegionMarkerTok{(}\FunctionTok{+.}\OtherTok{/}\NormalTok{ifstr }\FunctionTok{E.} \NormalTok{gdoc}\RegionMarkerTok{)} \FunctionTok{*.} \RegionMarkerTok{(}\FunctionTok{<}\NormalTok{IFACEWORDSPFX}\FunctionTok{,}\NormalTok{group}\RegionMarkerTok{)} \FunctionTok{e.} \NormalTok{glist }\KeywordTok{do.}
+    \NormalTok{iwords}\CharTok{=.} \NormalTok{ifacewords group}
+    \NormalTok{gdoc}\CharTok{=.} \NormalTok{iwords setifacelinks ifstr}\FunctionTok{;}\NormalTok{gdoc}
+    \NormalTok{hype}\CharTok{=.} \NormalTok{1  }\CommentTok{NB. hyperlinks set}
+  \KeywordTok{end.}
+\KeywordTok{end.}
+
+\CommentTok{NB. root .tex file - gets group name}
+\NormalTok{wdir}\CharTok{=.} \NormalTok{JLDIRECTORY}
+\NormalTok{jlroot}\CharTok{=.} \NormalTok{wdir}\FunctionTok{,}\NormalTok{group}\FunctionTok{,}\StringTok{'.tex'}
+\KeywordTok{if.} \NormalTok{chroot}\CharTok{=.} \DataTypeTok{x} \FunctionTok{-:} \NormalTok{1 }\KeywordTok{do.}
+  \NormalTok{root}\CharTok{=.} \RegionMarkerTok{(}\StringTok{'/~#~group~#~/'}\FunctionTok{,}\NormalTok{group}\RegionMarkerTok{)} \NormalTok{changestr JLGRPLITTEX}
+  \RegionMarkerTok{(}\NormalTok{toJ root}\RegionMarkerTok{)} \NormalTok{writeas jlroot}
+\KeywordTok{end.}
+
+\CommentTok{NB. author title .tex file}
+\NormalTok{agstrs}\CharTok{=.} \StringTok{'/~#~author~#~/'}\FunctionTok{,}\RegionMarkerTok{(}\NormalTok{alltrim JLAUTHOR}\RegionMarkerTok{)}\FunctionTok{,}\StringTok{'/~#~group~#~/'}\FunctionTok{,}\NormalTok{alltrim }\DataTypeTok{y}
+\RegionMarkerTok{(}\NormalTok{toJ agstrs changestr JLTITLETEX}\RegionMarkerTok{)} \NormalTok{writeas jltitle}\CharTok{=.} \NormalTok{wdir}\FunctionTok{,}\NormalTok{group}\FunctionTok{,}\NormalTok{JLTITLEFILE}
+
+\CommentTok{NB. group overview .tex file}
+\NormalTok{ohd}\CharTok{=.} \RegionMarkerTok{(}\StringTok{'/~#~group~#~/'}\FunctionTok{,}\NormalTok{alltrim }\DataTypeTok{y}\RegionMarkerTok{)} \NormalTok{changestr JLOVIEWTEX}
+\NormalTok{ohd}\CharTok{=.} \NormalTok{ohd}\FunctionTok{,}\NormalTok{LF}\FunctionTok{,}\NormalTok{gdoc}
+\RegionMarkerTok{(}\NormalTok{toJ ohd}\RegionMarkerTok{)} \NormalTok{writeas jloview}\CharTok{=.} \NormalTok{wdir}\FunctionTok{,}\NormalTok{group}\FunctionTok{,}\NormalTok{JLOVIEWFILE}
+
+\CommentTok{NB. group source code - return file names}
+\NormalTok{gltx}\CharTok{=.} \NormalTok{grouplatex group}
+\KeywordTok{if.} \NormalTok{hype }\KeywordTok{do.} \NormalTok{gltx}\CharTok{=.} \NormalTok{iwords setifacetargs gltx }\KeywordTok{end.}
+\RegionMarkerTok{(}\NormalTok{toJ gltx}\RegionMarkerTok{)} \NormalTok{writeas jlcode}\CharTok{=.} \NormalTok{wdir}\FunctionTok{,}\NormalTok{group}\FunctionTok{,}\NormalTok{JLCODEFILE}
+\NormalTok{ok_ajod_ }\RegionMarkerTok{(}\FunctionTok{-.}\NormalTok{chroot}\RegionMarkerTok{)} \FunctionTok{\}.} \NormalTok{jlroot}\FunctionTok{;}\NormalTok{jltitle}\FunctionTok{;}\NormalTok{jloview}\FunctionTok{;}\NormalTok{jlcode}
+
+\KeywordTok{catchd.}
+  \NormalTok{0}\FunctionTok{;}\StringTok{'!error: (grplit) failure - last J error ->'}\FunctionTok{;}\NormalTok{1}\DecValTok{3}\OtherTok{!:}\NormalTok{1}\DecValTok{2} \StringTok{''}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\hypertarget{ifacesection}{\NormalTok{ifacesection}}\AlertTok{=:}\index{ifacesection@\texttt{ifacesection}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*ifacesection v-- interface section summary string.}
+\CommentTok{NB.}
+\CommentTok{NB. This verb produces the interface section summary  string. For}
+\CommentTok{NB. (jodliterate)  to  include an  updated  hyperlinked interface}
+\CommentTok{NB. summary it  must find  this string in  generated  latex. Edit}
+\CommentTok{NB. this verb if you change the section layout.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  cl  =. ifacesection clGroupname}
+
+\StringTok{'\textbackslash{}subsection\{\textbackslash{}texttt\{'}\FunctionTok{,}\DataTypeTok{y}\FunctionTok{,}\StringTok{'\} Interface\}'}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{ifacewords}\AlertTok{=:}\index{ifacewords@\texttt{ifacewords}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*ifacewords v-- return interface word list.}
+\CommentTok{NB.}
+\CommentTok{NB. Assume the interface is out of date fetch current  definition}
+\CommentTok{NB. from  dictionary.  We  need  the  value   not   the   storage}
+\CommentTok{NB. representation so define it in the JOD scratch object.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  blcl =. ifacewords clGroupname}
+
+\CommentTok{NB. jod refs !(*)=. get}
+\NormalTok{iname}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{IFACEWORDSPFX}\FunctionTok{,}\DataTypeTok{y}\RegionMarkerTok{)} \FunctionTok{-.} \StringTok{' '}
+\RegionMarkerTok{(}\FunctionTok{;}\NormalTok{SO_}\DecValTok{_}\NormalTok{JODobj}\RegionMarkerTok{)} \NormalTok{get iname}
+\NormalTok{iname}\CharTok{=.} \NormalTok{iname}\FunctionTok{,}\StringTok{'__SO__JODobj'}
+\NormalTok{words}\CharTok{=.} \FunctionTok{".} \NormalTok{iname}
+\NormalTok{words }\FunctionTok{[} \RegionMarkerTok{(}\NormalTok{4}\OtherTok{!:}\NormalTok{5}\DecValTok{5}\RegionMarkerTok{)} \FunctionTok{<}\NormalTok{iname}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{indexgrouptex}\AlertTok{=:}\index{indexgrouptex@\texttt{indexgrouptex}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*indexgrouptex v-- insert index commands in pandoc highlight group latex.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  cl =. clGroupName indexgrouptex clTex}
+
+\StringTok{'pos ltx'}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{BEGININDEX}\FunctionTok{;}\NormalTok{ENDINDEX}\RegionMarkerTok{)} \NormalTok{cutnestidx }\DataTypeTok{y}
+\KeywordTok{if.} \FunctionTok{#}\NormalTok{pos }\KeywordTok{do.} \FunctionTok{;} \RegionMarkerTok{(}\NormalTok{formtexindexes pos}\FunctionTok{\{}\NormalTok{ltx}\RegionMarkerTok{)} \NormalTok{pos}\OtherTok{\}} \NormalTok{ltx }\KeywordTok{else.} \DataTypeTok{y} \KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. standarizes J path delimiter to unix/linux forward slash}
+\NormalTok{jpathsep}\AlertTok{=:}\index{jpathsep@\texttt{jpathsep}}\StringTok{'/'}\OtherTok{&}\RegionMarkerTok{((}\StringTok{'\textbackslash{}'} \FunctionTok{I.}\OtherTok{@:}\FunctionTok{=} \FunctionTok{]}\RegionMarkerTok{)}\OtherTok{\}}\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{jtokenize}\AlertTok{=:}\index{jtokenize@\texttt{jtokenize}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*jtokenize v-- tokenizes j text with (wfl).}
+\CommentTok{NB.}
+\CommentTok{NB. Similar  to  (;:&.>)@(<;.2) but preserves  whitespace  and is}
+\CommentTok{NB. able to parse invalid j text  containing open quotes. When an}
+\CommentTok{NB. open quote  is encountered it is treated like an unterminated}
+\CommentTok{NB. string.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  blblcl =. jtokenize clJtext}
+\CommentTok{NB.}
+\CommentTok{NB.   jtokenize 5!:5 <'jtokenize'}
+
+\NormalTok{ct}\CharTok{=.} \NormalTok{wfl }\DataTypeTok{y}\FunctionTok{,}\NormalTok{LF}
+\RegionMarkerTok{(}\NormalTok{ct }\FunctionTok{-:}\OtherTok{&}\FunctionTok{>} \FunctionTok{<,}\NormalTok{LF}\RegionMarkerTok{)} \FunctionTok{<}\OtherTok{;.}\NormalTok{2 ct}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{latexfrmarkd}\AlertTok{=:}\index{latexfrmarkd@\texttt{latexfrmarkd}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*latexfrmarkd v-- latex from markdown using pandoc.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  clTex =. latexfrmarkd clMarkdown}
+
+\CommentTok{NB. require 'task' !(*)=. shell}
+\KeywordTok{if.} \FunctionTok{#}\DataTypeTok{y} \KeywordTok{do.}
+  \NormalTok{ferase mrktmp}\CharTok{=.} \NormalTok{JLDIRECTORY}\FunctionTok{,}\NormalTok{MARKDOWNTMP}
+  \NormalTok{ferase ltxtmp}\CharTok{=.} \NormalTok{JLDIRECTORY}\FunctionTok{,}\NormalTok{LATEXTMP}
+  \RegionMarkerTok{(}\NormalTok{toJ }\DataTypeTok{y}\RegionMarkerTok{)} \NormalTok{writeas mrktmp}
+  \CommentTok{NB. highlighting style is overridden in latex preamble}
+  \NormalTok{shell }\StringTok{'pandoc --highlight-style=tango '}\FunctionTok{,}\NormalTok{mrktmp}\FunctionTok{,}\StringTok{' -o '}\FunctionTok{,}\NormalTok{ltxtmp}
+  \KeywordTok{assert.} \NormalTok{0 }\FunctionTok{<} \NormalTok{fsize ltxtmp}
+  \NormalTok{tex}\CharTok{=.} \NormalTok{read ltxtmp}
+  \NormalTok{tex }\FunctionTok{[} \NormalTok{ferase ltxtmp }\FunctionTok{[} \NormalTok{ferase mrktmp}
+\KeywordTok{else.}
+  \DataTypeTok{y}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{markdfrghead}\AlertTok{=:}\index{markdfrghead@\texttt{markdfrghead}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*markdfrghead v-- markdown text from group header.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  cl =. markdfrghead clGroupname}
+\CommentTok{NB.}
+\CommentTok{NB.   mtxt=. markdfrghead 'jod'}
+\CommentTok{NB.   (toHOST mtxt) write 'c:/temp/jodhdr.markdown'}
+
+\CommentTok{NB. jod refs !(*)=. badrc_ajod_ get HEADEND_ajodmake_}
+\KeywordTok{if.} \NormalTok{badrc_ajod_ hdr}\CharTok{=.} \NormalTok{2 get }\DataTypeTok{y} \KeywordTok{do.} \NormalTok{hdr }\KeywordTok{return.} \KeywordTok{end.}
+\KeywordTok{if.} \NormalTok{0}\FunctionTok{=#}\NormalTok{hdr}\CharTok{=.} \FunctionTok{;}\NormalTok{1}\FunctionTok{\{,>}\NormalTok{1}\FunctionTok{\{}\NormalTok{hdr       }\KeywordTok{do.} \StringTok{''}  \KeywordTok{return.} \KeywordTok{end.}
+\NormalTok{hdr}\CharTok{=.} \NormalTok{hdr}\FunctionTok{,}\NormalTok{LF}\FunctionTok{,}\NormalTok{HEADEND_ajodmake_}
+
+\CommentTok{NB. handle any non j code regions}
+\StringTok{'idx chd'}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{BEGINNOTJ}\FunctionTok{;}\NormalTok{ENDNOTJ}\RegionMarkerTok{)} \NormalTok{cutnestidx hdr}
+
+\KeywordTok{if.} \FunctionTok{#}\NormalTok{idx }\KeywordTok{do.}
+  \NormalTok{psj}\CharTok{=.} \NormalTok{idx }\FunctionTok{-.}\OtherTok{~} \FunctionTok{i.#}\NormalTok{chd}
+  \NormalTok{chd}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{markgnonj}\OtherTok{&.}\FunctionTok{>} \NormalTok{idx}\FunctionTok{\{}\NormalTok{chd}\RegionMarkerTok{)} \NormalTok{idx}\OtherTok{\}} \NormalTok{chd}
+  \NormalTok{chd}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{markgassign}\OtherTok{&.}\FunctionTok{>} \NormalTok{psj}\FunctionTok{\{}\NormalTok{chd}\RegionMarkerTok{)} \NormalTok{psj}\OtherTok{\}} \NormalTok{chd}
+  \NormalTok{hdr}\CharTok{=.} \FunctionTok{;}\NormalTok{chd}
+\KeywordTok{else.}
+  \NormalTok{hdr}\CharTok{=.} \NormalTok{markgassign hdr}
+\KeywordTok{end.}
+
+\KeywordTok{if.} \FunctionTok{#}\NormalTok{hdr }\KeywordTok{do.} \NormalTok{markdj hdr }\KeywordTok{else.} \StringTok{''} \KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{markdfrgpost}\AlertTok{=:}\index{markdfrgpost@\texttt{markdfrgpost}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*markdfrgpost v-- markdown from group post processor.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  clMarkdown =. markdfrgpost clGroupname}
+
+\CommentTok{NB. jod refs !(*)=. get}
+\StringTok{'rc post'}\CharTok{=.}  \NormalTok{2 }\FunctionTok{\{.} \NormalTok{4 get }\StringTok{'POST_'}\FunctionTok{,}\DataTypeTok{y} \FunctionTok{-.}\StringTok{' '}
+\KeywordTok{if.} \NormalTok{rc }\KeywordTok{do.} \NormalTok{markdj markgassign }\FunctionTok{;} \FunctionTok{\{:} \FunctionTok{,} \NormalTok{post }\KeywordTok{else.} \StringTok{''} \KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{markdfrgroup}\AlertTok{=:}\index{markdfrgroup@\texttt{markdfrgroup}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*markdfrgroup v-- markdown text from group.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  cl =. markdfrgrp clGroupname}
+\CommentTok{NB.}
+\CommentTok{NB.   mtxt=. markdfrgroup 'jod'}
+\CommentTok{NB.   (toHOST mtxt) write 'c:/temp/jcode.markdown'}
+
+\CommentTok{NB. jod refs !(*)=. badrc_ajod_ get gdeps grp}
+\KeywordTok{if.} \NormalTok{badrc_ajod_ gnl}\CharTok{=.} \NormalTok{grp }\DataTypeTok{y}   \KeywordTok{do.} \NormalTok{gnl }\KeywordTok{return.} \KeywordTok{end.}
+\KeywordTok{if.} \NormalTok{badrc_ajod_ gdp}\CharTok{=.} \NormalTok{gdeps }\DataTypeTok{y} \KeywordTok{do.} \NormalTok{gdp }\KeywordTok{return.} \KeywordTok{end.}
+\KeywordTok{if.} \FunctionTok{#}\NormalTok{gnl}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{gnl }\FunctionTok{-.} \NormalTok{gdp}\RegionMarkerTok{)} \FunctionTok{-.} \FunctionTok{a:} \KeywordTok{do.} \NormalTok{markdfrwords gnl }\KeywordTok{else.} \StringTok{''} \KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{markdfrwords}\AlertTok{=:}\index{markdfrwords@\texttt{markdfrwords}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*markdfrwords v-- markdown text from word list.}
+\CommentTok{NB.}
+\CommentTok{NB. This verb takes a  blcl of JOD word names and returns a UTF-8}
+\CommentTok{NB. encoded cl of  word source  code in markdown format. Markdown}
+\CommentTok{NB. is  a simple but versatile  text markup format that is almost}
+\CommentTok{NB. ideal for documenting program source code, see:}
+\CommentTok{NB.}
+\CommentTok{NB. http://daringfireball.net/projects/markdown/}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  clMarkdown =. markdfrwords blclWords}
+\CommentTok{NB.}
+\CommentTok{NB.   markdfrwords ;:'go ahead mark us up'}
+\CommentTok{NB.}
+\CommentTok{NB.   NB. markdown text from JOD group words}
+\CommentTok{NB.   mtxt=. markdfrwords \}. grp 'jod'}
+
+\CommentTok{NB. jod refs !(*)=. badrc_ajod_ get wttext__MK__JODobj}
+\KeywordTok{if.} \NormalTok{badrc_ajod_ src}\CharTok{=.} \NormalTok{0 1}\DecValTok{0} \NormalTok{get }\DataTypeTok{y} \KeywordTok{do.} \NormalTok{src }\KeywordTok{return.} \KeywordTok{end.}
+
+\CommentTok{NB. commented source code (name,source) table.}
+\KeywordTok{if.} \NormalTok{badrc_ajod_ src}\CharTok{=.} \NormalTok{0 0 1 wttext_}\DecValTok{_}\NormalTok{MK_}\DecValTok{_}\NormalTok{JODobj }\FunctionTok{>}\NormalTok{1}\FunctionTok{\{}\NormalTok{src }\KeywordTok{do.} \NormalTok{src}
+\KeywordTok{else.}
+  \NormalTok{src}\CharTok{=.} \NormalTok{markgassign}\OtherTok{&.}\FunctionTok{>} \FunctionTok{\{:}\OtherTok{"}\NormalTok{1 }\FunctionTok{>}\NormalTok{1}\FunctionTok{\{}\NormalTok{src}
+  \CommentTok{NB. similar to (markdj) but faster here}
+  \NormalTok{utf8 }\FunctionTok{;} \RegionMarkerTok{(}\FunctionTok{<}\NormalTok{LF}\FunctionTok{,}\NormalTok{MARKDOWNHEAD}\FunctionTok{,}\NormalTok{LF}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \NormalTok{src }\FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \FunctionTok{<}\NormalTok{LF}\FunctionTok{,}\NormalTok{MARKDOWNTAIL}\FunctionTok{,}\NormalTok{LF}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{markdj}\AlertTok{=:}\index{markdj@\texttt{markdj}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*markdj v-- mark j code for markdown.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  clM =. markdj clJ}
+
+\NormalTok{utf8 }\RegionMarkerTok{(}\NormalTok{LF}\FunctionTok{,}\NormalTok{MARKDOWNHEAD}\FunctionTok{,}\NormalTok{LF}\RegionMarkerTok{)}\FunctionTok{,}\RegionMarkerTok{(}\NormalTok{tlf }\DataTypeTok{y}\RegionMarkerTok{)}\FunctionTok{,}\NormalTok{MARKDOWNTAIL}\FunctionTok{,}\NormalTok{LF}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{markgassign}\AlertTok{=:}\index{markgassign@\texttt{markgassign}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*markgassign v-- mark j code for latex indexing.}
+\CommentTok{NB.}
+\CommentTok{NB. This  verb  tokenizes  j   code  and   replaces  all   global}
+\CommentTok{NB. assignments with syntactically incorrect j strings that  will}
+\CommentTok{NB. be transformed by pandoc into  easily located  latex  strings}
+\CommentTok{NB. that will then be  converted by a post pandoc processor  into}
+\CommentTok{NB. valid  latex  index commands. This works  because regex based}
+\CommentTok{NB. pandoc coloring does not "understand" j's parsing rules.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  cl =. markgassign clJcode}
+\CommentTok{NB.}
+\CommentTok{NB.  jcode=. 'markgassign=:' , 5!:5 <'markgassign'}
+\CommentTok{NB.  markgassign jcode}
+
+\KeywordTok{if.} \NormalTok{0}\FunctionTok{=#}\NormalTok{jcode}\CharTok{=.} \DataTypeTok{y} \FunctionTok{-.} \NormalTok{CR }\KeywordTok{do.} \DataTypeTok{y} \KeywordTok{return.} \KeywordTok{end.}
+\NormalTok{jcode}\CharTok{=.} \NormalTok{WRAPLIMIT wrapvrblong jcode}
+\NormalTok{jtokens}\CharTok{=.} \NormalTok{jtokenize jcode}
+
+\CommentTok{NB. only interested in global assignment lines}
+\KeywordTok{if.} \FunctionTok{#}\NormalTok{gix}\CharTok{=.} \FunctionTok{I.} \FunctionTok{;} \RegionMarkerTok{(}\FunctionTok{<}\StringTok{'=:'}\RegionMarkerTok{)} \FunctionTok{e.} \OtherTok{L:} \NormalTok{1 jtokens }\KeywordTok{do.}
+  \NormalTok{jgl}\CharTok{=.} \NormalTok{gix}\FunctionTok{\{}\NormalTok{jtokens}
+  \NormalTok{jshp}\CharTok{=.} \FunctionTok{$}\NormalTok{jat}\CharTok{=.} \FunctionTok{>}\NormalTok{jgl}
+  \NormalTok{jix}\CharTok{=.} \FunctionTok{I.} \NormalTok{jat }\FunctionTok{=} \FunctionTok{<}\StringTok{'=:'} \FunctionTok{[} \NormalTok{jat}\CharTok{=.} \FunctionTok{,}\NormalTok{jat}
+  \CommentTok{NB. extract global assignments}
+  \CommentTok{NB. ignoring interleaving blanks}
+  \NormalTok{jat2}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{jat }\FunctionTok{-.}\OtherTok{&.}\FunctionTok{>} \StringTok{' '}\RegionMarkerTok{)} \FunctionTok{-.} \FunctionTok{a:}
+  \NormalTok{anames}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{<:I.}\RegionMarkerTok{(}\FunctionTok{<}\StringTok{'=:'}\RegionMarkerTok{)} \FunctionTok{-:}\OtherTok{&}\FunctionTok{>} \NormalTok{jat2}\RegionMarkerTok{)}\FunctionTok{\{}\NormalTok{jat2}
+  \CommentTok{NB. =:=: and =.=. are invalid in j}
+  \NormalTok{faketoks}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{<}\StringTok{'=:=:'}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \NormalTok{anames }\FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \FunctionTok{<}\StringTok{'=.=.'}
+  \NormalTok{jat}\CharTok{=.} \FunctionTok{<}\OtherTok{"}\NormalTok{1 jshp }\FunctionTok{$} \NormalTok{faketoks jix}\OtherTok{\}} \NormalTok{jat}
+  \NormalTok{jat}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{#}\OtherTok{&}\FunctionTok{>} \NormalTok{jgl}\RegionMarkerTok{)} \FunctionTok{\{.}\OtherTok{&.}\FunctionTok{>} \NormalTok{jat}
+  \CommentTok{NB. adjust last LF}
+  \RegionMarkerTok{(}\FunctionTok{-}\NormalTok{LF}\FunctionTok{=\{:}\DataTypeTok{y}\RegionMarkerTok{)} \FunctionTok{\}.} \FunctionTok{;;}\NormalTok{jat gix}\OtherTok{\}} \NormalTok{jtokens}
+\KeywordTok{else.}
+  \DataTypeTok{y}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{markgnonj}\AlertTok{=:}\index{markgnonj@\texttt{markgnonj}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*markgnonj v-- mark non j code region global assignments.}
+\CommentTok{NB.}
+\CommentTok{NB. Non J code is often inserted in J scripts as  character nouns}
+\CommentTok{NB. using explicit  multi-line  '0 :  0'  definitions. This  verb}
+\CommentTok{NB. marks the assigned noun name. Only '=: 0 :  0' will be  found}
+\CommentTok{NB. and marked.}
+\CommentTok{NB.}
+\CommentTok{NB. verbatim:}
+\CommentTok{NB.}
+\CommentTok{NB. IamFound =: 0 : 0}
+\CommentTok{NB. .... non j code ...}
+\CommentTok{NB. )}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  cl =. markgnonj clNonj}
+
+\NormalTok{ct}\CharTok{=.}  \FunctionTok{<}\OtherTok{;.}\NormalTok{2 tlf }\DataTypeTok{y}
+\NormalTok{mrk}\CharTok{=.} \StringTok{'=:0:0'}
+\NormalTok{pos}\CharTok{=.} \FunctionTok{I.} \NormalTok{mrk}\OtherTok{&}\FunctionTok{-:}\OtherTok{&}\FunctionTok{>} \RegionMarkerTok{(}\FunctionTok{-#}\NormalTok{mrk}\RegionMarkerTok{)}\OtherTok{&}\FunctionTok{\{.}\OtherTok{&.}\FunctionTok{>} \NormalTok{ct }\FunctionTok{-.}\OtherTok{&.}\FunctionTok{>} \FunctionTok{<}\NormalTok{WHITESPACE}
+\NormalTok{ct}\CharTok{=.} \FunctionTok{;}\RegionMarkerTok{(}\NormalTok{LF }\FunctionTok{,}\OtherTok{&.}\FunctionTok{>}\OtherTok{~} \NormalTok{markgassign}\OtherTok{&.}\FunctionTok{>} \NormalTok{pos}\FunctionTok{\{}\NormalTok{ct}\RegionMarkerTok{)} \NormalTok{pos}\OtherTok{\}} \NormalTok{ct}
+\RegionMarkerTok{(}\FunctionTok{-}\NormalTok{LF}\FunctionTok{=\{:}\DataTypeTok{y}\RegionMarkerTok{)} \FunctionTok{\}.} \NormalTok{ct}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. reads a file as a list of bytes}
+\NormalTok{read}\AlertTok{=:}\index{read@\texttt{read}}\NormalTok{1}\OtherTok{!:}\NormalTok{1}\OtherTok{&}\RegionMarkerTok{(}\FunctionTok{]}\OtherTok{`}\FunctionTok{<}\OtherTok{@.}\RegionMarkerTok{(}\NormalTok{3}\DecValTok{2}\OtherTok{&}\FunctionTok{>}\OtherTok{@}\RegionMarkerTok{(}\NormalTok{3}\OtherTok{!:}\NormalTok{0}\RegionMarkerTok{)))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. trim right (trailing) blanks}
+\NormalTok{rtrim}\AlertTok{=:}\index{rtrim@\texttt{rtrim}}\FunctionTok{]} \FunctionTok{#}\OtherTok{~} \FunctionTok{[:} \FunctionTok{-.} \FunctionTok{[:} \FunctionTok{*.}\OtherTok{/\textbackslash{}.} \StringTok{' '}\OtherTok{"}\NormalTok{_ }\FunctionTok{=} \FunctionTok{]}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. blcl of nonempty noncomment J cl tokens}
+\NormalTok{sbtokens}\AlertTok{=:}\index{sbtokens@\texttt{sbtokens}}\FunctionTok{a:} \FunctionTok{-.}\OtherTok{~} \RegionMarkerTok{(}\FunctionTok{<}\NormalTok{1}\DecValTok{3} \NormalTok{1}\DecValTok{0} \NormalTok{9}\FunctionTok{\{a.}\RegionMarkerTok{)} \FunctionTok{-.}\OtherTok{&.}\FunctionTok{>}\OtherTok{~} \FunctionTok{[:} \NormalTok{alltrim}\OtherTok{&.}\FunctionTok{>} \FunctionTok{[:} \NormalTok{wfl }\FunctionTok{[:} \NormalTok{ctl }\FunctionTok{[:} \NormalTok{decomm }\FunctionTok{[:} \FunctionTok{]}\OtherTok{;.}\NormalTok{_}\DecValTok{1} \RegionMarkerTok{(}\NormalTok{1}\DecValTok{0}\FunctionTok{\{a.}\RegionMarkerTok{)} \FunctionTok{,} \RegionMarkerTok{(}\NormalTok{1}\DecValTok{3}\FunctionTok{\{a.}\RegionMarkerTok{)} \FunctionTok{-.}\OtherTok{~} \FunctionTok{]}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{setifacelinks}\AlertTok{=:}\index{setifacelinks@\texttt{setifacelinks}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*setifacelinks  v--  set  hyperref   links  in   any  overview}
+\CommentTok{NB. interface words section.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  cl =. blclIwords setifacelinks (clIfstr ; clTex)}
+
+\StringTok{'ifstr tex'}\CharTok{=.} \DataTypeTok{y}
+\NormalTok{rmrk}\CharTok{=.} \StringTok{'\textbackslash{}end\{Shaded\}'}
+\NormalTok{head}\CharTok{=.} \NormalTok{ifstr}\OtherTok{&}\NormalTok{beforestr tex}
+\NormalTok{tail}\CharTok{=.} \NormalTok{ifstr}\OtherTok{&}\NormalTok{afterstr tex}
+
+\KeywordTok{if.} \FunctionTok{+.}\OtherTok{/}\NormalTok{rmrk }\FunctionTok{E.} \NormalTok{tail }\KeywordTok{do.}
+  \NormalTok{ifbk }\CharTok{=.} \NormalTok{formifacetex }\DataTypeTok{x}
+  \NormalTok{tail }\CharTok{=.} \NormalTok{rmrk}\OtherTok{&}\NormalTok{afterstr tail}
+  \NormalTok{head}\FunctionTok{,}\NormalTok{ifstr}\FunctionTok{,}\RegionMarkerTok{(}\NormalTok{2}\FunctionTok{#}\NormalTok{LF}\RegionMarkerTok{)}\FunctionTok{,}\NormalTok{ifbk}\FunctionTok{,}\NormalTok{tail}
+\KeywordTok{else.}
+  \NormalTok{tex}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{setifacetargs}\AlertTok{=:}\index{setifacetargs@\texttt{setifacetargs}}\NormalTok{4 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*setifacetargs v-- set hyperlink targets in group latex.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  cl =. blclIwords setifacetargs clTex}
+
+\NormalTok{targs}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{<}\StringTok{'\textbackslash{}NormalTok\{'}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \DataTypeTok{x} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \FunctionTok{<}\StringTok{'\}\textbackslash{}AlertTok\{=:\}\textbackslash{}index'}
+\NormalTok{rstrs}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{<}\StringTok{'\textbackslash{}hypertarget\{'}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \DataTypeTok{x} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \RegionMarkerTok{(}\FunctionTok{<}\StringTok{'\}\{\textbackslash{}NormalTok\{'}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \DataTypeTok{x} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \FunctionTok{<}\StringTok{'\}\}\textbackslash{}AlertTok\{=:\}\textbackslash{}index'}
+\NormalTok{chgs}\CharTok{=.}  \FunctionTok{;}\RegionMarkerTok{(}\StringTok{'#'} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \NormalTok{targs}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \StringTok{'#'} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \NormalTok{rstrs}
+\NormalTok{chgs changestr }\DataTypeTok{y}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\hypertarget{setjodliterate}{\NormalTok{setjodliterate}}\AlertTok{=:}\index{setjodliterate@\texttt{setjodliterate}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*setjodliterate v-- prepare for processing.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  (paRc ; clDir) =. setjodliterate clWorkingDir}
+\CommentTok{NB.}
+\CommentTok{NB.   setjodliterate 'c:\textbackslash{}temp'           NB. windows}
+\CommentTok{NB.   setjodliterate '/home/john/temp'   NB. linux}
+
+\KeywordTok{try.}
+
+\KeywordTok{if.} \NormalTok{3}\FunctionTok{~:}\RegionMarkerTok{(}\NormalTok{4}\OtherTok{!:}\NormalTok{0}\RegionMarkerTok{)} \FunctionTok{<}\StringTok{'badrc_ajod_'} \KeywordTok{do.} \NormalTok{0}\FunctionTok{;}\StringTok{'!error: jod is not loaded'} \KeywordTok{return.} \KeywordTok{end.}
+
+\CommentTok{NB. profile (*)=. IFWIN}
+\NormalTok{JLDIRECTORY_ajodliterate_}\AlertTok{=:}\index{JLDIRECTORY\_ajodliterate\_@\texttt{JLDIRECTORY\_ajodliterate\_}} \NormalTok{jpathsep}\OtherTok{`}\NormalTok{winpathsep}\OtherTok{@.}\RegionMarkerTok{(}\NormalTok{IFWIN}\RegionMarkerTok{)} \NormalTok{tslash2 }\DataTypeTok{y}
+
+\CommentTok{NB. write main latex preamble once per directory}
+\NormalTok{preamble}\CharTok{=.} \StringTok{'JODLiteratePreamble.tex'}
+\KeywordTok{if.} \FunctionTok{-.}\NormalTok{fexist JLDIRECTORY}\FunctionTok{,}\NormalTok{preamble }\KeywordTok{do.}
+  \RegionMarkerTok{(}\NormalTok{toJ JODLiteratePreamble}\RegionMarkerTok{)} \NormalTok{writeas JLDIRECTORY}\FunctionTok{,}\NormalTok{preamble}
+\KeywordTok{end.}
+\NormalTok{1}\FunctionTok{;}\NormalTok{JLDIRECTORY}
+
+\KeywordTok{catchd.}
+  \NormalTok{0}\FunctionTok{;}\StringTok{'!error: (setjodliterate) failure - last J error ->'}\FunctionTok{;}\NormalTok{1}\DecValTok{3}\OtherTok{!:}\NormalTok{1}\DecValTok{2} \StringTok{''}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. appends trailing line feed character if necessary}
+\NormalTok{tlf}\AlertTok{=:}\index{tlf@\texttt{tlf}}\FunctionTok{]} \FunctionTok{,} \RegionMarkerTok{((}\NormalTok{1}\DecValTok{0}\FunctionTok{\{a.}\RegionMarkerTok{)}\OtherTok{"}\NormalTok{_ }\FunctionTok{=} \FunctionTok{\{:}\RegionMarkerTok{)} \FunctionTok{\}.} \RegionMarkerTok{(}\NormalTok{1}\DecValTok{0}\FunctionTok{\{a.}\RegionMarkerTok{)}\OtherTok{"}\NormalTok{_}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. converts character strings to J delimiter LF}
+\NormalTok{toJ}\AlertTok{=:}\index{toJ@\texttt{toJ}}\RegionMarkerTok{((}\NormalTok{1}\DecValTok{0}\FunctionTok{\{a.}\RegionMarkerTok{)} \FunctionTok{I.}\OtherTok{@}\RegionMarkerTok{(}\FunctionTok{e.}\OtherTok{&}\RegionMarkerTok{(}\NormalTok{1}\DecValTok{3}\FunctionTok{\{a.}\RegionMarkerTok{))}\OtherTok{@}\FunctionTok{]}\OtherTok{\}} \FunctionTok{]}\RegionMarkerTok{)}\OtherTok{@:}\RegionMarkerTok{(}\FunctionTok{#}\OtherTok{~} \FunctionTok{-.}\OtherTok{@}\RegionMarkerTok{((}\NormalTok{1}\DecValTok{3} \NormalTok{1}\DecValTok{0}\FunctionTok{\{a.}\RegionMarkerTok{)}\OtherTok{&}\FunctionTok{E.}\OtherTok{@}\FunctionTok{,}\RegionMarkerTok{))}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. appends trailing / iff last character is not \textbackslash{} or /}
+\NormalTok{tslash2}\AlertTok{=:}\index{tslash2@\texttt{tslash2}}\RegionMarkerTok{(}\FunctionTok{[:} \FunctionTok{-} \StringTok{'\textbackslash{}/'} \FunctionTok{e.}\OtherTok{~} \FunctionTok{\{:}\RegionMarkerTok{)} \FunctionTok{\}.} \StringTok{'/'} \FunctionTok{,}\OtherTok{~} \FunctionTok{]}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. character list to UTF-8}
+\NormalTok{utf8}\AlertTok{=:}\index{utf8@\texttt{utf8}}\NormalTok{8}\OtherTok{&}\FunctionTok{u:}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. standarizes J path delimiter to windows back slash}
+\NormalTok{winpathsep}\AlertTok{=:}\index{winpathsep@\texttt{winpathsep}}\StringTok{'\textbackslash{}'}\OtherTok{&}\RegionMarkerTok{((}\StringTok{'/'} \FunctionTok{I.}\OtherTok{@:}\FunctionTok{=} \FunctionTok{]}\RegionMarkerTok{)}\OtherTok{\}}\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{wrapvrblong}\AlertTok{=:}\index{wrapvrblong@\texttt{wrapvrblong}}\NormalTok{3 }\OtherTok{:} \NormalTok{0}
+
+\CommentTok{NB.*wrapvrblong v-- wraps verbatim text lines with length > (x).}
+\CommentTok{NB.}
+\CommentTok{NB. Wraps  lines with length > (x) and prefixes each wrapped line}
+\CommentTok{NB. with the syntactically invalid  j string ')=.)=.' This string}
+\CommentTok{NB. is transformed  by  pandoc into  an easily found sequence  of}
+\CommentTok{NB. LaTeX commands.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  cl =. wrapvrblong clTxt}
+\CommentTok{NB. dyad:   cl =. iaLength wrapvrblong clTxt}
+
+\NormalTok{WRAPLIMIT wrapvrblong }\DataTypeTok{y}
+\OtherTok{:}
+\CommentTok{NB. always trim trailing blanks}
+\NormalTok{ct}\CharTok{=.} \FunctionTok{<}\OtherTok{@}\NormalTok{rtrim}\OtherTok{;.}\NormalTok{_}\DecValTok{2} \NormalTok{tlf }\DataTypeTok{y} \FunctionTok{-.} \NormalTok{CR}
+
+\CommentTok{NB. only wrap lines exceeding limit}
+\KeywordTok{if.} \FunctionTok{#}\NormalTok{pos}\CharTok{=.} \FunctionTok{I.} \DataTypeTok{x} \FunctionTok{<} \FunctionTok{#}\OtherTok{&}\FunctionTok{>} \NormalTok{ct }\KeywordTok{do.}
+  \NormalTok{wlen}\CharTok{=.} \DataTypeTok{x}\FunctionTok{-#}\NormalTok{WRAPLEAD}
+  \NormalTok{wt}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{-}\NormalTok{wlen}\RegionMarkerTok{)} \RegionMarkerTok{(}\FunctionTok{<}\OtherTok{\textbackslash{}}\RegionMarkerTok{)}\OtherTok{&.}\FunctionTok{>} \NormalTok{pos}\FunctionTok{\{}\NormalTok{ct}
+  \NormalTok{slen}\CharTok{=.} \NormalTok{1}\OtherTok{&}\FunctionTok{,}\OtherTok{@:}\FunctionTok{<:}\OtherTok{@}\FunctionTok{#}\OtherTok{&.}\FunctionTok{>} \NormalTok{wt}
+  \CommentTok{NB. lead wrapped lines with prefix}
+  \NormalTok{wt}\CharTok{=.} \RegionMarkerTok{(}\NormalTok{slen }\FunctionTok{#}\OtherTok{&.}\FunctionTok{>} \FunctionTok{<}\RegionMarkerTok{(}\FunctionTok{<}\StringTok{''}\RegionMarkerTok{)}\FunctionTok{,<}\NormalTok{LF}\FunctionTok{,}\NormalTok{WRAPPREFIX}\RegionMarkerTok{)} \FunctionTok{,.}\OtherTok{&.}\FunctionTok{>} \NormalTok{wt}
+  \NormalTok{wt}\CharTok{=.} \FunctionTok{a:} \FunctionTok{-.}\OtherTok{~} \OtherTok{L:} \NormalTok{1 }\FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \NormalTok{wt}
+  \CommentTok{NB. last wrapped line LF terminated}
+  \NormalTok{wt}\CharTok{=.} \NormalTok{wt }\FunctionTok{,} \OtherTok{L:} \NormalTok{1 }\FunctionTok{<}\NormalTok{LF}
+  \NormalTok{nwpos}\CharTok{=.} \RegionMarkerTok{(}\FunctionTok{i.#}\NormalTok{ct}\RegionMarkerTok{)} \FunctionTok{-.} \NormalTok{pos}
+  \NormalTok{ct}\CharTok{=.} \RegionMarkerTok{((}\NormalTok{nwpos}\FunctionTok{\{}\NormalTok{ct}\RegionMarkerTok{)} \FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \NormalTok{LF}\RegionMarkerTok{)} \NormalTok{nwpos}\OtherTok{\}} \NormalTok{ct}
+  \FunctionTok{;;}\NormalTok{wt pos}\OtherTok{\}} \FunctionTok{<}\OtherTok{"}\NormalTok{0 ct}
+\KeywordTok{else.}
+  \RegionMarkerTok{(}\FunctionTok{-}\NormalTok{LF}\FunctionTok{~:\{:}\DataTypeTok{y}\RegionMarkerTok{)} \FunctionTok{\}.} \FunctionTok{;} \NormalTok{ct }\FunctionTok{,}\OtherTok{&.}\FunctionTok{>} \NormalTok{LF}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. write file as list of bytes - throws unambiguous error on failure}
+\NormalTok{writeas}\AlertTok{=:}\index{writeas@\texttt{writeas}}\RegionMarkerTok{(}\NormalTok{1}\OtherTok{!:}\NormalTok{2 }\FunctionTok{]}\OtherTok{`}\FunctionTok{<}\OtherTok{@.}\RegionMarkerTok{(}\NormalTok{3}\DecValTok{2}\OtherTok{&}\FunctionTok{>}\OtherTok{@}\RegionMarkerTok{(}\NormalTok{3}\OtherTok{!:}\NormalTok{0}\RegionMarkerTok{)))} \OtherTok{::}\RegionMarkerTok{(}\FunctionTok{[:} \StringTok{'cannot write file'}\OtherTok{&}\RegionMarkerTok{(}\NormalTok{1}\DecValTok{3}\OtherTok{!:}\NormalTok{8}\RegionMarkerTok{)} \FunctionTok{1:}\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{JODPostProcessor}
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB.POST_jodliterate post processor (-.)=:}
+
+\NormalTok{smoutput 0 }\OtherTok{:} \NormalTok{0}
+\CommentTok{NB. (jodliterate) interface word(s):}
+\CommentTok{NB.   grplit          NB. make latex for group (y)}
+\CommentTok{NB.   ifacesection    NB. interface section summary string}
+\CommentTok{NB.   setjodliterate  NB. prepare for processing}
+\RegionMarkerTok{)}
+
+\NormalTok{cocurrent }\StringTok{'base'}
+\NormalTok{coinsert  }\StringTok{'ajodliterate'}
+\end{Highlighting}
+\end{Shaded}
+
+\end{JODPostProcessor}

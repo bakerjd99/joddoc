@@ -432,6 +432,7 @@
 
 \begin{Shaded}
 \begin{Highlighting}[]
+\CommentTok{NB. core JOD interface words - loaded into (ijod) locale}
 \NormalTok{IzJODinterface}\AlertTok{=:}\index{IzJODinterface@\texttt{IzJODinterface}}\FunctionTok{<}\OtherTok{;.}\NormalTok{_}\DecValTok{1} \StringTok{' bnl del did dnl dpset gdeps get globs grp make newd od packd put regd restd uses'}
 \end{Highlighting}
 \end{Shaded}
@@ -466,7 +467,8 @@
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\NormalTok{JODVMD}\AlertTok{=:}\index{JODVMD@\texttt{JODVMD}}\StringTok{'0.9.92'}\FunctionTok{;}\NormalTok{4}\FunctionTok{;}\StringTok{'26 Jan 2013 13:08:49'}
+\CommentTok{NB. version, make and date}
+\NormalTok{JODVMD}\AlertTok{=:}\index{JODVMD@\texttt{JODVMD}}\StringTok{'0.9.93'}\FunctionTok{;}\NormalTok{3}\FunctionTok{;}\StringTok{'23 Nov 2013 11:12:19'}
 \end{Highlighting}
 \end{Shaded}
 
@@ -1960,8 +1962,8 @@
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{NB. J name class}
-\NormalTok{nc}\AlertTok{=:}\index{nc@\texttt{nc}}\NormalTok{4}\OtherTok{!:}\NormalTok{0}
+\CommentTok{NB. J name class override - traps limit error for very long names}
+\NormalTok{nc}\AlertTok{=:}\index{nc@\texttt{nc}}\NormalTok{4}\OtherTok{!:}\NormalTok{0 }\OtherTok{::}\RegionMarkerTok{(}\FunctionTok{_2:}\RegionMarkerTok{)}
 \end{Highlighting}
 \end{Shaded}
 
