@@ -1,5 +1,5 @@
-joddoc README
-=============
+![](/jodgraphics/jodtinycube2.png) [joddoc README](http://bakerjd99.wordpress.com/the-jod-page/)
+===============================================================================================
 
 This repository contains the `LaTeX` source and supporting
 graphics files for building the JOD manual [`jod.pdf`](https://www.box.com/shared/gajfu50gc0).
@@ -27,5 +27,5 @@ The following sequence of commands builds `jod.pdf`.
 See the batch file [`0ajod.bat`](https://github.com/bakerjd99/joddoc/blob/master/0ajod.bat).
 
 John Baker
-November 17, 2012
+December 31, 2013
 
