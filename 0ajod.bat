@@ -11,11 +11,17 @@ latex jod
 dvips jod
 ps2pdf jod.ps
 
-rem copy jod.pdf to jodsvn/github directory & working jod directories
-if exist C:\jaddons\general\joddocument\pdfdoc\jod.pdfcopy copy jod.pdf C:\jaddons\general\joddocument\pdfdoc\jod.pdf
-if exist C:\j701\addons\general\joddocument\pdfdoc\jod.pdf copy jod.pdf C:\j701\addons\general\joddocument\pdfdoc\jod.pdf
+rem copy jod.pdf to working jod directories
+if exist C:\uap\j64-803\addons\general\joddocument\pdfdoc\jod.pdf copy jod.pdf C:\uap\j64-803\addons\general\joddocument\pdfdoc\jod.pdf 
 if exist C:\j602\addons\general\joddocument\pdfdoc\jod.pdf copy jod.pdf C:\j602\addons\general\joddocument\pdfdoc\jod.pdf
 
 rem display pdf 
 title JOD/LaTeX complete displaying PDF ...
-"C:\Program Files\SumatraPDF\SumatraPDF.exe" jod.pdf
+if exist C:\uap\sumatra\SumatraPDF.exe goto Location0 
+goto TheEnd
+
+:Location0
+    C:\uap\sumatra\SumatraPDF.exe jod.pdf
+    goto TheEnd
+
+:TheEnd
