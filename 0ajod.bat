@@ -9,7 +9,10 @@ latex jod
 makeindex jod
 latex jod
 dvips jod
+
+if exist jod.pdf erase jod.pdf
 ps2pdf jod.ps
+if not exist jod.pdf goto TheEnd
 
 rem copy jod.pdf to working jod directories
 if exist C:\uap\j64-803\addons\general\joddocument\pdfdoc\jod.pdf copy jod.pdf C:\uap\j64-803\addons\general\joddocument\pdfdoc\jod.pdf 
