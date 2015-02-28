@@ -1,4 +1,4 @@
 rem clean up projects directorie(s)
 
-rem cleantex.bat must be on the path
-call cleantex.bat
+rem 0cleantex.bat must be on the path
+call 0cleantex.bat
