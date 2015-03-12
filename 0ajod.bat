@@ -29,7 +29,7 @@ goto TheEnd
     C:\uap\sumatra\SumatraPDF.exe jod.pdf
     goto TheEnd
 :Location1
-	C:\PROGRA~2\SumatraPDF\SumatraPDF.exe jod.pdf
-	goto TheEnd
-	
+    C:\PROGRA~2\SumatraPDF\SumatraPDF.exe jod.pdf
+    goto TheEnd
+
 :TheEnd
