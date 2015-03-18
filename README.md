@@ -11,7 +11,7 @@ A printed and bound manual version is available on
 
 A "bleeding edge" current build of `jod.pdf` is available in this repository see: 
 [`jodbeta.pdf`](https://github.com/bakerjd99/joddoc/tree/master/jodpdf/jodbeta.pdf).
-To download `jodbeta.pdf` press the *Raw* button when viewing `jodbeta.pdf`.
+To download `jodbeta.pdf` press the **Raw** button when viewing `jodbeta.pdf`.
 
 Building `jod.pdf` requires a current `LaTeX` distribution.
 I mainly use [MikTeX 2.9](http://www.miktex.org/) on Windows but I have tested
