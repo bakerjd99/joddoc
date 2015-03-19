@@ -18,8 +18,8 @@
 	\cite{baker:jod}:  This is the only package that must be installed to run JOD.  
 	It contains  JOD system code and supporting files.
 	\item  \href{http://www.jsoftware.com/jwiki/Addons/general/jodsource}{\texttt{jodsource}}
-	 \cite{baker:jodsource}: This addon is single \texttt{zip} file containing 
-	   JOD dictionary dumps.  JOD dictionary dumps\index{dictionary!source!\texttt{jodsource}}
+	 \cite{baker:jodsource}: This addon consists of three 
+	   JOD dictionary dumps and a setup script.  JOD dictionary dumps\index{dictionary!source!\texttt{jodsource}}
 	  are J script files that can rebuild  JOD dictionaries.  Dump files are the best way to
 	  distribute dictionary code since they are independent of J binary representations. 
 	  The \texttt{jodsource}\index{source code} addon contains.
@@ -28,12 +28,7 @@
 	  \item \texttt{jod.ijs} --- main JOD source and test script dictionary
 	  \item \texttt{utils.ijs}  --- common utilities dictionary
      \item \texttt{jodsourcesetup.ijs} --- J script that creates and loads the three
-     JOD development dictionaries.\footnote{
-\textcolor{red}{The addon \texttt{arc/zip} can fail on 64 bit systems. This breaks \texttt{jodsourcesetup.ijs}.
-See \href{http://bakerjd99.wordpress.com/the-jod-page/\#comment-210}{The JOD Page} \cite{baker:jodpages} for instructions 
-on loading JOD dictionaries without using
-\texttt{jodsourcesetup.ijs}.}
-	 }
+     JOD development dictionaries.
   \end{enumerate}
   \item \href{http://www.jsoftware.com/jwiki/Addons/general/joddocument}{\texttt{joddocument}} \cite{baker:joddocument}: this package contains 
   JOD PDF documents. Installing this
