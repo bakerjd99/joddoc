@@ -58,22 +58,21 @@
 \section{Installing and Configuring JOD}
 
 Before using JOD you need to install the current Windows, Linux or Mac version of J.\footnote{JOD runs on 
- J \texttt{6.0x} and  J \texttt{7.0x} Windows systems. The Linux and Mac versions of JOD require J
-\texttt{7.0x}. Currently there are no \texttt{IOS} or \texttt{Android} versions of JOD. Porting JOD 
+ J \texttt{6.0x} ,  J \texttt{7.0x}  and J \texttt{8.0x} Windows systems. The Linux and Mac versions of JOD require J
+\texttt{7.0x} or \texttt{8.0x}. Currently there are no \texttt{IOS} or \texttt{Android} versions of JOD. Porting JOD 
 to any J system is a simple task.
 If you are interested in helping me create ports please contact me at:  
 \texttt{bakerjd99@gmail.com}
 } J can be downloaded from \href{http://www.jsoftware.com}{\texttt{www.jsoftware.com}}.
 
-In addition to J you may need to install a number of J \emph{addons}. JOD uses the
-\texttt{jfiles}, \texttt{regex}, \texttt{scriptdoc}, \texttt{task} and \texttt{zip} addons.  Some J versions
-include these addons as part of the basic J system. If you can run the following J commands
+In addition to J you need to install a number of J \emph{addons}. JOD uses the
+\texttt{jfiles}, \texttt{regex} and \texttt{task} addons.  Some J versions
+include these addons as part of the basic J system. If you can run the following J command
 without errors your system is ready for JOD. 
 \begin{lstlisting}[frame=single,framerule=0pt,label=lst:reqaddons]
-   require 'jfiles regex scriptdoc task'
-   load 'addons/arc/zip/zfiles.ijs'
+   require 'jfiles regex task'
 \end{lstlisting}
-If you encounter any errors running these commands use \href{http://www.jsoftware.com/jwiki/JAL/}{\texttt{JAL}}\index{installation!JAL} to install 
+If you encounter any errors  use \href{http://www.jsoftware.com/jwiki/JAL/}{\texttt{JAL}}\index{installation!JAL} to install 
 missing addons.
  
 JOD can be installed in two ways.  
@@ -83,8 +82,8 @@ JOD can be installed in two ways.
 	\item Download the current JOD distribution from \href{http://bakerjd99.wordpress.com/the-jod-page/}{\emph{The JOD Page}}\index{installation!\emph{The JOD Page}} \cite{baker:jodpages} and unzip, preserving directories, to the relative directory\footnote{Paths that begin with the \textbf{\texttt{\~}} character are relative directories. The full path can be obtained with \texttt{jpath} verb. } \verb|~addons/general/jod|
 \end{enumerate}
 
-After installation JOD can be loaded with:\footnote{
-\textcolor{red}{The \texttt{'} character is a single quote: in J notation it is: \texttt{39 \{ a.}}
+After installation JOD can be loaded with:\footnote{\textcolor{red}{The \texttt{'} character 
+is a single quote: in J notation it is: \texttt{39 \{ a.}}
 }
 \begin{verbatim}
   load 'general/jod'
@@ -103,15 +102,16 @@ To configure and maintain JOD you must be aware of the following:
    page~\pageref{eps:jodfolders}, and
 	define folders like:\index{configuration!J folders}
 	\begin{lstlisting}[frame=single,framerule=0pt,label=lst:foldercfg]
-   JOD               c:/jod/j701
-   JODDUMPS          c:/jod/j701/joddumps
+   JOD               c:/jod
+   JODDUMPS          c:/jod/joddumps
    JODSOURCE         c:/jodtest/labtesting
    JODTEST           c:/jodtest/test
   \end{lstlisting}
   \emph{Use fully qualified directory paths that are not in the J install tree.}
-  \item \hyperlink{il:jodhelp}{\texttt{jodhelp}} (\pageref{ss:jodhelp}) uses a web browser and a 
+  \item \hyperlink{il:jodhelp}{\texttt{jodhelp}} (\pageref{ss:jodhelp}) uses a 
   PDF reader to display JOD documentation. Use J's configuration tool to set 
-  your preferred browser and PDF reader. 
+  your preferred PDF reader.\footnote{See the blog post \href{https://bakerjd99.wordpress.com/2015/02/08/mahin-and-carl/}{JOD Update: Version \texttt{0.9.97*}} for J configuration advice.
+  } 
 \end{enumerate} 
 
 
@@ -133,9 +133,9 @@ To configure and maintain JOD you must be aware of the following:
     \label{eps:j6folders}
     \includegraphics[width=0.8\textwidth]{j6folders}}
   \hfill
-  \subfigure[J \texttt{7.0x} Linux configuration editor]{
+  \subfigure[J \texttt{8.0x} Mac JQT configuration editor]{
     \label{epsj7folders}
-    \includegraphics[width=0.7\textwidth]{j7folders}}
+    \includegraphics[width=0.7\textwidth]{mac32jqtcfg}}
 \caption[JOD Folders]{This folder configuration\index{configuration!J folders} is recommended for 
 running JOD labs and test scripts. 
 When defining JOD folders the full path, including the drive letter on Windows and a

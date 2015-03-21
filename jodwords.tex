@@ -1042,8 +1042,8 @@ are stored with \hypertarget{il:put}{\texttt{put}}.
 put into a dictionary the date\index{dates} is recorded. 
 
 The monad returns the age of words and the dyad returns the age of other objects.  
-JOD dates are stored in a fractional day \verb|yyyymmdd.fd| floating point format.\footnote{
-JOD times are derived from \emph{local} computer clock times. \texttt{UTC} is not used.
+JOD dates are stored in a fractional day \verb|yyyymmdd.fd| floating point format.\footnote{JOD times
+are derived from \emph{local} computer clock times. \texttt{UTC} is not used.
 }    
 
 \begin{wordhead}
@@ -1072,12 +1072,10 @@ JOD times are derived from \emph{local} computer clock times. \texttt{UTC} is no
 \end{lstlisting}
 
 
-\subsection{\texttt{jodhelp} --- return help}\label{ss:jodhelp}  
+\subsection{\texttt{jodhelp} --- display help}\label{ss:jodhelp}  
 
-\hypertarget{il:jodhelp}{\texttt{jodhelp}} displays help\index{help!\texttt{jodhelp}}
- for JOD words.  
-The monad returns help for specific words and displays an index.  
-The dyad displays \verb|jod.pdf| and lists all words that have online help.
+\hypertarget{il:jodhelp}{\texttt{jodhelp}} displays JOD documentation\index{help!\texttt{jodhelp}}.  
+The monad starts the configured J PDF reader and displays \verb|jod.pdf|. 
 
 \verb|jod.pdf| is omitted from the core JOD addon \texttt{JAL} package to
 reduce download size. Installing the addon \texttt{general/joddocument} 
@@ -1088,30 +1086,15 @@ saves \verb|jod.pdf| in the directory searched by \texttt{jodhelp}.
 \end{lstlisting}
 
 \begin{wordhead}
-\monad & jodhelp clWord \\
+\monad & jodhelp uuIgnore \\
 \end{wordhead}
 \begin{lstlisting}[frame=single,framerule=0pt] 
-  NB. show online (put) help
-  jodhelp 'put'   
+  NB. display help - requires general/joddocument addon
+  jodhelp 0   
 
-  NB. display online help index 
-  jodhelp '' 
+  NB. argument is ignored
+  jodhelp 'I don''t hear you!' 
 \end{lstlisting}  
-
-\begin{wordhead}
-\dyad & uuIgnore \argsep clPDF jodhelp uuIgnore \\
-\end{wordhead}
-\begin{lstlisting}[frame=single,framerule=0pt] 
-  NB. list help topics - ignores arguments 
-  jodhelp~ 0    
-  
-  NB. open PDF documentation 
-  NB. requires install of general/joddocument 
-  'PDF' jodhelp ''
-  
-  NB. handy idiom
-  jodhelp~ 'PDF'
-\end{lstlisting}
 
 
 \subsection{\texttt{lg} ---  make and load group}\label{ss:lg}
@@ -1122,8 +1105,8 @@ script and the dyad loads with the postprocessor.
 
 The postprocessor\index{postprocessor} is a JOD macro script that is associated with a group.
 If a group\index{group!\texttt{lg}} is named \texttt{numtutils} the associated postprocessor 
-is named \verb|POST_numutils|. The prefix \verb|POST_| labels J macro scripts as postprocessors.\footnote{
-A macro must be coded as a J script, (code 21), to be used as a postprocessor.
+is named \verb|POST_numutils|. The prefix \verb|POST_| labels J macro scripts as postprocessors.\footnote{A macro
+must be coded as a J script, (code 21), to be used as a postprocessor.
 } The postprocessor is appended to generated group scripts and is often used to start systems.
 
 \begin{wordhead}
@@ -1251,8 +1234,8 @@ to the current user's start up script
 \begin{verbatim}
   ~config/startup.ijs
 \end{verbatim}
-and inserted in the session's \verb|Public_j_| table.\footnote{
-On J \texttt{6.0x} systems the public script noun is named \texttt{PUBLIC\_j\_}.}
+and inserted in the session's \verb|Public_j_| table.\footnote{On J 
+\texttt{6.0x} systems the public script noun is named \texttt{PUBLIC\_j\_}.}
 
 An \verb|mls| load script\index{load scripts} is independent of JOD and can be used 
 like any other J load script, for example:
@@ -1366,8 +1349,8 @@ an edit window using JOD format conventions. \texttt{nw} assumes the
 new word is  \emph{explicit} but you can edit the default text to define \emph{tacit} words. 
 \texttt{nw} will append the 
 character list \texttt{DOCUMENTCOMMAND} to the text placed in an edit window.  
-This allows the user to define an arbitrary script that is run when a word is defined.\footnote{
-Key combinations like \texttt{CTRL-W} that run editor scripts depend on the J platform.
+This allows the user to define an arbitrary script that is run when a word is defined.\footnote{Key combinations
+like \texttt{CTRL-W} that run editor scripts depend on the J platform.
 }
 
 \begin{wordhead}
@@ -1541,8 +1524,8 @@ A \texttt{packd} operation can be reversed with \hyperlink{il:restd}{\texttt{res
 no JOD facility for deleting  backup files. To erase backup files use OS facilities. 
 
 The read/write status of a dictionary is recorded in 
-the master file. JOD assumes all tasks point to the same master file.\footnote{
-There is one important exception to the single \texttt{jmaster.ijf} rule. \texttt{READONLY}
+the master file. JOD assumes all tasks point to the same master file.\footnote{There is one
+important exception to the single \texttt{jmaster.ijf} rule. \texttt{READONLY}
 dictionaries can be safely registered in different master files. This allows 
 easy sharing of \texttt{READONLY} library dictionaries on network drives with
 the standard JOD/JAL setup.
