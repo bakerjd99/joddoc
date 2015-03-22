@@ -41,42 +41,39 @@ are committed and then pushed to a remote repository.\footnote{
 +-+-----------------+----+-----+
    
    1 rm 'dumpput'  NB. run dump macro - (utils) must be on path
-+-+---------------------------+------------------------------+
-|1|object(s) on path dumped ->|c:/jod/j701/docs/dump/docs.ijs|
-+-+---------------------------+------------------------------+
-+-----------------------------+
-|c:/jod/j701/joddumps/docs.ijs|
-+-----------------------------+
-+-------------------------------+
-|c:/db/Dropbox/joddumps/docs.ijs|
-+-------------------------------+
++-+---------------------------+-------------------------+
+|1|object(s) on path dumped ->|c:/jod/docs/dump/docs.ijs|
++-+---------------------------+-------------------------+
++------------------------+
+|c:/jod/joddumps/docs.ijs|
++------------------------+
 \end{lstlisting}
 
 \begin{lstlisting}[language=bash,frame=single,framerule=0pt
 ,basicstyle=\ttfamily\footnotesize,backgroundcolor=\color{CodeBackGround}]
 $ echo Step 2: Bash shell commands > /dev/null
 
-bakerjd99@NINJA /c/jod/j701/joddumps (master)
+bakerjd99@NINJA /c/jod/joddumps (master)
 $ pwd
-/c/jod/j701/joddumps
+/c/jod/joddumps
 
-bakerjd99@NINJA /c/jod/j701/joddumps (master)
+bakerjd99@NINJA /c/jod/joddumps (master)
 $ git status -s
 M  docs.ijs
  M joddev.ijs
  M utils.ijs
 
-bakerjd99@NINJA /c/jod/j701/joddumps (master)
+bakerjd99@NINJA /c/jod/joddumps (master)
 $ git commit -m 'recent changes to docs.ijs dictionary'
 [master 1577d1a] recent changes to docs.ijs dictionary
  1 files changed, 46 insertions(+), 4 deletions(-)
  
-bakerjd99@NINJA /c/jod/j701/joddumps (master) 
+bakerjd99@NINJA /c/jod/joddumps (master) 
 $ git remote
 joddumps
 origin
 
-bakerjd99@NINJA /c/jod/j701/joddumps (master) 
+bakerjd99@NINJA /c/jod/joddumps (master) 
 $ git push joddumps master 
 \end{lstlisting}
 
@@ -96,27 +93,27 @@ and the contents of the \texttt{exif} group have been edited and regenerated.
    
    NB. regenerate (exif) script
    mls 'exif'
-+-+--------------------+-----------------------------------+
-|1|load script saved ->|c:/jod/j701/smugdev/script/exif.ijs|
-+-+--------------------+-----------------------------------+
++-+--------------------+------------------------------+
+|1|load script saved ->|c:/jod/smugdev/script/exif.ijs|
++-+--------------------+------------------------------+
 \end{lstlisting}
 
 \begin{lstlisting}[language=bash,frame=single,framerule=0pt
 ,basicstyle=\ttfamily\footnotesize,backgroundcolor=\color{CodeBackGround}]
 $ echo Step 2: Bash shell commands > /dev/null
 
-bakerjd99@NINJA /c/jod/j701/smugdev/script (master)
+bakerjd99@NINJA /c/jod/smugdev/script (master)
 $ pwd
-/c/jod/j701/smugdev/script
+/c/jod/smugdev/script
 
-bakerjd99@NINJA /c/jod/j701/smugdev/script (master)
+bakerjd99@NINJA /c/jod/smugdev/script (master)
 $ git status -s
  M exif.ijs
 
-bakerjd99@NINJA /c/jod/j701/smugdev/script (master)
+bakerjd99@NINJA /c/jod/smugdev/script (master)
 $ git add exif.ijs
 
-bakerjd99@NINJA /c/jod/j701/smugdev/script (master)
+bakerjd99@NINJA /c/jod/smugdev/script (master)
 $ git commit -m '(masspixels) added to description of (exif) interface'
 [master e93ffe5] (masspixels) added to description of (exif) interface
  1 files changed, 13 insertions(+), 11 deletions(-)
@@ -199,9 +196,9 @@ and then commits differences in \texttt{Git}.
    NB. edit/modify/create words and save changes ...
 
    #showpass pwf ''  NB. write and count word files
-+-+------------------------------------------+...
-|1|c:/jod/j701/joddev/alien/words/ASCII85.ijs|...
-+-+------------------------------------------+...
++-+-------------------------------------+...
+|1|c:/jod/joddev/alien/words/ASCII85.ijs|...
++-+-------------------------------------+...
 121
 \end{lstlisting}
 
@@ -209,18 +206,18 @@ and then commits differences in \texttt{Git}.
 ,basicstyle=\ttfamily\footnotesize,backgroundcolor=\color{CodeBackGround}]
 $ echo Step 2: Bash shell commands > /dev/null
 
-bakerjd99@NINJA /c/jod/j701/joddev/alien/words (master)
+bakerjd99@NINJA /c/jod/joddev/alien/words (master)
 $ pwd
-/c/jod/j701/joddev/alien/words
+/c/jod/joddev/alien/words
 
-bakerjd99@NINJA /c/jod/j701/joddev/alien/words (master)
+bakerjd99@NINJA /c/jod/joddev/alien/words (master)
 $ git status -s
  M pwf.ijs
 
-bakerjd99@NINJA /c/jod/j701/joddev/alien/words (master)
+bakerjd99@NINJA /c/jod/joddev/alien/words (master)
 $ git add pwf.ijs
 
-bakerjd99@NINJA /c/jod/j701/smugdev/script (master)
+bakerjd99@NINJA /c/jod/smugdev/script (master)
 $ git commit -m '(pwf) comments added'
 [master e93fga4] (pwf) comments added
  1 files changed, 3 insertions(+), 2 deletions(-)
