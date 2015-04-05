@@ -19,8 +19,9 @@ if exist C:\uap\j64-803\addons\general\joddocument\pdfdoc\jod.pdf copy jod.pdf C
 if exist C:\j64\j64-803\addons\general\joddocument\pdfdoc\jod.pdf copy jod.pdf C:\j64\j64-803\addons\general\joddocument\pdfdoc\jod.pdf
 if exist C:\j32\j602\addons\general\joddocument\pdfdoc\jod.pdf copy jod.pdf C:\j32\j602\addons\general\joddocument\pdfdoc\jod.pdf
 
-rem update stage directory
+rem update stage and svn release directories
 if exist C:\jod\joddev\alien\stage\joddocument\pdfdoc\jod.pdf copy jod.pdf C:\jod\joddev\alien\stage\joddocument\pdfdoc\jod.pdf
+if exist C:\jrelease\jaddons\general\joddocument\pdfdoc\jod.pdf copy jod.pdf C:\jrelease\jaddons\general\joddocument\pdfdoc\jod.pdf
 
 rem display pdf 
 title JOD/LaTeX complete displaying PDF ...
