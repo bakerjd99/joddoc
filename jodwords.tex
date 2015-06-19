@@ -1262,7 +1262,13 @@ see subsection~\ref{ss:genscripts} Generated Script Structure, on page~\pageref{
   mls 'appgroup' 
   
   NB. load group - postprocessor runs
-  load 'appgroup' 
+  load 'appgroup'
+  
+  NB. redirect generated script by setting 
+  NB. ROOTFOLDER to a configured J folder 
+  jpath '~user/jodroot' 
+  dpset 'ROOTFOLDER';'~user/jodroot'
+  mls 'appgroup'
 \end{lstlisting}
 
 \begin{wordhead}
