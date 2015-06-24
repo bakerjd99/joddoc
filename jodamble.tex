@@ -107,11 +107,36 @@
 %\definecolor{CodeComment}{rgb}{0,0.08,0.45}           % dark blue {0,0.08,0.45}
 \definecolor{CodeComment}{rgb}{0,0.50,0.00}           % dark green {0,0.45,0.08}
 \definecolor{TableStripes}{gray}{0.9}                 % odd/even background in tables
+\definecolor{keywcolor}{rgb}{0.13,0.29,0.53}          % code key word color
+
+
+% original document setting for J code 
+%\lstdefinelanguage{jdoc}
+%{morekeywords={Monad,Dyad},
+%sensitive=True,
+%morecomment=[l]{NB.}
+%}
+
+
+% There is a keyword substring problem in the lstlisting package that
+% I haven't found a way around. If you attempt to color two keywords
+% where one is a substring onf the other:
+%
+%    if.
+%    elseif.
+%
+% the substring will override making a mess of the coloring. The only
+% work around I've found is changing the input code to not have keyword substrings.
 
 \lstdefinelanguage{jdoc}
-{morekeywords={Monad,Dyad},
+{
+morekeywords={Monad,Dyad},
+otherkeywords={assert.,break.,continue.,for.,do.,elseif.,if.,else.,return.,select.,end.
+,while.,whilst.,throw.,catch.,catchd.,catcht.,try.,case.,fcase.},
 sensitive=True,
-morecomment=[l]{NB.}
+morecomment=[l]{NB.},
+morestring=[b]',
+morestring=[d]',
 }
 
 % overrides normal bash keywords - uncomment
@@ -120,18 +145,47 @@ morecomment=[l]{NB.}
 {morekeywords={git,pwd,echo},
 sensitive=True
 }
+
   
-% listings package settings  
+% listings package settings  - original document settings
 \lstset{%
   language=jdoc,                          % j document settings
   basicstyle=\ttfamily\small,             % print whole listing scriptsize
-  keywordstyle=\bfseries\small,  %keywordstyle=\color{red}\bfseries\small,  %  colored Monad and Dyad
+  keywordstyle=\ttfamily\bfseries\color{keywcolor}\small,  %keywordstyle=\color{red}\bfseries\small,  %  colored Monad and Dyad
   identifierstyle=,                       % nothing happens
   commentstyle=\slshape\color{CodeComment}, % colored slanted comments
-  stringstyle=\ttfamily,                  % typewriter type for strings
+  %stringstyle=\ttfamily,                  % typewriter type for strings
+  stringstyle=\color{red}\ttfamily,
   showstringspaces=false,                 % no special string spaces
   %backgroundcolor=\color{CodeBackGround} % listing box background 
 }
+
+
+%\lstset{%
+%  language=jdoc,                                % j document settings
+%  basicstyle=\ttfamily\small,            
+%  %keywordstyle=\bfseries\color{keywcolor}\small,
+%  keywordstyle=\bfseries\small,
+%  %identifierstyle=\color{black},
+%  identifierstyle=,
+%  commentstyle=\slshape\color{CodeComment},     % colored slanted comments
+%  stringstyle=\color{red}\ttfamily,
+%  showstringspaces=false,                       
+%  %backgroundcolor=\color{CodeBackGround},       
+%  frame=single,                                
+%  framesep=1pt,                                 
+%  framerule=0.8pt,                             
+%  rulecolor=\color{CodeBackGround},   
+%  showspaces=false,
+%  %numbers=left,
+%  %numberstyle=\footnotesize,
+%  %numbersep=9pt,
+%  tabsize=2,
+%  showtabs=false,
+%  %captionpos=t
+%  breaklines=true,                              
+%  breakindent=5pt                               
+%}
 
 % postscript draft in background
 %\special{!userdict begin /bop-hook{
