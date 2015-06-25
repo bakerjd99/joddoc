@@ -763,7 +763,13 @@ A basic JOD rule is that if you can \texttt{put} it you can \texttt{get} it.
   1 8 get ;:'explain tests'   
   
   NB. test case documentation
-  1 9 get 'radical'   
+  1 9 get 'radical'
+  
+  NB. get word names and timestamps 
+  0 _14 get ;:'our time stamps'
+  
+  NB. get macro names and timestamps
+  4 _14 get ;:'macro creation lastput'        
 \end{lstlisting}         
 
   \texttt{get} fetches information about stored\index{testing!\texttt{get}} tests.
