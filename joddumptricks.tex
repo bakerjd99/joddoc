@@ -1,16 +1,119 @@
 \section{Turning JOD Dump Script Tricks}\label{ap:joddumptricks}
 
-Dump script generation is my favorite JOD feature. Dump scripts essentially serialize 
+Dump script generation is my favorite JOD feature. Dump scripts serialize 
 JOD dictionaries; they are mainly used to backup dictionaries and interact with 
 version control systems: see appendix~\ref{ap:jodvcsys} on page~\pageref{ap:jodvcsys}.
 However, dump scripts are general J scripts and can do much more!  
 Maintaining a stable of healthy JOD dictionaries is easier 
-if you can turn a few dump script tricks.
+if you can turn a few dump script tricks.\footnote{Spicing up one's rhetoric with a double entendre 
+like ``turning tricks'' may be construed as a 
+\href{http://thefederalist.com/2015/03/24/microaggressions-and-trigger-warnings-meet-real-trauma/}{\emph{microaggression}}. 
+The point of colored language is to memorably make a point. 
+You are unlikely to forget \emph{turning dump script tricks.} 
+}
 
 \begin{enumerate}
-\item \textbf{Sharing code, tests and other objects:}
-\item \textbf{Flattening reference paths:}
-\item \textbf{Merging dictionaries:}
-\item \textbf{Updating master dictionary parameters:}
+
+\item \textbf{Flattening reference paths:} Open JOD dictionaries define a reference path: see appendix~\ref{ap:refpath} on page~\pageref{ap:refpath}.
+For example, if you open the following dictionaries:
+
+\begin{lstlisting}[frame=single,framerule=0pt,basicstyle=\ttfamily\footnotesize]
+   NB. open four dictionaries
+   od ;:'smugdev smug image utils'
++-+-----------------------+-------+----+-----+-----+
+|1|opened (ro/ro/ro/ro) ->|smugdev|smug|image|utils|
++-+-----------------------+-------+----+-----+-----+
+\end{lstlisting}
+
+The reference path is \texttt{/smugdev/smug/image/utils}.
+
+When objects are retrieved each dictionary on the path is searched in reference path order.
+If there are \emph{no compelling reasons} to maintain separate dictionaries you can improve
+JOD retrieval performance and simplify dictionary maintenance by flattening all or part of the path. 
+
+To flatten the reference path do:
+
+\begin{lstlisting}[frame=single,framerule=0pt,basicstyle=\ttfamily\footnotesize]
+   NB. reopen first three dictionaries on path
+   od ;:'smugdev smug image' [ 3 od ''
++-+--------------------+-------+----+-----+
+|1|opened (ro/ro/ro) ->|smugdev|smug|image|
++-+--------------------+-------+----+-----+
+
+   NB. dump to a temporary file (df)
+   df=: {: showpass make jpath '~temp/smugflat.ijs'
++-+---------------------------+--------------------------------------------+
+|1|object(s) on path dumped ->|c:/users/john/j64-803-user/temp/smugflat.ijs|
++-+---------------------------+--------------------------------------------+
+
+   NB. create a new flat dictionary
+   newd 'smugflat' [ 3 od ''
++-+---------------------+--------+---------------------------------------------+
+|1|dictionary created ->|smugflat|c:/users/john/j64-803-user/joddicts/smugflat/|
++-+---------------------+--------+---------------------------------------------+
+
+   NB. open the flat dictionary and (utils)
+   od ;:'smugflat utils'
++-+-----------------+--------+-----+
+|1|opened (rw/ro) ->|smugflat|utils|
++-+-----------------+--------+-----+
+  
+   NB. load the dump script 
+   0!:0 df
+\end{lstlisting}
+
+The collapsed path \texttt{/smugflat/utils} will return the same objects as the longer path.
+It is important to understand that the collapsed dictionary \texttt{smugflat} does not necessarily contain
+the same objects found in the three original dictionaries \texttt{smugdev}, \texttt{smug} and \texttt{image}.
+If objects with the same name exist in the original dictionaries only the first one found will 
+be in the collapsed dictionary.
+
+
+\item \textbf{Merging dictionaries:} If two dictionaries \emph{contain no overlapping objects} it might make
+sense to merge them. This is easily achieved with dump scripts. To merge two or more dictionaries do:
+
+\begin{lstlisting}[frame=single,framerule=0pt,basicstyle=\ttfamily\footnotesize]
+   NB. open and dump first dictionary
+   od 'dict0' [ 3 od ''
++-+--------------+-----+
+|1|opened (rw) ->|dict0|
++-+--------------+-----+
+   df0=: {: showpass make jpath '~temp/dict0.ijs'
++-+---------------------------+-----------------------------------------+
+|1|object(s) on path dumped ->|c:/users/john/j64-803-user/temp/dict0.ijs|
++-+---------------------------+-----------------------------------------+
+   
+   NB. open and dump second dictionary
+   od 'dict1' [ 3 od ''
++-+--------------+-----+
+|1|opened (rw) ->|dict1|
++-+--------------+-----+
+   df1=: {: showpass make jpath '~temp/dict1.ijs'
++-+---------------------------+-----------------------------------------+
+|1|object(s) on path dumped ->|c:/users/john/j64-803-user/temp/dict1.ijs|
++-+---------------------------+-----------------------------------------+
+   
+   NB. create new merge dictionary
+   newd 'mergedict' [ 3 od ''
++-+---------------------+---------+----------------------------------------------+
+|1|dictionary created ->|mergedict|c:/users/john/j64-803-user/joddicts/mergedict/|
++-+---------------------+---------+----------------------------------------------+
+   
+   NB. open merge dictionary and run dump scripts
+   od 'mergedict'
++-+--------------+---------+
+|1|opened (rw) ->|mergedict|
++-+--------------+---------+
+   0!:0 df0  NB. .... output omitted ... 
+   0!:0 df1
+\end{lstlisting}
+
+Be careful when merging dictionaries. If there are common objects the last object loaded is the one
+retained in the merged dictionary.
+
+
+
+\item \textbf{Updating master dictionary parameters:} When a new dictionary parameter is added to \texttt{jodparms.ijs}, 
+see () on page () it will not be available in existing dictionaries.
 \end{enumerate} 
 
