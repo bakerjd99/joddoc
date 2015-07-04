@@ -1670,6 +1670,14 @@ are stored as J character lists.
   NB. by DOCUMENTDICT with default 1
   dpset 'DOCUMENTDICT';0
   5 put 'this will not be stored' 
+\end{lstlisting}
+  
+Finally \texttt{put} can store timestamps in the form returned by \hyperlink{il:get}{\texttt{get}}.
+
+\begin{lstlisting}[frame=single,framerule=0pt]  
+  NB. push yyyymmdd.fd lastput dates 15 years forward
+  'rc nts'=: 0 _14 get }. dnl 'new'
+  0 _14 put (<0 150000 + "0 1 ;1{nts) 1} nts 
 \end{lstlisting}                  
 
 

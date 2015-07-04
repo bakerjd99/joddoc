@@ -1,6 +1,6 @@
 \section{Turning JOD Dump Script Tricks}\label{ap:joddumptricks}
 
-Dump script generation is my favorite JOD feature. Dump scripts serialize 
+Dump script\index{dump scripts} generation is my favorite JOD feature. Dump scripts serialize 
 JOD dictionaries; they are mainly used to backup dictionaries and interact with 
 version control systems: see appendix~\ref{ap:jodvcsys} on page~\pageref{ap:jodvcsys}.
 However, dump scripts are general J scripts and can do much more!  
@@ -25,7 +25,7 @@ For example, if you open the following dictionaries:
 +-+-----------------------+-------+----+-----+-----+
 \end{lstlisting}
 
-The reference path is \texttt{/smugdev/smug/image/utils}.
+The reference path\index{reference path} is \texttt{/smugdev/smug/image/utils}.
 
 When objects are retrieved each dictionary on the path is searched in reference path order.
 If there are \emph{no compelling reasons} to maintain separate dictionaries you can improve
@@ -34,7 +34,7 @@ JOD retrieval performance and simplify dictionary maintenance by flattening all 
 To flatten the reference path do:
 
 \begin{lstlisting}[frame=single,framerule=0pt,basicstyle=\ttfamily\footnotesize]
-   NB. reopen first three dictionaries on path
+   NB. reopen the first three dictionaries on the path
    od ;:'smugdev smug image' [ 3 od ''
 +-+--------------------+-------+----+-----+
 |1|opened (ro/ro/ro) ->|smugdev|smug|image|
@@ -51,14 +51,18 @@ To flatten the reference path do:
 +-+---------------------+--------+---------------------------------------------+
 |1|dictionary created ->|smugflat|c:/users/john/j64-803-user/joddicts/smugflat/|
 +-+---------------------+--------+---------------------------------------------+
+\end{lstlisting}
 
+\newpage
+
+\begin{lstlisting}[frame=single,framerule=0pt,basicstyle=\ttfamily\footnotesize]
    NB. open the flat dictionary and (utils)
    od ;:'smugflat utils'
 +-+-----------------+--------+-----+
 |1|opened (rw/ro) ->|smugflat|utils|
 +-+-----------------+--------+-----+
   
-   NB. load the dump script 
+   NB. reload dump script ... output not shown ...  
    0!:0 df
 \end{lstlisting}
 
@@ -98,13 +102,19 @@ sense to merge them. This is easily achieved with dump scripts. To merge two or 
 +-+---------------------+---------+----------------------------------------------+
 |1|dictionary created ->|mergedict|c:/users/john/j64-803-user/joddicts/mergedict/|
 +-+---------------------+---------+----------------------------------------------+
+\end{lstlisting}
+
+   \newpage
    
+\begin{lstlisting}[frame=single,framerule=0pt,basicstyle=\ttfamily\footnotesize]   
    NB. open merge dictionary and run dump scripts
    od 'mergedict'
 +-+--------------+---------+
 |1|opened (rw) ->|mergedict|
 +-+--------------+---------+
-   0!:0 df0  NB. .... output omitted ... 
+
+   NB. reload dump scripts ... output not shown ...  
+   0!:0 df0  
    0!:0 df1
 \end{lstlisting}
 
@@ -112,8 +122,61 @@ Be careful when merging dictionaries. If there are common objects the last objec
 retained in the merged dictionary.
 
 
+\item \textbf{Updating master file parameters:} When a new parameter\index{dictionary!parameters} is added to \texttt{jodparms.ijs}, 
+see appendix~\ref{ap:jodparms} on page~\pageref{ap:jodparms}, it will not be available in existing dictionaries.
+With dump scripts you can rebuild existing dictionaries and update parameters. To rebuild a dictionary with
+new or custom parameters do:
 
-\item \textbf{Updating master dictionary parameters:} When a new dictionary parameter is added to \texttt{jodparms.ijs}, 
-see () on page () it will not be available in existing dictionaries.
+\begin{lstlisting}[frame=single,framerule=0pt,basicstyle=\ttfamily\footnotesize]
+   NB. save current dictionary registrations
+   (toHOST ; 1 { 5 od '') write_ajod_ jpath '~temp/jodregister.ijs'
+   
+   NB. open dictionary requiring parameter update 
+   od 'dict0' [ 3 od ''
++-+--------------+-----+
+|1|opened (rw) ->|dict0|
++-+--------------+-----+
+   
+   NB. dump dictionary and close
+   df=: {: showpass make jpath '~temp/dict0.ijs'
++-+---------------------------+-----------------------------------------+
+|1|object(s) on path dumped ->|c:/users/john/j64-803-user/temp/dict0.ijs|
++-+---------------------------+-----------------------------------------+
+
+   3 od ''
++-+---------+-----+
+|1|closed ->|dict0|
++-+---------+-----+
+
+   NB. erase master file and JOD object id file
+   ferase jpath '~addons/general/jod/jmaster.ijf'
+1
+   ferase jpath '~addons/general/jod/jod.ijn'
+1
+\end{lstlisting}
+
+\newpage
+
+\begin{lstlisting}[frame=single,framerule=0pt,basicstyle=\ttfamily\footnotesize]
+   NB. recycle JOD - this recreates (jmaster.ijf) and (jod.ijn) 
+   NB. using the new dictionary parameters defined in (jodparms.ijs)   
+   (jodon , jodoff) 1
+1 1
+
+   NB. re-register dictionaries
+   load jpath '~temp/jodregister.ijs'
+
+   NB. create a new dictionary - it will have the new parameters
+   newd 'dict0new'
+   
+   NB. reload dump script ... output not shown ...
+   0!:0 df  
+\end{lstlisting}
+
+Before executing complex dump script procedures \emph{back up your JOD dictionary folders} and play with 
+dump scripts on test dictionaries. Dump scripts are essential JOD dictionary maintenance tools but like
+all powerful tools they must be used with care. 
+
+
 \end{enumerate} 
 
