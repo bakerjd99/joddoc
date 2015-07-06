@@ -1,7 +1,7 @@
 \section{Turning JOD Dump Script Tricks}\label{ap:joddumptricks}
 
 Dump script\index{dump scripts} generation is my favorite JOD feature. Dump scripts serialize 
-JOD dictionaries; they are mainly used to backup dictionaries and interact with 
+JOD dictionaries; they are mainly used to back up dictionaries and interact with 
 version control systems: see appendix~\ref{ap:jodvcsys} on page~\pageref{ap:jodvcsys}.
 However, dump scripts are general J scripts and can do much more!  
 Maintaining a stable of healthy JOD dictionaries is easier 
@@ -10,7 +10,7 @@ like ``turning tricks'' may be construed as a
 \href{http://thefederalist.com/2015/03/24/microaggressions-and-trigger-warnings-meet-real-trauma/}{\emph{microaggression}}. 
 The point of colored language is to memorably make a point. 
 You are unlikely to forget \emph{turning dump script tricks.} 
-}
+} The following examples assume a configured folder \verb|JODTEST|: see Section~\ref{ss:jodcfgdesc} on~\pageref{ss:jodcfgdesc}.
 
 \begin{enumerate}
 
@@ -41,16 +41,16 @@ To flatten the reference path do:
 +-+--------------------+-------+----+-----+
 
    NB. dump to a temporary file (df)
-   df=: {: showpass make jpath '~temp/smugflat.ijs'
-+-+---------------------------+--------------------------------------------+
-|1|object(s) on path dumped ->|c:/users/john/j64-803-user/temp/smugflat.ijs|
-+-+---------------------------+--------------------------------------------+
+   df=: {: showpass make jpath '~JODTEST/smugflat.ijs'
++-+---------------------------+----------------------------+
+|1|object(s) on path dumped ->|c:/jodtest/test/smugflat.ijs|
++-+---------------------------+----------------------------+
 
    NB. create a new flat dictionary
-   newd 'smugflat' [ 3 od ''
-+-+---------------------+--------+---------------------------------------------+
-|1|dictionary created ->|smugflat|c:/users/john/j64-803-user/joddicts/smugflat/|
-+-+---------------------+--------+---------------------------------------------+
+   newd 'smugflat';jpath '~JODTEST/smugflat' [ 3 od ''
++-+---------------------+--------+-------------------------+
+|1|dictionary created ->|smugflat|c:/jodtest/test/smugflat/|
++-+---------------------+--------+-------------------------+
 \end{lstlisting}
 
 \newpage
@@ -82,26 +82,26 @@ sense to merge them. This is easily achieved with dump scripts. To merge two or 
 +-+--------------+-----+
 |1|opened (rw) ->|dict0|
 +-+--------------+-----+
-   df0=: {: showpass make jpath '~temp/dict0.ijs'
-+-+---------------------------+-----------------------------------------+
-|1|object(s) on path dumped ->|c:/users/john/j64-803-user/temp/dict0.ijs|
-+-+---------------------------+-----------------------------------------+
+   df0=: {: showpass make jpath '~JODTEST/dict0.ijs'
++-+---------------------------+-------------------------+
+|1|object(s) on path dumped ->|c:/jodtest/test/dict0.ijs|
++-+---------------------------+-------------------------+
    
    NB. open and dump second dictionary
    od 'dict1' [ 3 od ''
 +-+--------------+-----+
 |1|opened (rw) ->|dict1|
 +-+--------------+-----+
-   df1=: {: showpass make jpath '~temp/dict1.ijs'
-+-+---------------------------+-----------------------------------------+
-|1|object(s) on path dumped ->|c:/users/john/j64-803-user/temp/dict1.ijs|
-+-+---------------------------+-----------------------------------------+
-   
+   df1=: {: showpass make jpath '~JODTEST/dict1.ijs'
++-+---------------------------+-------------------------+
+|1|object(s) on path dumped ->|c:/jodtest/test/dict1.ijs|
++-+---------------------------+-------------------------+   
+  
    NB. create new merge dictionary
-   newd 'mergedict' [ 3 od ''
-+-+---------------------+---------+----------------------------------------------+
-|1|dictionary created ->|mergedict|c:/users/john/j64-803-user/joddicts/mergedict/|
-+-+---------------------+---------+----------------------------------------------+
+   newd 'mergedict';jpath '~JODTEST/mergedict' [ 3 od ''
++-+---------------------+---------+--------------------------+
+|1|dictionary created ->|mergedict|c:/jodtest/test/mergedict/|
++-+---------------------+---------+--------------------------+
 \end{lstlisting}
 
    \newpage
@@ -129,7 +129,7 @@ new or custom parameters do:
 
 \begin{lstlisting}[frame=single,framerule=0pt,basicstyle=\ttfamily\footnotesize]
    NB. save current dictionary registrations
-   (toHOST ; 1 { 5 od '') write_ajod_ jpath '~temp/jodregister.ijs'
+   (toHOST ; 1 { 5 od '') write_ajod_ jpath '~JODTEST/jodregister.ijs'
    
    NB. open dictionary requiring parameter update 
    od 'dict0' [ 3 od ''
@@ -138,10 +138,10 @@ new or custom parameters do:
 +-+--------------+-----+
    
    NB. dump dictionary and close
-   df=: {: showpass make jpath '~temp/dict0.ijs'
-+-+---------------------------+-----------------------------------------+
-|1|object(s) on path dumped ->|c:/users/john/j64-803-user/temp/dict0.ijs|
-+-+---------------------------+-----------------------------------------+
+   df=: {: showpass make jpath '~JODTEST/dict0.ijs'
++-+---------------------------+-------------------------+
+|1|object(s) on path dumped ->|c:/jodtest/test/dict0.ijs|
++-+---------------------------+-------------------------+
 
    3 od ''
 +-+---------+-----+
@@ -164,7 +164,7 @@ new or custom parameters do:
 1 1
 
    NB. re-register dictionaries
-   load jpath '~temp/jodregister.ijs'
+   load jpath '~JODTEST/jodregister.ijs'
 
    NB. create a new dictionary - it will have the new parameters
    newd 'dict0new'
