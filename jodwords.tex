@@ -539,7 +539,7 @@ text in that it is not prefixed with leading \verb|NB.|'s.
 \hypertarget{il:dpset}{\texttt{dpset}} modifies dictionary parameters. JOD uses a 
 variety of values that control putting, getting and generating objects. 
 Parameters\index{dictionary!parameters} are stored in individual dictionaries and 
-the master file. Master file parameters\index{parameters|see{dictionary}} are initially 
+the master file. Master file\index{master file} parameters\index{parameters|see{dictionary}} are initially 
 set from the \verb|jodparms.ijs| file, see appendix~\ref{ap:jodparms}, on
 page~\pageref{ap:jodparms}, and cannot be reset without 
 editing \verb|jodparms.ijs| and recreating the master file. Individual 
@@ -558,7 +558,7 @@ that are set in code and require script edits to change.
 
 If JOD, or the host OS crashes, the master file could be
  left in a state that makes it impossible to reopen dictionaries.
-  \verb|dpset 'RESETME'| and \verb|dpset 'RESETALL'| clear read status codes in the master file.
+  \verb|dpset 'RESETME'| and \verb|dpset 'RESETALL'| clear read status codes in the master file.\index{master file}
    \texttt{RESETME} resets all dictionaries recently opened from the current machine. 
    \texttt{RESETALL} resets all dictionaries in the master file.  
    In the worst case you can rebuild the master file by:
@@ -1536,7 +1536,7 @@ A \texttt{packd} operation can be reversed with \hyperlink{il:restd}{\texttt{res
 no JOD facility for deleting  backup files. To erase backup files use OS facilities. 
 
 The read/write status of a dictionary is recorded in 
-the master file. JOD assumes all tasks point to the same master file.\footnote{There is one
+the master file. JOD assumes all tasks point to the same master file.\index{master file}\footnote{There is one
 important exception to the single \texttt{jmaster.ijf} rule. \texttt{READONLY}
 dictionaries can be safely registered in different master files. This allows 
 easy sharing of \texttt{READONLY} library dictionaries on network drives with
