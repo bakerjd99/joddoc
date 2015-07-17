@@ -86,27 +86,6 @@ result.
   Prior to compressing a word apply \hyperlink{il:globs}{\texttt{globs}}, 
   see page~\pageref{ss:globs}, to expose any name problems.
 
-  \texttt{compj} compression can be limited to \emph{white space removal} by
-  marking explicit words with the comment tag \textcolor{CodeComment}{\texttt{\textsl{(-.)=:}}}.\index{comment tag!\texttt{(-.)=:}}
-
-\begin{lstlisting}[frame=single,framerule=0pt]
-donotsqueeze=: 4 : 0
-
-NB. I have local names that occur in quoted strings.
-NB. Compressing me will end civilization as we know it.
-NB. Use the comment tag (-.)=: anywhere to save the day.
-
-NB. do not compress (-.)=:
-home=. 2 * y
-heart=. x - 1
-if. 0=|home do.
-  'home is where the heart is'
-else.
-  'heart health helps'
-end.
-)
-\end{lstlisting}
-
   Ambiguous names in J are words created in object instances,
   temporary locale globals, names masked by indirect assignments\index{assignments!indirect} and objects
   created with execute. When you use ambiguous names augment your code with
@@ -168,7 +147,59 @@ NB. !(*)=. THIS STUFF IS INSIDE AN OBJECT
 )
 \end{lstlisting}
 
-    More examples of the use of comment scope tags can be found in 
+ \texttt{compj} recognizes two additional comment tags \textcolor{CodeComment}{\texttt{\textsl{(-.)=:}}}
+ and \textcolor{CodeComment}{\texttt{\textsl{(/:)=:}}}. The first limits compression to only white space removal
+ and the second \emph{obfuscates} local names.
+ 
+\begin{enumerate}
+\item
+  \texttt{compj} compression can be limited to \emph{white space removal} by
+  marking explicit words with the comment tag \textcolor{CodeComment}{\texttt{\textsl{(-.)=:}}}.\index{comment tag!\texttt{(-.)=:}}
+
+\begin{lstlisting}[frame=single,framerule=0pt]
+donotsqueeze=: 4 : 0
+
+NB. I have local names that occur in quoted strings.
+NB. Compressing me will end civilization as we know it.
+NB. Use the comment tag (-.)=: anywhere to save the day.
+
+NB. do not compress (-.)=:
+home=. 2 * y
+heart=. x - 1
+if. 0=|home do.
+  'home is where the heart is'
+else.
+  'heart health helps'
+end.
+)
+\end{lstlisting}
+
+\item
+\texttt{compj} will obfuscate local names when explicit words are marked with the comment tag
+\textcolor{CodeComment}{\texttt{\textsl{(/:)=:}}}\index{comment tag!\texttt{(/:)=:}}. Name obfuscation
+makes code difficult to read and should only be used when words are running general scripts with 
+\verb|0!:k| foreigns. 
+\textcolor{CodeComment}{\texttt{\textsl{(-.)=:}}} overrides \textcolor{CodeComment}{\texttt{\textsl{(/:)=:}}}.
+
+\begin{lstlisting}[frame=single,framerule=0pt]
+obfuscateme=: 3 : 0
+
+NB. I run a script that may reassign my names.
+NB. Obfuscation makes this unlikely.
+
+NB. (/:)=: do not eschew obfuscation
+script=. y
+
+NB. running (script) may clash with local (script)
+0!:000 y
+
+'bytes run' , ":# script
+)
+\end{lstlisting}
+
+\end{enumerate}
+
+    More examples of the use of comment tags can be found in 
       JOD source code.  JOD source code is not 
      distributed with JOD.  You can get JOD source code by installing
      the  \href{http://www.jsoftware.com/jwiki/Addons/general/jodsource}{\texttt{jodsource}}
