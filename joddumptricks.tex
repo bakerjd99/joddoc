@@ -169,6 +169,10 @@ new or custom parameters do:
    NB. create a new dictionary - it will have the new parameters
    newd 'dict0new'
    
+   NB. open the new dictionary - taking care to include all 
+   NB. dictionaries on (dict0)'s reference path
+   od ;:'dict0new utils' [ 3 od ''
+   
    NB. reload dump script ... output not shown ...
    0!:0 df  
 \end{lstlisting}
