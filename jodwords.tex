@@ -49,7 +49,82 @@ result.
 
 \subsection{\texttt{bget} --- backup get NIMP}\label{ss:bget}\index{backup!\texttt{bget}}   
 
-\subsection{\texttt{bnl} --- backup name lists NIMP}\label{ss:bnl}\index{backup!\texttt{bnl}}\index{search!names!\texttt{bnl}}    
+\subsection{\texttt{bnl} --- backup name lists}\label{ss:bnl}\index{backup!\texttt{bnl}}\index{search!names!\texttt{bnl}}
+
+  \hypertarget{il:bnl}{\texttt{bnl}} searches \emph{put dictionary} backups, 
+  see appendix~\ref{ap:refpath} on page~\pageref{ap:refpath}, and returns backup name lists. 
+  \texttt{bnl}'s arguments are similiar to \hyperlink{il:dnl}{\texttt{dnl}}, see page~\pageref{ss:dnl}.
+  
+  \begin{wordhead}
+\monad & bnl zl \argsep clPstr \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt]
+  NB. list all put dictionary backup numbers
+  bnl '.'
+  
+  NB. words in last put dictionary backup
+  bnl ''
+ 
+  NB. words in last backup matching prefix 
+  bnl 'prefix'
+  
+  NB. words in backup #42 matching prefix
+  bnl 'prefix.42'
+\end{lstlisting}
+
+\begin{wordhead}
+\dyad & iaObject bnl zl \argsep clPstr \\
+      & (iaObject,iaOption) bnl zl \argsep clPstr \\
+      & (iaObject,iaOption,iaQualifier) bnl zl  \\
+      & (iaObject,iaOption,iaQualifier) bnl clPstr \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt]
+  0 bnl ''     NB. all words in last backup (monad)
+  0 bnl '.11'  NB. all words in backup #11
+  
+  1 bnl ''     NB. all tests in last backup
+  1 bnl '.13'  NB. all tests in backup #13
+  
+  2 bnl ''     NB. all groups in last backup
+  2 bnl '.7'   NB. all groups in backup #7
+
+  NB. suites in backup #14 beginning with boo
+  3 bnl 'boo.14'  
+  
+  NB. words in last backup containing the string str
+  0 2 bnl 'str'
+  
+  NB. words in backup #6 containg the string ass
+  0 2 bnl 'ass.6'  
+  
+  NB. words in all backups containing yada
+  0 2&bnl&> (<'yada') ,&.> }. bnl '.'
+  
+  NB. word names in last backup ending with string str 
+  0 3 bnl 'str'  
+
+  NB. adverbs in backup #17 beginning with str
+  0 1 1 bnl 'str.17'  
+  
+  NB. verb names in last backup containing str
+  0 2 3 bnl 'str'  
+  
+  NB. nouns in backup #9 ending with str
+  0 3 0 bnl 'str.9'
+  
+  NB. nouns in all backups ending with EX 
+  0 3 0&bnl&> (<'EX') ,&.> }. bnl '.'  
+
+  NB. J macro names beginning with jscript
+  4 1 21 bnl 'jscript' 
+
+  NB. Markdown macro names in backup #18 containing mark
+  4 2 27 bnl 'mark.18'   
+  
+  NB. TEXT macro names in backup #23 ending badly 
+  4 3 25 bnl 'badly.23' 
+\end{lstlisting}
+ 
 
 \subsection{\texttt{compj} --- compress J code}
 
