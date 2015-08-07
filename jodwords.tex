@@ -639,7 +639,10 @@ you are absolutely sure you will not reset other tasks!
   dpset 'READWRITE'   
   
   NB. use ascii85 in dump scripts 
-  dpset 'ASCII85';1    
+  dpset 'ASCII85';1   
+  
+  NB. retain age of objects in dump scripts
+  dpset 'RETAINAGE';1  
 \end{lstlisting}
 
 
@@ -657,6 +660,10 @@ them in an edit\index{edit!\texttt{ed}} window for editing.\index{test suite}
   
   NB. put many words in edit window 
   ed ;:'many words edited' 
+  
+  NB. edit objects in (name,[class],value) tables 
+  ed ; 1 { 4 get }. 4 1 21 dnl 'build'
+  ed ; 1 { bget <;._1 ' me.12 me.09 me.08 me.02'
 \end{lstlisting} 
 
 \begin{wordhead}
