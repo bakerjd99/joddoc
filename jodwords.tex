@@ -52,7 +52,7 @@ result.
 \subsection{\texttt{bnl} --- backup name lists}\label{ss:bnl}\index{backup!\texttt{bnl}}\index{search!names!\texttt{bnl}}
 
   \hypertarget{il:bnl}{\texttt{bnl}} searches \emph{put dictionary} backups, 
-  see appendix~\ref{ap:refpath} on page~\pageref{ap:refpath}, and returns backup name lists. 
+  see page~\pageref{xr:putdic} and appendix~\ref{ap:refpath} on page~\pageref{ap:refpath}, and returns backup name lists. 
   \texttt{bnl}'s arguments are similiar to \hyperlink{il:dnl}{\texttt{dnl}}, see page~\pageref{ss:dnl}.
   
   \begin{wordhead}
@@ -64,6 +64,9 @@ result.
   
   NB. words in last put dictionary backup
   bnl ''
+  
+  NB. all words in all backups
+  bnl&> }. bnl '.'
  
   NB. words in last backup matching prefix 
   bnl 'prefix'
@@ -118,7 +121,7 @@ result.
   NB. J macro names beginning with jscript
   4 1 21 bnl 'jscript' 
 
-  NB. Markdown macro names in backup #18 containing mark
+  NB. MARKDOWN macro names in backup #18 containing mark
   4 2 27 bnl 'mark.18'   
   
   NB. TEXT macro names in backup #23 ending badly 
@@ -140,8 +143,8 @@ result.
 \end{verbatim}
 
   is an example of a compressed J script. In its fully commented
-  form this script is about 192 kilobytes when squeezed with
-  \texttt{compj} it shrinks to about 72 kilobytes.
+  form this script is about 212 kilobytes when squeezed with
+  \texttt{compj} it shrinks to about 75 kilobytes.
   \texttt{compj} does not compress words in JOD
   dictionaries it returns a compressed script result.
   
