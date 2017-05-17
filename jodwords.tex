@@ -1009,6 +1009,36 @@ references the word must be in the put dictionary,\index{put dictionary} all
 word references must exist on the path and the current 
 path must match the put dictionary reference path. 
 
+Finally, \texttt{globs} expects all assigned local and global word names to differ. If \texttt{globs}
+finds names that are both globally and locally assigned it returns a mixed assignments error.
+
+\begin{lstlisting}[frame=single,framerule=0pt]
+mixedassignment=: 3 : 0
+
+NB. I have a mixed global and local assignment. Usually, this is 
+NB. poor name choice but there are good reasons for such assignments.
+
+names=. ;:'we are going to be globals'
+(names)=: <'clandestine global'
+)
+\end{lstlisting}
+
+\noindent To override \texttt{globs} mixed assignment handling use the comment tag
+ \textcolor{CodeComment}{\texttt{\textsl{(<:)=:}}}\index{comment tag!\texttt{(<:)=:}}.
+If this tag is used anywhere in a word definition \texttt{globs} will ignore any 
+mixed assignments in the tagged word.
+
+\begin{lstlisting}[frame=single,framerule=0pt]
+confusing=: 3 : 0
+
+NB. allow mixed assignments (<:)=:
+scopeless=. <'cis_scoping_is_so_un_woke'
+(scopeless)=: scopeless 
+)
+\end{lstlisting}
+
+
+
 \begin{wordhead}
 \monad & globs clName \\
 \end{wordhead}
