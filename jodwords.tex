@@ -1439,7 +1439,91 @@ see subsection~\ref{ss:genscripts} Generated Script Structure, on page~\pageref{
   2 mls 'bstats' 
 \end{lstlisting}
 
-\subsection{\texttt{mnl} --- master name lists NIMP}\label{ss:mnl}\index{search!names!\texttt{mnl}}
+\subsection{\texttt{mnl} --- master name lists}\label{ss:mnl}\index{search!names!\texttt{mnl}}
+
+\hypertarget{il:mnl}{\texttt{mnl}} searches\index{dictionary!search!\texttt{mnl}} 
+the name lists of all registered dictionaries, see \hyperlink{il:regd}{\texttt{regd}} on page~\pageref{ss:regd}.
+ \texttt{mnl} does not require open dictionaries. 
+\texttt{mnl}'s arguments mirror \hyperlink{il:dnl}{\texttt{dnl}} with the 
+exception of negative option codes, see page~\pageref{ss:dnl}.  
+The primary use of \texttt{mnl} is looking for duplicate names. Duplicate names limit the utility of words
+and make it difficult to use dictionaries on arbitrary paths.
+If the dictionaries \texttt{d0}, \texttt{d1} and \texttt{d2}
+contain common names the paths resulting from the following commands 
+are not necessarily the same.
+
+\begin{lstlisting}[frame=single,framerule=0pt] 
+  od ;:'d0 d1 d2' 
+  od ;:'d2 d0 d1'   
+\end{lstlisting}
+
+\begin{wordhead}
+\monad & mnl zl \argsep clPstr \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt]
+  NB. list all words in all registered dictionaries
+  mnl '' 
+
+  NB. list all words in all dictionaries that begin with prefix
+  mnl 'prefix' 
+\end{lstlisting}
+
+\begin{wordhead}
+\dyad & iaObject mnl zl \argsep clPstr \\
+      & (iaObject,iaOption) mnl zl \argsep clPstr \\
+      & (iaObject,iaOption,iaQualifier) mnl zl  \\
+      & (iaObject,iaOption,iaQualifier) mnl clPstr \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt]
+  0 mnl ''  NB. all words in all dictionaries (monad)
+  1 mnl ''  NB. all tests in all dictionaries
+  2 mnl ''  NB. all groups in all dictionaries
+  3 mnl ''  NB. all suites in all dictionaries
+  4 mnl ''  NB. all macros in all dictionaries
+  
+  NB. match word names beginning with str
+  0 1 mnl 'str'  
+  
+  NB. match word names containing the string str
+  0 2 mnl 'str'  
+  
+  NB. match word names ending with string str 
+  0 3 mnl 'str'  
+
+  NB. words and macros have an optional third
+  NB. item that denotes name class or type
+  
+  NB. adverb names beginning with str
+  0 1 1 mnl 'str'  
+  
+  NB. verb names containing str
+  0 2 3 mnl 'str'  
+  
+  NB. nouns ending with str
+  0 3 0 mnl 'str'  
+
+  NB. J macro names beginning with jscript
+  4 1 21 mnl 'jscript' 
+
+  NB. LaTeX macro names containing latex
+  4 2 22 mnl 'latex'   
+  
+  NB. HTML macro names ending with html 
+  4 3 23 mnl 'html' 
+\end{lstlisting}
+
+A negative second item option code returns duplicate names.
+
+\begin{lstlisting}[frame=single,framerule=0pt] 
+  NB. duplicate words containing str
+  0 _2 3 mnl 'str' 
+  
+  NB. duplicate group names beginning with so
+  2 _1 mnl 'so'   
+  
+  NB. duplicate suite names ending with str
+  3 _3 mnl 'str'   
+\end{lstlisting}
 
 \subsection{\texttt{newd} --- create a new dictionary}\label{ss:newd} 
 
