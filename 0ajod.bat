@@ -15,11 +15,8 @@ ps2pdf jod.ps
 if not exist jod.pdf goto TheEnd
 
 rem copy jod.pdf to working jod directories
-rem if exist C:\uap\j64-803\addons\general\joddocument\pdfdoc\jod.pdf copy jod.pdf C:\uap\j64-803\addons\general\joddocument\pdfdoc\jod.pdf 
-rem if exist C:\uap\j64-804\addons\general\joddocument\pdfdoc\jod.pdf copy jod.pdf C:\uap\j64-804\addons\general\joddocument\pdfdoc\jod.pdf 
-rem if exist C:\j64\j64-803\addons\general\joddocument\pdfdoc\jod.pdf copy jod.pdf C:\j64\j64-803\addons\general\joddocument\pdfdoc\jod.pdf
-if exist C:\j64\j64-804\addons\general\joddocument\pdfdoc\jod.pdf copy jod.pdf C:\j64\j64-804\addons\general\joddocument\pdfdoc\jod.pdf
-if exist C:\j64\j64-805\addons\general\joddocument\pdfdoc\jod.pdf copy jod.pdf C:\j64\j64-805\addons\general\joddocument\pdfdoc\jod.pdf
+if exist C:\j64\j64-806\addons\general\joddocument\pdfdoc\jod.pdf copy jod.pdf C:\j64\j64-806\addons\general\joddocument\pdfdoc\jod.pdf
+if exist C:\j64\j64-807\addons\general\joddocument\pdfdoc\jod.pdf copy jod.pdf C:\j64\j64-807\addons\general\joddocument\pdfdoc\jod.pdf
 if exist C:\j32\j602\addons\general\joddocument\pdfdoc\jod.pdf copy jod.pdf C:\j32\j602\addons\general\joddocument\pdfdoc\jod.pdf
 
 rem update stage and svn release directories
