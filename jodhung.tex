@@ -70,10 +70,10 @@ To succinctly describe a J noun you need to be mindful of:
 
 \begin{lstlisting}[frame=single,framerule=0pt,basicstyle=\ttfamily\footnotesize] 
 datatype=: 3 : 0
-  n=. 1 2 4 8 16 32 64 128 1024 2048 4096 8192 16384 32768 65536 131072
+  n=. 1 2 4 8 16 32 64 128 1024 2048 4096 8192 16384 32768 65536 131072 262144
   t=. '/boolean/literal/integer/floating/complex/boxed/extended/rational'
   t=. t,'/sparse boolean/sparse literal/sparse integer/sparse floating'
-  t=. t,'/sparse complex/sparse boxed/symbol/unicode'
+  t=. t,'/sparse complex/sparse boxed/symbol/unicode/unicode4'
   (n i. 3!:0 y) pick <;._1 t
 )
 
@@ -135,7 +135,8 @@ the film \emph{Pirates of the Caribbean} these rules are more like \emph{guideli
  SJ\T\B & \textcolor{CodeComment}{\textsl{sparse complex}}  & 16384 \\ 
  SB\T\B & \textcolor{CodeComment}{\textsl{sparse boxed}}    & 32768 \\ 
  s\T\B  & \textcolor{CodeComment}{\textsl{symbol}}          & 65536  \\                 
- w\T\B  & \textcolor{CodeComment}{\textsl{unicode}}         & 131072 \\ \hline
+ w\T\B  & \textcolor{CodeComment}{\textsl{unicode}}         & 131072 \\ 
+ W\T\B  & \textcolor{CodeComment}{\textsl{unicode4}}        & 262144 \\ \hline
 \end{tabular}
   }
   \hspace{0.6cm} %\hfill
