@@ -181,7 +181,7 @@ pages~\pageref{tab:objcodes}, \pageref{tab:qualcodes} and \pageref{tab:objneg}.
 \verb|4 1 21 dnl 'POST_'  | \textcolor{CodeComment}{\ttfamily\textsl{NB. list postprocessors}} \\
 \end{tabular} 
 \end{minipage} \\ \hline
-\texttt{LATEX\T\B} & 22 & \LaTeXe text code  & \begin{minipage}{3.9in}
+\texttt{LATEX\T\B} & 22 & \LaTeX\ text code  & \begin{minipage}{3.9in}
 \begin{tabular}{l}
 \verb|4 get }. 4 3 22 dnl 'TEX'  | \textcolor{CodeComment}{\ttfamily\textsl{NB. get LaTeX macros}} \\
 \end{tabular} 
@@ -206,16 +206,43 @@ pages~\pageref{tab:objcodes}, \pageref{tab:qualcodes} and \pageref{tab:objneg}.
 \verb|4 put 'BYTEME';a.|  \\
 \end{tabular} 
 \end{minipage} \\ \hline
+
 \texttt{MARKDOWN\T\B} & 27 & \href{http://daringfireball.net/projects/markdown/}{MARKDOWN} text code & \begin{minipage}{3.9in}
 \begin{tabular}{l}
 \verb|5 put 'Main **dictionary** document' |  \\
 \end{tabular} 
 \end{minipage} \\ \hline
+
 \texttt{UTF8\T\B} & 28 & Unicode UTF8 text & \begin{minipage}{3.9in}
 \begin{tabular}{l}
 \verb|4 put 'UTF8TEXT';UTF8_ajod_;(8 u: 4 u: 56788 4578,65+i.5)  |  \\
 \end{tabular} 
 \end{minipage} \\ \hline
+
+\texttt{PYTHON\T\B} & 29 & Python script text & \begin{minipage}{3.9in}
+\begin{tabular}{l}
+\verb|4 put 'Pytext';PYTHON_ajod_;'2 ** 1024'  |  \\
+\end{tabular} 
+\end{minipage} \\ \hline
+
+\texttt{SQL\T\B} & 30 & SQL script text & \begin{minipage}{3.9in}
+\begin{tabular}{l}
+\verb|4 put 'SQLTEST';SQL_ajod_;'select * from yada'  |  \\
+\end{tabular} 
+\end{minipage} \\ \hline
+
+\texttt{JSON\T\B} & 31 & JSON text & \begin{minipage}{3.9in}
+\begin{tabular}{l}
+\verb|4 put 'JSONTEXT';JSON_ajod_;'{boo: 22}'  |  \\
+\end{tabular} 
+\end{minipage} \\ \hline
+
+
+%\texttt{PYTHON\T\B} & 29 & Python script text & \begin{minipage}{3.9in}
+%\begin{tabular}{l}
+%\verb|4 put 'PYTHONTEXT';PYTHON_ajod_;'2 ** 1024'  |  \\
+%\end{tabular} 
+%\end{minipage} \\ \hline
     \end{tabular}
    \caption{JOD Qualifier Codes}
   \label{tab:qualcodes}
