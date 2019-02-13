@@ -2081,7 +2081,71 @@ and \texttt{rtt} applies it to dictionary test scripts.\index{test suite}
   4 rtt 'silentsuite'      
 \end{lstlisting}   
 
-\subsection{\texttt{rxs} --- regular expression search NIMP}\label{ss:rxs}\index{search!text!\texttt{rxs}}               
+\subsection{\texttt{rxs} --- regular expression search}\label{ss:rxs}\index{search!text!\texttt{rxs}}
+
+\hypertarget{il:rxs}{\texttt{rxs}} searches dictionary \emph{text objects} with regular expressions.\index{regular expressions!\texttt{rxs}}
+Text objects are essentially all nonnouns.  Typical text objects are verbs, test cases, macros,  group and suite headers, 
+long and short documentation texts, and dictionary documentation.
+\texttt{rxs}'s arguments use JOD object and qualifier codes: see appendix~\ref{ap:objqualcodes} on
+page~\pageref{ap:objqualcodes}.
+
+\begin{wordhead}
+\monad & rxs blclNames \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt]
+  NB. all nonempty nonnoun search text
+  rxs }. dnl ''  
+  
+  NB. nouns are excluded from searches
+  rxs }. 0 1 0 dnl ''  
+\end{lstlisting}  
+
+\begin{wordhead}
+\dyad & clRegex rxs blclNames \\
+         & (clRegex ; iaOption) rxs zl \argsep blclNames \\
+         & (clRegex ; ilOptions) rxs zl \argsep blclNames \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt]
+  NB. empty patterns return nonempty nonnoun search text
+  '' rxs }. dnl''
+
+  NB. nonemtpy group and suite headers
+  ('';2) rxs }. 2 dnl ''
+  ('';3) rxs }. 3 dnl '' 
+
+  NB. first match of  unique in nonnouns with names starting with re
+  'unique' rxs }. dnl 're' 
+   
+  NB. first match of catch. in path words - note pattern escape
+  ('catch\.';0 7 1) rxs }. dnl ''
+
+  NB. words in group mytheory containing NIMP:
+  'NIMP:' rxs }. grp 'mytheory'
+  
+  NB. all J quoted text in nonnoun path words starting with s
+  ('''(''''|[^''])*''';0 7 2) rxs }. dnl 's'  
+
+  NB. all digits in nonempty long word document text
+  ('[[:digit:]]+';0 9 2) rxs }. dnl ''
+
+  NB. digits in long word document text with match position arrays
+  ('[[:digit:]]+';0 9 3) rxs }. dnl ''
+  
+  NB. many useful J regex patterns are in the jregex locale
+
+  NB. all J quoted text with match position arrays 
+  (Jchar_jregex_;0 7 3) rxs }. dnl 's'  
+   
+  NB. all J names in nonempty group header text
+  (Jname_jregex_;2 7 2) rxs }. 2 dnl ''
+  
+  NB. first match of github in dictionary document
+  ('github';5) rxs ''
+  
+  NB. all matches of github in dictionary document with position arrays
+  ('github';5 7 3) rxs ''
+\end{lstlisting}   
+          
 
 \subsection{\texttt{uses} --- return word uses} 
 
