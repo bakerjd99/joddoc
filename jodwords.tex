@@ -3,7 +3,7 @@
 This section describes all JOD user interface words in alphabetical
 order.  Each  word description consists of a short explanation followed
 by examples.  Examples show J inputs; outputs
-are omitted.  Word arguments are summarized with a form of Hungarian
+are omitted.  Word arguments are summarized with a form of \emph{Hungarian}
 notation: see appendix~\ref{ap:jodhung} on
 page~\pageref{ap:jodhung}.
 
@@ -47,7 +47,68 @@ result.
   ('suitename';3) addgrp ;:'tests added to suite'
 \end{lstlisting}
 
-\subsection{\texttt{bget} --- backup get NIMP}\label{ss:bget}\index{backup!\texttt{bget}}   
+\subsection{\texttt{bget} --- backup get}\label{ss:bget}\index{backup!\texttt{bget}} 
+
+  \hypertarget{il:bget}{\texttt{bget}} fetches objects from either the last dictionary backup or particular backups.
+  Backups are created by \hyperlink{il:packd}{\texttt{packd}}, see page~\pageref{ss:packd}.
+  
+  Fetched \emph{objects are not defined in locales} for the simple reason that
+  backup fetches may return many versions of the same object.
+  \texttt{bget} like \hyperlink{il:bnl}{\texttt{bnl}}, only searches put dictionary\index{put dictionary} backups 
+  and unlike \hyperlink{il:get}{\texttt{get}}, (see page~\pageref{ss:get}), \texttt{bget} does 
+  not fetch name classes, timestamps or byte sizes. 
+  
+  The \texttt{y} argument of \texttt{bget} is similar to the \texttt{y} argument of 
+  \hyperlink{il:get}{\texttt{get}}. Both take
+  list of names. \texttt{get} takes lists of J names that do not reference
+  locales or objects and \texttt{bget} takes \texttt{get} names and
+  \emph{backup names} where a backup name is a \texttt{get} name that may end with a \emph{backup suffix}.
+  The following \texttt{bget} examples illustrate backup names.
+   
+    \begin{wordhead}
+\monad & bget clBName \argsep blclBNames \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt]
+  NB. get word from last backup
+  bget 'oops'
+  
+  NB. fetch words from last backup
+  bget ;: 'shawn of the dead'
+  
+  NB. fetch words from particular backups - backup names
+  bget <;._1 ' us.12 poor.10 little.08 words.08 lastback'
+  
+  NB. fetch many versions of a word - backup names
+  bget <;._1 'me me.12 me.09 me.08 me.02'
+  
+  NB. define word backups in locale oldstuff
+  'rc dtab'=. bget <;._1 ' us.12 poor.10 little.08 words.08 lastback'
+\end{lstlisting}
+
+\begin{wordhead}
+\dyad & iaObject bget clBName \argsep blclBNames \argsep uuIgnore \\
+      & (iaObject,iaOption) bget clBName \argsep blclNames \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt]
+  5 bget ''     NB. dictionary document from last backup
+  5 bget '.12'  NB. dictionary document from particular backup
+
+  NB. fetch a suite header from a particular backup
+  3 bget 'sweet.04'
+  
+  NB. fetch a particular suite test list 
+  3 1 bget 'sweet.04'
+
+  NB. three versions of a group's header - similar to (get) 
+  NB. where (2 get 'group') returns the group header
+  2 bget <;._1 ' gfoo.12 gfoo.05 gfoo.00'  
+ 
+  NB. three versions of a group's word list - backup names
+  2 1 bget <;._1 ' gfoo.12 gfoo.05 gfoo.00'  
+  
+  NB. fetch many versions of a macro - backup names
+  4 bget <;._1 ' mymacro.13 mymacro.09 mymacro.07 mymacro.02'   
+\end{lstlisting}
 
 \subsection{\texttt{bnl} --- backup name lists}\label{ss:bnl}\index{backup!\texttt{bnl}}\index{search!names!\texttt{bnl}}
 
