@@ -35,7 +35,63 @@
   package places these documents on local drives 
   for \hyperlink{il:jodhelp}{\texttt{jodhelp}}, see page~\pageref{ss:jodhelp}.  
 \end{enumerate}
- 
+
+ \newpage
+    \section{Building JOD}
+    
+    JOD is an open-source system. Anyone is free to examine and modify JOD source code. 
+    All JOD source is stored in JOD developement dictionaries. Installing the
+    \href{http://www.jsoftware.com/jwiki/Addons/general/jodsource}{\texttt{jodsource}}\index{dictionary!source!\texttt{jodsource}}
+    addon makes this code available.
+    
+    JOD dictionaries also contain utilities for building\index{building!JOD distribution} and distributing JOD. 
+    
+\begin{lstlisting}[frame=single,framerule=0pt,basicstyle=\ttfamily\footnotesize]    
+NB. open JOD development dictionaries
+od ;:'joddev jod utils' [ 3 od ''
+
+NB. build JOD
+rm 'buildjoddistribution'
+\end{lstlisting}   
+    
+   \texttt{buildjoddistribution} extracts JOD source code from development dictionaries and generates the compressed or 
+    \href{https://en.wikipedia.org/wiki/Minification_(programming)}{\emph{minimized}} scripts 
+    used by the JOD addon.
+    
+\begin{lstlisting}[frame=single,framerule=0pt,basicstyle=\ttfamily\footnotesize]
+NB.*buildjoddistribution s-- full JOD distribution build.
+
+NB. create temporary working locale
+cocurrent 'base'
+coclass tmploc_AAAjodbuild999_=: 'AAAjodbuild999' [ coerase <'AAAjodbuild999'
+coinsert 'ijod'
+
+NB. record open dictionaries and open JOD dictionaries
+ooo=: }. did 0
+od ;:'joddev jod utils' [ 3 od''
+
+NB. get JOD build utilities and version tracking nouns
+tmploc get }. grp 'buildjod'
+
+NB. set distribution directories
+jddir=: 'JODSTAGEDIR JODGITDIR JODSOURCESTAGEDIR JODSTAGEPDFDIR JODSTAGEDOCDIR'
+jddir=: jddir , ' JODGITDOCDIR JODADDONDIR JODSCRIPTDIR JODEXTSDIR' 
+(jddir)=: setbuilddirs 0
+
+NB. generate distribution scripts
+updatejodmanifest 0
+JODVMD buildjodcompressed JODSTAGEDIR;JODGITDIR;JODADDONDIR;JODSCRIPTDIR
+JODTOOLSVMD buildjodtoolscompressed JODSTAGEDIR;JODEXTSDIR;JODSCRIPTDIR
+JODVMD updatejoddistribution JODSTAGEDIR;JODGITDIR
+JODVMD updatejodsourcedumps JODSOURCESTAGEDIR
+JODVMD releasejod JODSTAGEDIR;JODSTAGEPDFDIR;JODSTAGEDOCDIR;JODGITDOCDIR
+
+NB. destroy build locale
+cocurrent 'base'
+coerase <tmploc_AAAjodbuild999_
+\end{lstlisting}
+    
+     
    \newpage
    \section{JOD Classes}\label{ap:classes}
    
