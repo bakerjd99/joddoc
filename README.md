@@ -2,16 +2,12 @@
 ===============================================================================================
 
 This repository contains the `LaTeX` source and supporting
-graphics files for building the JOD manual [`jod.pdf`](https://www.box.com/shared/gajfu50gc0).
+graphics files for building the JOD manual [`jod.pdf`](https://bakerjd99.files.wordpress.com/2019/02/jod.pdf).
 
 `jod.pdf` is distributed by the [JAL](http://www.jsoftware.com/jwiki/JAL/User%20Guide) J addon 
 [`joddocument`](http://www.jsoftware.com/jwiki/Addons/general/joddocument).
 A printed and bound manual version is available on 
 [Lulu](http://www.lulu.com/shop/john-baker/jod-j-object-dictionary/paperback/product-20076245.html).
-
-A "bleeding edge" current build of `jod.pdf` is available in this repository see: 
-[`jodbeta.pdf`](https://github.com/bakerjd99/joddoc/tree/master/jodpdf/jodbeta.pdf).
-To download `jodbeta.pdf` press the **Raw** button when viewing `jodbeta.pdf`.
 
 Building `jod.pdf` requires a current `LaTeX` distribution.
 I mainly use [MikTeX 2.9](http://www.miktex.org/) on Windows but I have tested
@@ -31,5 +27,5 @@ The following sequence of commands builds `jod.pdf`.
 See the batch file [`0ajod.bat`](https://github.com/bakerjd99/joddoc/blob/master/0ajod.bat).
 
 John Baker
-March 18, 2015
+December 6, 2019
 

@@ -79,7 +79,13 @@ result.
   bget <;._1 ' us.12 poor.10 little.08 words.08 lastback'
   
   NB. fetch many versions of a word - backup names
-  bget <;._1 'me me.12 me.09 me.08 me.02'
+  bget <;._1 ' me me.12 me.09 me.08 me.02'
+  
+  NB. all words from last backup
+  bget }. bnl ''
+  
+  NB. all words from backup #55
+  bget (}.bnl '.55') ,&.> <'.55'
 \end{lstlisting}
 
 \begin{wordhead}
@@ -89,6 +95,7 @@ result.
 \begin{lstlisting}[frame=single,framerule=0pt]
   5 bget ''     NB. dictionary document from last backup
   5 bget '.12'  NB. dictionary document from particular backup
+  5 bget }. bnl '.'  NB. documents from all backups
 
   NB. fetch a suite header from a particular backup
   3 bget 'sweet.04'
