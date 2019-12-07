@@ -49,7 +49,7 @@ result.
 
 \subsection{\texttt{bget} --- backup get}\label{ss:bget}\index{backup!\texttt{bget}} 
 
-  \hypertarget{il:bget}{\texttt{bget}} fetches objects from either the last dictionary backup or particular backups.
+  \hypertarget{il:bget}{\texttt{bget}} fetches objects from either the last dictionary \emph{binary} backup or particular backups.
   Backups are created by \hyperlink{il:packd}{\texttt{packd}}, see page~\pageref{ss:packd}.
   
   Fetched \emph{objects are not defined in locales} for the simple reason that
@@ -632,8 +632,7 @@ as only one value can be retrieved.
 
 \hypertarget{il:doc}{\texttt{doc}} formats the leading comment block 
 of explicit words, tests, group/suite headers and macros.  The comment block must follow J
-\href{http://www.jsoftware.com/help/user/scriptdoc.htm}{\texttt{scriptdoc}}\index{scriptdoc}
- \cite{scriptdoc} compatible conventions.  The comment style processed by \texttt{doc} is 
+ \texttt{scriptdoc}\index{scriptdoc} compatible conventions.  The comment style processed by \texttt{doc} is 
 illustrated in the following example. More examples of \texttt{doc} 
 formatting can be examined by displaying 
 words in the distributed JOD dictionaries.\index{documentation!\texttt{doc}} 
@@ -1833,8 +1832,9 @@ from dictionary files by copying active components to new files.
  retained in the backup subdirectory. If a \texttt{packd} operation succeeds 
  the backup dictionary has no directory data inconsistencies. 
 
-A \texttt{packd} operation can be reversed with \hyperlink{il:restd}{\texttt{restd}}. There is 
-no JOD facility for deleting  backup files. To erase backup files use OS facilities. 
+A \texttt{packd} operation can be reversed with \hyperlink{il:restd}{\texttt{restd}}.
+Individual objects in backups can be retrieved with \hyperlink{il:bget}{\texttt{bget}}, see page~\pageref{ss:bget}.
+There is no JOD facility for deleting  backup files. To erase backup files use OS facilities. 
 
 The read/write status of a dictionary is recorded in 
 the master file. JOD assumes all tasks point to the same master file.\index{master file}\footnote{There is one
