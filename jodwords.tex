@@ -800,7 +800,7 @@ you are absolutely sure you will not reset other tasks!
 them in an edit\index{edit!\texttt{ed}} window for editing.\index{test suite}
 
 \begin{wordhead}
-\monad & ed clName \argsep blclNames \\
+\monad & ed clName \argsep blclNames \argsep btNameClassValue \\
 \end{wordhead}
 \begin{lstlisting}[frame=single,framerule=0pt]
   NB. retrieve word and place in edit window
@@ -809,13 +809,21 @@ them in an edit\index{edit!\texttt{ed}} window for editing.\index{test suite}
   NB. put many words in edit window 
   ed ;:'many words edited' 
   
-  NB. edit objects in (name,[class],value) tables 
-  ed ; 1 { 4 get }. 4 1 21 dnl 'build'
-  ed ; 1 { bget <;._1 ' me.12 me.09 me.08 me.02'
+  NB. edit objects in (name,[class],value) tables
+  'rc ncv'=. 4 get }. 4 1 21 dnl 'build'
+  ed ncv
+  
+  NB. edit backup versions of a word in a single edit window
+  'rc ncv'=. bget <;._1 ' me.12 me.09 me.08 me.02'
+  ed ncv
+  
+  NB. edit all words in last backup in a single edit window
+  'rc ncv'=. bget }. bnl ''
+  ed ncv
 \end{lstlisting} 
 
 \begin{wordhead}
-\dyad & iaObject ed clName \argsep blclNames \\
+\dyad & iaObject ed clName \argsep blclNames \argsep btNameClassValue \\
       & (iaObject,iaOption) ed clPstr \\
 \end{wordhead}
 \begin{lstlisting}[frame=single,framerule=0pt]      
