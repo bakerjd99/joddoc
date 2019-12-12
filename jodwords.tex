@@ -116,7 +116,7 @@ result.
 
 \subsection{\texttt{bnl} --- backup name lists}\label{ss:bnl}\index{backup!\texttt{bnl}}\index{search!names!\texttt{bnl}}
 
-  \hypertarget{il:bnl}{\texttt{bnl}} searches \emph{put dictionary} backups, 
+  \hypertarget{il:bnl}{\texttt{bnl}} searches\index{dictionary!search!\texttt{bnl}} \emph{put dictionary} backups, 
   see page~\pageref{xr:putdic} and appendix~\ref{ap:refpath} on page~\pageref{ap:refpath}, and returns backup name lists. 
   \texttt{bnl}'s arguments are similiar to \hyperlink{il:dnl}{\texttt{dnl}}, see page~\pageref{ss:dnl}.
   
@@ -211,8 +211,8 @@ result.
 \end{verbatim}
 
   is an example of a compressed J script. In its fully commented
-  form this script is about 212 kilobytes when squeezed with
-  \texttt{compj} it shrinks to about 75 kilobytes.
+  form this script is about 230 kilobytes when squeezed with
+  \texttt{compj} it shrinks to about 84 kilobytes.
   \texttt{compj} does not compress words in JOD
   dictionaries it returns a compressed script result.
   
@@ -534,7 +534,7 @@ list when successful and the standard boxed \verb|(paRc;clMessage)| when reporti
   
 \subsection{\texttt{dnl} --- dictionary name lists}\label{ss:dnl}\index{search!names!\texttt{dnl}}
 
-\hypertarget{il:dnl}{\texttt{dnl}} searches and returns dictionary name lists. 
+\hypertarget{il:dnl}{\texttt{dnl}} searches\index{dictionary!search!\texttt{dnl}} and returns dictionary name lists. 
 The entire path is searched for names and duplicates are removed. 
 A negative option code requests a \emph{path order list.}\index{path order list} A path order list returns
  the objects in each directory in path order. 
