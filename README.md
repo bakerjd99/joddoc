@@ -4,7 +4,7 @@
 This repository contains the `LaTeX` source and supporting
 graphics files for building the JOD manual [`jod.pdf`](https://bakerjd99.files.wordpress.com/2019/12/jod.pdf).
 
-`jod.pdf` is distributed by the [JAL](http://www.jsoftware.com/jwiki/JAL/User%20Guide) J addon 
+`jod.pdf` is distributed by the [Pacman](https://code.jsoftware.com/wiki/Pacman) J addon 
 [`joddocument`](http://www.jsoftware.com/jwiki/Addons/general/joddocument).
 A printed and bound manual version is available on 
 [Lulu](http://www.lulu.com/shop/john-baker/jod-j-object-dictionary/paperback/product-20076245.html).
@@ -27,5 +27,4 @@ The following sequence of commands builds `jod.pdf`.
 See the batch file [`0ajod.bat`](https://github.com/bakerjd99/joddoc/blob/master/0ajod.bat).
 
 John Baker
-December 9, 2019
-
+March 2, 2020
