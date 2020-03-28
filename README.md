@@ -2,7 +2,7 @@
 ===============================================================================================
 
 This repository contains the `LaTeX` source and supporting
-graphics files for building the JOD manual [`jod.pdf`](https://bakerjd99.files.wordpress.com/2019/12/jod.pdf).
+graphics files for building the JOD manual [`jod.pdf`](https://bakerjd99.files.wordpress.com/2020/03/jod.pdf).
 
 `jod.pdf` is distributed by the [Pacman](https://code.jsoftware.com/wiki/Pacman) J addon 
 [`joddocument`](http://www.jsoftware.com/jwiki/Addons/general/joddocument).
@@ -27,4 +27,4 @@ The following sequence of commands builds `jod.pdf`.
 See the batch file [`0ajod.bat`](https://github.com/bakerjd99/joddoc/blob/master/0ajod.bat).
 
 John Baker
-March 2, 2020
+March 28, 2020
