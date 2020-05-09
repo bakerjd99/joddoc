@@ -517,7 +517,7 @@
   \CommentTok{NB. make sure older versions of JOD can execute dumps with timestamps without errors.}
 \NormalTok{  putup}\KeywordTok{=.} \StringTok{\textquotesingle{}cocurrent \textquotesingle{}\textquotesingle{}base\textquotesingle{}\textquotesingle{} \textquotesingle{}}\KeywordTok{,}\NormalTok{tag}
 \NormalTok{  putup}\KeywordTok{=.}\NormalTok{ putup}\KeywordTok{,} \StringTok{\textquotesingle{}puttstamps\_ijod\_=: (((1;\textquotesingle{}\textquotesingle{}upgrade JOD\textquotesingle{}\textquotesingle{})"\_)\textasciigrave{}putallts\_\_MK\_\_JODobj)@.(3 = (4!:0)<\textquotesingle{}}\NormalTok{\textquotesingle{}putallt}
-\RegionMarkerTok{)}\KeywordTok{=.}\RegionMarkerTok{)}\KeywordTok{=.}\NormalTok{s}\DecValTok{\_\_}\NormalTok{MK}\DecValTok{\_\_}\NormalTok{JODobj}\StringTok{\textquotesingle{}\textquotesingle{}}\RegionMarkerTok{)}\NormalTok{\textquotesingle{}}\KeywordTok{,}\NormalTok{tag}
+\AlertTok{>..>}\NormalTok{ s}\DecValTok{\_\_}\NormalTok{MK}\DecValTok{\_\_}\NormalTok{JODobj}\StringTok{\textquotesingle{}\textquotesingle{}}\RegionMarkerTok{)}\NormalTok{\textquotesingle{}}\KeywordTok{,}\NormalTok{tag}
 
   \CommentTok{NB. expression to store timestamps from text in scratch object}
 \NormalTok{  soputts}\KeywordTok{=.}\NormalTok{ putup}\KeywordTok{,}\NormalTok{SOPASS}\KeywordTok{,}\StringTok{\textquotesingle{}puttstamps ".".\textquotesingle{}\textquotesingle{}zz\_\textquotesingle{}\textquotesingle{},SOLOCALE,\textquotesingle{}\textquotesingle{}\_\textquotesingle{}\textquotesingle{} [ cocurrent \textquotesingle{}\textquotesingle{}base\textquotesingle{}\textquotesingle{} \textquotesingle{}}\KeywordTok{,}\NormalTok{tag}
@@ -857,7 +857,7 @@
   \KeywordTok{if.} \RegionMarkerTok{(}\KeywordTok{,}\NormalTok{sts}\RegionMarkerTok{)} \KeywordTok{{-}:}\NormalTok{ nlfrrle ets }\KeywordTok{do.}
     \CommentTok{NB. if run encoded timestamps are smaller use them}
     \KeywordTok{if.} \RegionMarkerTok{(}\KeywordTok{*/$}\NormalTok{ets}\RegionMarkerTok{)} \KeywordTok{<:} \KeywordTok{*/$}\NormalTok{sts }\KeywordTok{do.}
-\NormalTok{      cts}\KeywordTok{=.} \RegionMarkerTok{(}\KeywordTok{<}\NormalTok{ets}\RegionMarkerTok{)} \RegionMarkerTok{(}\KeywordTok{<}\DecValTok{1}\KeywordTok{;}\NormalTok{obj\_index}\RegionMarkerTok{)}\KeywordTok{\}}\NormalTok{ cts}
+\NormalTok{      cts}\KeywordTok{=.} \RegionMarkerTok{(}\KeywordTok{<}\NormalTok{ets}\RegionMarkerTok{)} \RegionMarkerTok{(}\KeywordTok{<}\DecValTok{1}\KeywordTok{;}\NormalTok{obj\_index}\RegionMarkerTok{)}\KeywordTok{\}}\NormalTok{ cts  }
 \NormalTok{      cts}\KeywordTok{=.} \RegionMarkerTok{(}\KeywordTok{<}\DecValTok{1}\RegionMarkerTok{)} \RegionMarkerTok{(}\KeywordTok{<}\DecValTok{2}\KeywordTok{;}\NormalTok{obj\_index}\RegionMarkerTok{)}\KeywordTok{\}}\NormalTok{ cts}
     \KeywordTok{end.}
   \KeywordTok{end.}
@@ -895,7 +895,7 @@
 \begin{Shaded}
 \begin{Highlighting}[]
 \CommentTok{NB. 0\textquotesingle{}s every other 1 in even groups of 1\textquotesingle{}s}
-\NormalTok{halfbits}\AlertTok{=:}\index{halfbits@\texttt{halfbits}} \KeywordTok{]} \RegionMarkerTok{(}\KeywordTok{*.}\RegionMarkerTok{)} \DecValTok{1} \DecValTok{0}\KeywordTok{"}\NormalTok{\_ }\KeywordTok{$\textasciitilde{}} \KeywordTok{\#}
+\NormalTok{halfbits}\AlertTok{=:}\index{halfbits@\texttt{halfbits}} \KeywordTok{]} \KeywordTok{*.} \DecValTok{1} \DecValTok{0}\KeywordTok{"}\NormalTok{\_ }\KeywordTok{$\textasciitilde{}} \KeywordTok{\#}
 \end{Highlighting}
 \end{Shaded}
 
