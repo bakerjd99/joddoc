@@ -2,7 +2,7 @@
 \section{\texttt{jodliterate} Overview}
 
 \texttt{jodliterate} is a J utility script that generates
-\emph{literate} documents directly from JOD dictionary groups.
+\href{https://en.wikipedia.org/wiki/Literate_programming}{literate} documents directly from JOD dictionary groups.
 
 \subsection{\texttt{jodliterate} Interface}
 
@@ -68,9 +68,7 @@ NB.>>~~~~
 \subsection{Running \texttt{jodliterate}}
 
 \texttt{jodliterate} runs on Windows, Linux and Mac versions of
-J.\footnote{\texttt{jodliterate} will run on Windows versions of J 6.02
-  and beyond. The Linux and Mac versions of \texttt{jodliterate} require
-  J 7.01 and beyond.}
+J.\footnote{\texttt{jodliterate} will run on J 8.01 and beyond.}
 
 To use \texttt{jodliterate} you must:
 
@@ -83,17 +81,19 @@ To use \texttt{jodliterate} you must:
 \item
   Install JODSOURCE.
   \href{http://www.jsoftware.com/jwiki/Addons/general/jodsource}{JODSOURCE}
-  is also a J addon. Install it with \texttt{pacman}.\footnote{On 64 bit versions of
-    J the standard \texttt{pacman} install of JODSOURCE may fail. See
-    \href{http://bakerjd99.wordpress.com/the-jod-page/\#comment-210}{The
-    Jod Page} for an alternate install method.} It contains the JOD
+  is also a J addon. Install it with \texttt{pacman}. It contains the JOD
   dictionaries required to build JOD. JODSOURCE also contains
   \texttt{jodliterate.}
 \item
-  Setup a version of \href{http://johnmacfarlane.net/pandoc/}{pandoc}
-  that supports J syntax highlighting. See the blog post
-  \href{http://bakerjd99.wordpress.com/2012/09/20/pandoc-based-j-syntax-highlighting/}{Pandoc
-  based J Syntax Highlighting} for details.
+  Install a current version of \href{https://pandoc.org/}{pandoc}.
+  \texttt{pandoc} version \texttt{2.9.1.1} and beyond 
+  supports J syntax highlighting. Prior versions required modification. The
+  following blog posts provide more information:
+      \begin{enumerate}
+	  \item \href{https://analyzethedatanotthedrivel.org/2020/02/19/more-j-pandoc-syntax-highlighting/}{More J Pandoc Syntax HighLighting}
+	  \item \href{https://analyzethedatanotthedrivel.org/2012/09/20/pandoc-based-j-syntax-highlighting/}{Pandoc based J Syntax Highlighting}
+	  \item \href{https://analyzethedatanotthedrivel.org/2012/10/01/semi-literate-jod/}{Semi-Literate JOD}.
+	  \end{enumerate}
 \item
   Build \texttt{jodliterate.} \texttt{jodliterate} is a J group. JOD
   makes J scripts from groups. To make \texttt{jodliterate} do:
