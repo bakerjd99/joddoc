@@ -1,3 +1,4 @@
+rem remove latex/tex temp files
 del *.aux
 del *.bbl
 del *.dvi

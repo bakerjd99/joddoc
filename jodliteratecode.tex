@@ -34,7 +34,7 @@
 
 \CommentTok{NB.*dependents}
 \CommentTok{NB. declared global here to avoid confusing LaTeX names with J names}
-\CommentTok{NB. (*)=: JLTITLETEX JLOVIEWTEX JLGRPLITTEX JODLiteratePreamble}
+\CommentTok{NB. (*)=: JLTITLETEX JLOVIEWTEX JLBUILDTEX JLGRPLITTEX JODLiteratePreamble}
 
 \CommentTok{NB. Roger Hui\textquotesingle{}s word formation state machine {-} similiar to ;: but}
 \CommentTok{NB. parses text with LFs, retains whitespace and handles open quotes.}
@@ -97,6 +97,17 @@
 
 \KeywordTok{\%}\NormalTok{ this jodliterate overview}
 \KeywordTok{\textbackslash{}}\NormalTok{section}\KeywordTok{\{\textbackslash{}}\NormalTok{texttt}\KeywordTok{\{\textasciitilde{}\#\textasciitilde{}}\NormalTok{group}\KeywordTok{\textasciitilde{}\#\textasciitilde{}\}}\NormalTok{ Overview}\KeywordTok{\}}
+\RegionMarkerTok{)}
+
+\CommentTok{NB. latex group build script }
+\NormalTok{JLBUILDTEX}\AlertTok{=:}\index{JLBUILDTEX@\texttt{JLBUILDTEX}}  \DecValTok{0} \RegionMarkerTok{: 0}
+
+\NormalTok{rem sequence of latex commands that generate PDF}
+\NormalTok{rem assumes commands are on the working path}
+\NormalTok{lualatex  }\KeywordTok{\textasciitilde{}\#\textasciitilde{}}\NormalTok{group}\KeywordTok{\textasciitilde{}\#\textasciitilde{}}
+\NormalTok{makeindex }\KeywordTok{\textasciitilde{}\#\textasciitilde{}}\NormalTok{group}\KeywordTok{\textasciitilde{}\#\textasciitilde{}}
+\NormalTok{lualatex  }\KeywordTok{\textasciitilde{}\#\textasciitilde{}}\NormalTok{group}\KeywordTok{\textasciitilde{}\#\textasciitilde{}}
+\NormalTok{lualatex  }\KeywordTok{\textasciitilde{}\#\textasciitilde{}}\NormalTok{group}\KeywordTok{\textasciitilde{}\#\textasciitilde{}}
 \RegionMarkerTok{)}
 
 \CommentTok{NB. group root tex {-} columns may need adjusting}
@@ -380,8 +391,7 @@
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{NB. interface words (IFACEWORDSjodliterate) group}
-\NormalTok{IFACEWORDSjodliterate}\AlertTok{=:}\index{IFACEWORDSjodliterate@\texttt{IFACEWORDSjodliterate}} \KeywordTok{<;.}\NormalTok{\_}\DecValTok{1} \StringTok{\textquotesingle{} grplit setjodliterate ifacesection\textquotesingle{}}
+\NormalTok{IFACEWORDSjodliterate}\AlertTok{=:}\index{IFACEWORDSjodliterate@\texttt{IFACEWORDSjodliterate}} \KeywordTok{<;.}\NormalTok{\_}\DecValTok{1} \StringTok{\textquotesingle{} THISPANDOC grplit ifacesection setjodliterate\textquotesingle{}}
 \end{Highlighting}
 \end{Shaded}
 
@@ -403,6 +413,13 @@
 \begin{Highlighting}[]
 \CommentTok{NB. suffix of jodliterate overview file}
 \NormalTok{JLOVIEWFILE}\AlertTok{=:}\index{JLOVIEWFILE@\texttt{JLOVIEWFILE}} \StringTok{\textquotesingle{}oview.tex\textquotesingle{}}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. name suffix of markdown overview text}
+\NormalTok{JLOVIEWSUFFIX}\AlertTok{=:}\index{JLOVIEWSUFFIX@\texttt{JLOVIEWSUFFIX}} \StringTok{\textquotesingle{}\_oview\_tex\textquotesingle{}}
 \end{Highlighting}
 \end{Shaded}
 
@@ -458,7 +475,7 @@
 \begin{Shaded}
 \begin{Highlighting}[]
 \CommentTok{NB. full pandoc executable path {-} use pandoc only if on shell path}
-\NormalTok{THISPANDOC}\AlertTok{=:}\index{THISPANDOC@\texttt{THISPANDOC}} \StringTok{\textquotesingle{}"C:\textbackslash{}Program Files\textbackslash{}Pandoc\textbackslash{}pandoc"\textquotesingle{}}
+\hypertarget{THISPANDOC}{\NormalTok{THISPANDOC}}\AlertTok{=:}\index{THISPANDOC@\texttt{THISPANDOC}} \StringTok{\textquotesingle{}"C:\textbackslash{}Program Files\textbackslash{}Pandoc\textbackslash{}pandoc"\textquotesingle{}}
 \end{Highlighting}
 \end{Shaded}
 
@@ -471,7 +488,6 @@
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{NB. leading >... line wrap mark}
 \NormalTok{WRAPLEAD}\AlertTok{=:}\index{WRAPLEAD@\texttt{WRAPLEAD}} \StringTok{\textquotesingle{}>..>\textquotesingle{}}
 \end{Highlighting}
 \end{Shaded}
@@ -872,7 +888,7 @@
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\NormalTok{grplit}\AlertTok{=:}\index{grplit@\texttt{grplit}} \DecValTok{3} \RegionMarkerTok{: 0}
+\hypertarget{grplit}{\NormalTok{grplit}}\AlertTok{=:}\index{grplit@\texttt{grplit}} \DecValTok{3} \RegionMarkerTok{: 0}
 
 \CommentTok{NB.*grplit v{-}{-} make latex for group (y).}
 \CommentTok{NB.}
@@ -892,20 +908,28 @@
 
 \KeywordTok{if.} \DecValTok{3}\KeywordTok{\textasciitilde{}:}\RegionMarkerTok{(}\DecValTok{4}\KeywordTok{!:}\DecValTok{0}\RegionMarkerTok{)} \KeywordTok{<}\StringTok{\textquotesingle{}badrc\_ajod\_\textquotesingle{}} \KeywordTok{do.} \DecValTok{0}\KeywordTok{;}\StringTok{\textquotesingle{}!error: jod is not loaded\textquotesingle{}} \KeywordTok{return.} \KeywordTok{end.}
 \KeywordTok{if.} \DecValTok{0}\KeywordTok{=\#}\NormalTok{JLDIRECTORY  }\KeywordTok{do.} \DecValTok{0}\KeywordTok{;}\StringTok{\textquotesingle{}!error: working directory is not set\textquotesingle{}} \KeywordTok{return.} \KeywordTok{end.}
-\NormalTok{group}\KeywordTok{=.} \KeywordTok{y} \KeywordTok{{-}.} \StringTok{\textquotesingle{} \textquotesingle{}}
-\KeywordTok{if.}\NormalTok{ badrc\_ajod}\DecValTok{\_}\NormalTok{ gdoc}\KeywordTok{=.} \DecValTok{2} \DecValTok{9}\NormalTok{ get group }\KeywordTok{do.}\NormalTok{ gdoc }\KeywordTok{return.} \KeywordTok{end.}
 
-\CommentTok{NB. latex from any group document markdown}
-\NormalTok{hype}\KeywordTok{=.} \DecValTok{0}
-\KeywordTok{if.} \KeywordTok{\#}\NormalTok{gdoc}\KeywordTok{=.} \KeywordTok{;\{:,>}\DecValTok{1}\KeywordTok{\{}\NormalTok{gdoc }\KeywordTok{do.}
-\NormalTok{  gdoc}\KeywordTok{=.}\NormalTok{ latexfrmarkd gdoc}
-  \KeywordTok{if.}\NormalTok{ badrc\_ajod}\DecValTok{\_}\NormalTok{ glist}\KeywordTok{=.}\NormalTok{ grp group }\KeywordTok{do.}\NormalTok{ glist }\KeywordTok{return.} \KeywordTok{end.}
-\NormalTok{  ifstr}\KeywordTok{=.}\NormalTok{ ifacesection group}
-  \KeywordTok{if.} \RegionMarkerTok{(}\KeywordTok{+./}\NormalTok{ifstr }\KeywordTok{E.}\NormalTok{ gdoc}\RegionMarkerTok{)} \KeywordTok{*.} \RegionMarkerTok{(}\KeywordTok{<}\NormalTok{IFACEWORDSPFX}\KeywordTok{,}\NormalTok{group}\RegionMarkerTok{)} \KeywordTok{e.}\NormalTok{ glist }\KeywordTok{do.}
-\NormalTok{    iwords}\KeywordTok{=.}\NormalTok{ ifacewords group}
-\NormalTok{    gdoc}\KeywordTok{=.}\NormalTok{ iwords setifacelinks ifstr}\KeywordTok{;}\NormalTok{gdoc}
-\NormalTok{    hype}\KeywordTok{=.} \DecValTok{1}  \CommentTok{NB. hyperlinks set}
+\CommentTok{NB. group must exist}
+\KeywordTok{if.}\NormalTok{ badrc\_ajod}\DecValTok{\_}\NormalTok{ glist}\KeywordTok{=.}\NormalTok{ GROUP\_ajod}\DecValTok{\_}\NormalTok{ grp group}\KeywordTok{=.} \KeywordTok{y} \KeywordTok{{-}.} \StringTok{\textquotesingle{} \textquotesingle{}} \KeywordTok{do.}\NormalTok{ glist }\KeywordTok{return.} \KeywordTok{end.}
+
+\CommentTok{NB. default overview}
+\NormalTok{ohd}\KeywordTok{=.} \RegionMarkerTok{(}\StringTok{\textquotesingle{}/\textasciitilde{}\#\textasciitilde{}group\textasciitilde{}\#\textasciitilde{}/\textquotesingle{}}\KeywordTok{,}\NormalTok{alltrim }\KeywordTok{y}\RegionMarkerTok{)}\NormalTok{ changestr JLOVIEWTEX }\KeywordTok{[}\NormalTok{ gdoc}\KeywordTok{=.} \StringTok{\textquotesingle{}\textquotesingle{}}
+\NormalTok{iwords}\KeywordTok{=.}\NormalTok{ ifacewords group}
+
+\CommentTok{NB. overview documents are either markdown/latex group headers or stored LaTeX macros}
+\KeywordTok{if.}\NormalTok{ badrc\_ajod}\DecValTok{\_}\NormalTok{ gdoc}\KeywordTok{=.}\NormalTok{ MACRO\_ajod}\DecValTok{\_}\NormalTok{ get group}\KeywordTok{,}\NormalTok{JLOVIEWSUFFIX }\KeywordTok{do.}
+  \CommentTok{NB. no stored LaTeX generate LaTeX from group document markdown/latex}
+  \KeywordTok{if.}\NormalTok{ badrc\_ajod}\DecValTok{\_}\NormalTok{ gdoc}\KeywordTok{=.} \RegionMarkerTok{(}\NormalTok{GROUP\_ajod}\DecValTok{\_}\KeywordTok{,}\NormalTok{DOCUMENT\_ajod}\DecValTok{\_}\RegionMarkerTok{)}\NormalTok{ get group }\KeywordTok{do.}\NormalTok{ gdoc }\KeywordTok{return.} \KeywordTok{end.}
+  \KeywordTok{if.} \KeywordTok{\#}\NormalTok{gdoc}\KeywordTok{=.} \KeywordTok{;\{:,>}\DecValTok{1}\KeywordTok{\{}\NormalTok{gdoc }\KeywordTok{do.}
+\NormalTok{    gdoc}\KeywordTok{=.}\NormalTok{ latexfrmarkd gdoc}
+\NormalTok{    ifstr}\KeywordTok{=.}\NormalTok{ ifacesection group}
+    \KeywordTok{if.} \RegionMarkerTok{(}\KeywordTok{+./}\NormalTok{ifstr }\KeywordTok{E.}\NormalTok{ gdoc}\RegionMarkerTok{)} \KeywordTok{*.} \RegionMarkerTok{(}\KeywordTok{<}\NormalTok{IFACEWORDSPFX}\KeywordTok{,}\NormalTok{group}\RegionMarkerTok{)} \KeywordTok{e.}\NormalTok{ glist }\KeywordTok{do.}
+\NormalTok{      gdoc}\KeywordTok{=.}\NormalTok{ iwords setifacelinks ifstr}\KeywordTok{;}\NormalTok{gdoc}
+    \KeywordTok{end.}
   \KeywordTok{end.}
+\KeywordTok{else.}
+  \CommentTok{NB. stored macro LaTeX {-} no adjustments}
+\NormalTok{  gdoc}\KeywordTok{=.} \KeywordTok{;\{:,>}\DecValTok{1}\KeywordTok{\{}\NormalTok{gdoc}
 \KeywordTok{end.}
 
 \CommentTok{NB. root .tex file {-} gets group name}
@@ -921,15 +945,18 @@
 \RegionMarkerTok{(}\NormalTok{toJ agstrs changestr JLTITLETEX}\RegionMarkerTok{)}\NormalTok{ writeas jltitle}\KeywordTok{=.}\NormalTok{ wdir}\KeywordTok{,}\NormalTok{group}\KeywordTok{,}\NormalTok{JLTITLEFILE}
 
 \CommentTok{NB. group overview .tex file}
-\NormalTok{ohd}\KeywordTok{=.} \RegionMarkerTok{(}\StringTok{\textquotesingle{}/\textasciitilde{}\#\textasciitilde{}group\textasciitilde{}\#\textasciitilde{}/\textquotesingle{}}\KeywordTok{,}\NormalTok{alltrim }\KeywordTok{y}\RegionMarkerTok{)}\NormalTok{ changestr JLOVIEWTEX}
 \NormalTok{ohd}\KeywordTok{=.}\NormalTok{ ohd}\KeywordTok{,}\NormalTok{LF}\KeywordTok{,}\NormalTok{gdoc}
 \RegionMarkerTok{(}\NormalTok{toJ ohd}\RegionMarkerTok{)}\NormalTok{ writeas jloview}\KeywordTok{=.}\NormalTok{ wdir}\KeywordTok{,}\NormalTok{group}\KeywordTok{,}\NormalTok{JLOVIEWFILE}
 
-\CommentTok{NB. group source code {-} return file names}
+\CommentTok{NB. group build batch script {-} latex utils that compile generated files}
+\NormalTok{jlbuildtex}\KeywordTok{=.} \RegionMarkerTok{(}\StringTok{\textquotesingle{}/\textasciitilde{}\#\textasciitilde{}group\textasciitilde{}\#\textasciitilde{}/\textquotesingle{}}\KeywordTok{,}\NormalTok{alltrim }\KeywordTok{y}\RegionMarkerTok{)}\NormalTok{ changestr JLBUILDTEX}
+\RegionMarkerTok{(}\NormalTok{toJ jlbuildtex}\RegionMarkerTok{)}\NormalTok{ writeas jlbuildbat}\KeywordTok{=.}\NormalTok{ wdir}\KeywordTok{,}\NormalTok{group}\KeywordTok{,}\StringTok{\textquotesingle{}.bat\textquotesingle{}}
+
+\CommentTok{NB. group source code .tex {-} return file names}
 \NormalTok{gltx}\KeywordTok{=.}\NormalTok{ grouplatex group}
-\KeywordTok{if.}\NormalTok{ hype }\KeywordTok{do.}\NormalTok{ gltx}\KeywordTok{=.}\NormalTok{ iwords setifacetargs gltx }\KeywordTok{end.}
+\NormalTok{gltx}\KeywordTok{=.}\NormalTok{ iwords setifacetargs gltx}
 \RegionMarkerTok{(}\NormalTok{toJ gltx}\RegionMarkerTok{)}\NormalTok{ writeas jlcode}\KeywordTok{=.}\NormalTok{ wdir}\KeywordTok{,}\NormalTok{group}\KeywordTok{,}\NormalTok{JLCODEFILE}
-\NormalTok{ok\_ajod}\DecValTok{\_} \RegionMarkerTok{(}\KeywordTok{{-}.}\NormalTok{chroot}\RegionMarkerTok{)} \KeywordTok{\}.}\NormalTok{ jlroot}\KeywordTok{;}\NormalTok{jltitle}\KeywordTok{;}\NormalTok{jloview}\KeywordTok{;}\NormalTok{jlcode}
+\NormalTok{ok\_ajod}\DecValTok{\_} \RegionMarkerTok{(}\KeywordTok{{-}.}\NormalTok{chroot}\RegionMarkerTok{)} \KeywordTok{\}.}\NormalTok{ jlroot}\KeywordTok{;}\NormalTok{jltitle}\KeywordTok{;}\NormalTok{jloview}\KeywordTok{;}\NormalTok{jlcode}\KeywordTok{;}\NormalTok{jlbuildbat}
 
 \KeywordTok{catchd.}
   \DecValTok{0}\KeywordTok{;}\StringTok{\textquotesingle{}!error: (grplit) failure {-} last J error {-}>\textquotesingle{}}\KeywordTok{;}\DecValTok{13}\KeywordTok{!:}\DecValTok{12} \StringTok{\textquotesingle{}\textquotesingle{}}
@@ -940,7 +967,7 @@
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\NormalTok{ifacesection}\AlertTok{=:}\index{ifacesection@\texttt{ifacesection}} \DecValTok{3} \RegionMarkerTok{: 0}
+\hypertarget{ifacesection}{\NormalTok{ifacesection}}\AlertTok{=:}\index{ifacesection@\texttt{ifacesection}} \DecValTok{3} \RegionMarkerTok{: 0}
 
 \CommentTok{NB.*ifacesection v{-}{-} interface section summary string.}
 \CommentTok{NB.}
@@ -1267,8 +1294,8 @@
 \NormalTok{tail}\KeywordTok{=.}\NormalTok{ ifstr}\KeywordTok{\&}\NormalTok{afterstr tex}
 
 \KeywordTok{if.} \KeywordTok{+./}\NormalTok{rmrk }\KeywordTok{E.}\NormalTok{ tail }\KeywordTok{do.}
-\NormalTok{  ifbk }\KeywordTok{=.}\NormalTok{ formifacetex }\KeywordTok{x}
-\NormalTok{  tail }\KeywordTok{=.}\NormalTok{ rmrk}\KeywordTok{\&}\NormalTok{afterstr tail}
+\NormalTok{  ifbk}\KeywordTok{=.}\NormalTok{ formifacetex }\KeywordTok{x}
+\NormalTok{  tail}\KeywordTok{=.}\NormalTok{ rmrk}\KeywordTok{\&}\NormalTok{afterstr tail}
 \NormalTok{  head}\KeywordTok{,}\NormalTok{ifstr}\KeywordTok{,}\RegionMarkerTok{(}\DecValTok{2}\KeywordTok{\#}\NormalTok{LF}\RegionMarkerTok{)}\KeywordTok{,}\NormalTok{ifbk}\KeywordTok{,}\NormalTok{tail}
 \KeywordTok{else.}
 \NormalTok{  tex}
@@ -1295,18 +1322,25 @@
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\NormalTok{setjodliterate}\AlertTok{=:}\index{setjodliterate@\texttt{setjodliterate}} \DecValTok{3} \RegionMarkerTok{: 0}
+\hypertarget{setjodliterate}{\NormalTok{setjodliterate}}\AlertTok{=:}\index{setjodliterate@\texttt{setjodliterate}} \DecValTok{3} \RegionMarkerTok{: 0}
 
 \CommentTok{NB.*setjodliterate v{-}{-} prepare for processing.}
 \CommentTok{NB.}
-\CommentTok{NB. monad:  (paRc ; clDir) =. setjodliterate clWorkingDir}
+\CommentTok{NB. monad:  (paRc ; clDir) =. setjodliterate clWorkingDir | zl}
 \CommentTok{NB.}
 \CommentTok{NB.   setjodliterate \textquotesingle{}c:\textbackslash{}temp\textquotesingle{}           NB. windows}
 \CommentTok{NB.   setjodliterate \textquotesingle{}/home/john/temp\textquotesingle{}   NB. linux}
+\CommentTok{NB.}
+\CommentTok{NB.   NB. use the current JOD put dictionary document directory}
+\CommentTok{NB.   setjodliterate \textquotesingle{}\textquotesingle{}}
 
 \KeywordTok{try.}
 
 \KeywordTok{if.} \DecValTok{3}\KeywordTok{\textasciitilde{}:}\RegionMarkerTok{(}\DecValTok{4}\KeywordTok{!:}\DecValTok{0}\RegionMarkerTok{)} \KeywordTok{<}\StringTok{\textquotesingle{}badrc\_ajod\_\textquotesingle{}} \KeywordTok{do.} \DecValTok{0}\KeywordTok{;}\StringTok{\textquotesingle{}!error: jod is not loaded\textquotesingle{}} \KeywordTok{return.} \KeywordTok{end.}
+\KeywordTok{if.} \DecValTok{0} \KeywordTok{=} \KeywordTok{\#}\NormalTok{DPATH}\DecValTok{\_\_}\NormalTok{ST}\DecValTok{\_\_}\NormalTok{JODobj   }\KeywordTok{do.} \DecValTok{0}\KeywordTok{;}\StringTok{\textquotesingle{}!error: no open jod dictionaries\textquotesingle{}} \KeywordTok{return.} \KeywordTok{end.}
+
+\CommentTok{NB. if the path is empty use the current put dictionary document directory !(*)=. dob}
+\KeywordTok{if.} \DecValTok{0} \KeywordTok{e.} \KeywordTok{$y} \KeywordTok{do.} \KeywordTok{y=.}\NormalTok{ DOC\_\_dob }\KeywordTok{[}\NormalTok{ dob}\AlertTok{=:}\index{dob@\texttt{dob}}  \KeywordTok{\{:\{.}\NormalTok{DPATH}\DecValTok{\_\_}\NormalTok{ST}\DecValTok{\_\_}\NormalTok{JODobj }\KeywordTok{end.}
 
 \CommentTok{NB. profile (*)=. IFWIN}
 \NormalTok{JLDIRECTORY\_ajodliterate}\DecValTok{\_}\AlertTok{=:}\index{JLDIRECTORY\_ajodliterate\_@\texttt{JLDIRECTORY\_ajodliterate\_}}\NormalTok{  jpathsep}\KeywordTok{\textasciigrave{}}\NormalTok{winpathsep}\KeywordTok{@.}\RegionMarkerTok{(}\NormalTok{IFWIN}\RegionMarkerTok{)}\NormalTok{ tslash2 }\KeywordTok{y}

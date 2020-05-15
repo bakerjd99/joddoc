@@ -1,6 +1,9 @@
 % this jodliterate overview
 \section{\texttt{jodliterate} Overview}
 
+% this jodliterate overview
+%\section{\texttt{jodliterate} Overview}
+
 \texttt{jodliterate} is a J utility script that generates
 \href{https://en.wikipedia.org/wiki/Literate_programming}{literate} documents directly from JOD dictionary groups.
 
@@ -8,12 +11,12 @@
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\hyperlink{grplit}{\NormalTok{grplit         }}\CommentTok{make latex for group (y)}
-\hyperlink{setjodliterate}{\NormalTok{setjodliterate }}\CommentTok{prepare for processing}
-\hyperlink{ifacesection}{\NormalTok{ifacesection   }}\CommentTok{interface section summary string}
+\hyperlink{THISPANDOC}\NormalTok{THISPANDOC      }\CommentTok{full pandoc executable path {-} use pandoc only if on shell path}
+\hyperlink{grplit}\NormalTok{grplit          }\CommentTok{make latex for group (y)}
+\hyperlink{ifacesection}\NormalTok{ifacesection    }\CommentTok{interface section summary string}
+\hyperlink{setjodliterate}\NormalTok{setjodliterate  }\CommentTok{prepare for processing}
 \end{Highlighting}
 \end{Shaded}
-
 
 \subsection{\texttt{jodliterate} and JOD}
 
@@ -157,5 +160,5 @@ There are some \LaTeX~settings you may want to adjust.
   controlled by \texttt{WRAPLIMIT}. The default is 110 characters.
   Change this value if you change font or page size. Wrapped lines are
   preceeded with the string \texttt{WRAPLEAD} with default
-  \AlertTok{\texttt{>...>}}.
+  \AlertTok{\texttt{>..>}}.
 \end{enumerate}
