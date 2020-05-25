@@ -7,14 +7,22 @@
 \texttt{jodliterate} is a J utility script that generates
 \href{https://en.wikipedia.org/wiki/Literate_programming}{literate} documents directly from JOD dictionary groups.
 
+See the following for details:
+\begin{enumerate}
+\item
+ \href{https://github.com/bakerjd99/jacks/blob/master/jodliterate/Using%20jodliterate.ipynb}{Using jodliterate notebook}.
+\item
+ \href{https://github.com/bakerjd99/jacks/blob/master/jodliterate/UsingJodliterate.pdf}{Using jodliterate PDF}.
+\end{enumerate}
+
 \subsection{\texttt{jodliterate} Interface}
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\hyperlink{THISPANDOC}\NormalTok{THISPANDOC      }\CommentTok{full pandoc executable path {-} use pandoc only if on shell path}
-\hyperlink{grplit}\NormalTok{grplit          }\CommentTok{make latex for group (y)}
-\hyperlink{ifacesection}\NormalTok{ifacesection    }\CommentTok{interface section summary string}
-\hyperlink{setjodliterate}\NormalTok{setjodliterate  }\CommentTok{prepare for processing}
+\hyperlink{THISPANDOC}{\NormalTok{THISPANDOC      }}\CommentTok{full pandoc path {-} use (pandoc) if on shell path}
+\hyperlink{grplit}{\NormalTok{grplit          }}\CommentTok{make latex for group (y)}
+\hyperlink{ifacesection}{\NormalTok{ifacesection    }}\CommentTok{interface section summary string}
+\hyperlink{setjodliterate}{\NormalTok{setjodliterate  }}\CommentTok{prepare for processing}
 \end{Highlighting}
 \end{Shaded}
 
@@ -27,45 +35,24 @@ document text it processes. It assumes:
 \item
   All source code is stored in JOD dictionaries.
 \item
-  JOD group documents \texttt{2 9 disp 'groupname'} are
-  \href{http://johnmacfarlane.net/pandoc/README.html\#pandocs-markdown}{pandoc
-  compatible markdown} text fragments. \emph{This is the most serious
-  limitation of \texttt{jodliterate}.} Most of my group documents are
-  not markdown. I am slowly converting them. If you compose group
-  documents use pandoc markdown and \texttt{jodliterate} will be a lot
-  more useful.
-\item
-  Any group class\footnote{A \emph{group class} is a JOD group with a
-    declared list of interface and root words:
-    \texttt{IFACEWORDS}\emph{groupname} and
-    \texttt{ROOTWORDS}\emph{groupname}. Root words allow
-    \texttt{allrefs} to find all the words that belong to the group.
-    Class groups typically load into locales. \texttt{jodliterate.ijs}
-    is an example of a class group.} interface is a simple J verbatim
-  block that is marked with a \LaTeX~section command. Examine this
-  group's document \texttt{2 9 disp 'jodliterate'} for an example.
+  \texttt{jodliterate} document fragments are either:
+  \begin{itemize}
+  \item Markdown group headers: \verb|2 9 disp 'groupname'|
+  \item \LaTeX\ suffixed macros: \verb|4 disp 'groupname','_oview_tex'|
+  \end{itemize}
 
-\begin{verbatim}
-% latex section 
-\subsection{\texttt{groupname} Interface}
+% \item
+%   Non-J code is confined to the JOD group header\footnote{This
+%     limitation may be eased if it becomes a hindrance.} and is marked
+%   with pseudo-pandoc delimiters. Everything in curly \texttt{\{\}}
+%   brackets follows pandoc source code highlighting conventions.
+%   \texttt{jodliterate}'s header contains \LaTeX~code that is marked like
+%   this.
 
-~~~~ { .j}
-grplit          NB. make latex for group (y)
-setjodliterate  NB. prepare for processing
-~~~~~  
-\end{verbatim}
-\item
-  Non-J code is confined to the JOD group header\footnote{This
-    limitation may be eased if it becomes a hindrance.} and is marked
-  with pseudo-pandoc delimiters. Everything in curly \texttt{\{\}}
-  brackets follows pandoc source code highlighting conventions.
-  \texttt{jodliterate}'s header contains \LaTeX~code that is marked like
-  this.
-
-\begin{verbatim}
-NB.<<~~~~ { .latex numberLines startFrom="1" }
-NB.>>~~~~ 
-\end{verbatim}
+% \begin{verbatim}
+% NB.<<~~~~ { .latex numberLines startFrom="1" }
+% NB.>>~~~~ 
+% \end{verbatim}
 \end{enumerate}
 
 \subsection{Running \texttt{jodliterate}}
@@ -78,12 +65,12 @@ To use \texttt{jodliterate} you must:
 \begin{enumerate}[1.]
 \item
   Install JOD.
-  \href{http://www.jsoftware.com/jwiki/Addons/general/jod}{JOD} is a J
+  \href{https://code.jsoftware.com/wiki/Addons/general/jod}{JOD} is a J
   addon. It is usually installed with
-  \href{http://www.jsoftware.com/jwiki/JAL}{JAL}.
+  \href{https://code.jsoftware.com/wiki/Pacman}{pacman}.
 \item
   Install JODSOURCE.
-  \href{http://www.jsoftware.com/jwiki/Addons/general/jodsource}{JODSOURCE}
+  \href{https://code.jsoftware.com/wiki/Addons/general/jodsource}{JODSOURCE}
   is also a J addon. Install it with \texttt{pacman}. It contains the JOD
   dictionaries required to build JOD. JODSOURCE also contains
   \texttt{jodliterate.}
@@ -120,11 +107,13 @@ od ;:'joddev jod utils' [ 3 od ''
 load 'jodliterate'
 \end{verbatim}
 \item
-  Set a working directory. \texttt{jodliterate} generates markdown and
+  Set a working directory. \texttt{jodliterate} generates
   \LaTeX~files. All such files are written to the directory specified by
   \texttt{setjodliterate.}
 
 \begin{verbatim}
+setjodliterate ''  NB. current JOD put dictionary document directory
+
 setjodliterate 'c:\temp'          NB. windows
 setjodliterate '/home/john/temp'  NB. linux
 \end{verbatim}
@@ -137,7 +126,12 @@ setjodliterate '/home/john/temp'  NB. linux
 grplit 'jodliterate' NB. makes jodliterate.tex 
 \end{verbatim}
 \item
-  Use \LaTeX~to compile the files generated by \texttt{grplit.} Files
+  Use \LaTeX~to compile the files generated by \texttt{grplit.} 
+
+  A batch \texttt{bat} script is written to the \texttt{setjodliterate}
+  directory that shows the sequence of \LaTeX\ compilation commands.
+  
+  Files
   may be processed with \texttt{pdflatex}, \texttt{xelatex} or
   \texttt{lualatex}. Your choice will be dictated by the presence of
   Unicode characters. For more details see the preamble file

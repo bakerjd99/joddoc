@@ -5,15 +5,20 @@
 \begin{Highlighting}[]
 \CommentTok{NB.*jodliterate s{-}{-} generates literate source code documents directly from JOD groups.}
 \CommentTok{NB.}
-\CommentTok{NB. verbatim:}
+\CommentTok{NB. verbatim: see the following blog posts and github files}
 \CommentTok{NB.}
-\CommentTok{NB. http://bakerjd99.wordpress.com/2012/10/01/semi{-}literate{-}jod/}
+\CommentTok{NB. https://analyzethedatanotthedrivel.org/2012/10/01/semi{-}literate{-}jod/}
+\CommentTok{NB. https://analyzethedatanotthedrivel.org/2020/02/19/more{-}j{-}pandoc{-}syntax{-}highlighting/}
+\CommentTok{NB. https://github.com/bakerjd99/jacks/blob/master/jodliterate/UsingJodliterate.pdf}
+\CommentTok{NB. https://github.com/bakerjd99/jacks/blob/master/jodliterate/Using\%20jodliterate.ipynb}
 \CommentTok{NB.}
 \CommentTok{NB. interface word(s):}
 \CommentTok{NB. {-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}}
+\CommentTok{NB.  THISPANDOC     {-} full pandoc path {-} use pandoc only if on shell path}
 \CommentTok{NB.  grplit         {-} make latex for group (y)}
 \CommentTok{NB.  ifacesection   {-} interface section summary string}
-\CommentTok{NB.  setjodliterate {-} prepare for processing}
+\CommentTok{NB.  ifc            {-} format interface comment text}
+\CommentTok{NB.  setjodliterate {-} prepare LaTeX processing {-} sets directory {-} writes preamble}
 \CommentTok{NB.}
 \CommentTok{NB. author:  John D. Baker}
 \CommentTok{NB. created: 2012oct01}
@@ -103,11 +108,14 @@
 \NormalTok{JLBUILDTEX}\AlertTok{=:}\index{JLBUILDTEX@\texttt{JLBUILDTEX}}  \DecValTok{0} \RegionMarkerTok{: 0}
 
 \NormalTok{rem sequence of latex commands that generate PDF}
-\NormalTok{rem assumes commands are on the working path}
+\NormalTok{rem assumes latex exes are on the working path}
+\NormalTok{setlocal}
+\NormalTok{cd }\KeywordTok{/}\NormalTok{d }\KeywordTok{\%\textasciitilde{}}\NormalTok{dp0}
 \NormalTok{lualatex  }\KeywordTok{\textasciitilde{}\#\textasciitilde{}}\NormalTok{group}\KeywordTok{\textasciitilde{}\#\textasciitilde{}}
 \NormalTok{makeindex }\KeywordTok{\textasciitilde{}\#\textasciitilde{}}\NormalTok{group}\KeywordTok{\textasciitilde{}\#\textasciitilde{}}
 \NormalTok{lualatex  }\KeywordTok{\textasciitilde{}\#\textasciitilde{}}\NormalTok{group}\KeywordTok{\textasciitilde{}\#\textasciitilde{}}
 \NormalTok{lualatex  }\KeywordTok{\textasciitilde{}\#\textasciitilde{}}\NormalTok{group}\KeywordTok{\textasciitilde{}\#\textasciitilde{}}
+\NormalTok{endlocal}
 \RegionMarkerTok{)}
 
 \CommentTok{NB. group root tex {-} columns may need adjusting}
@@ -191,6 +199,10 @@
     \KeywordTok{\{\textbackslash{}}\NormalTok{setlength}\KeywordTok{\{\textbackslash{}}\NormalTok{labelwidth}\KeywordTok{\}\{}\NormalTok{4em}\KeywordTok{\}\}}
 \KeywordTok{\}\textbackslash{}}\NormalTok{makeatother}
 \KeywordTok{\textbackslash{}}\NormalTok{usepackage}\KeywordTok{\{}\NormalTok{enumerate}\KeywordTok{\}}
+
+\KeywordTok{\%}\NormalTok{ tightlist command for list spacing}
+\KeywordTok{\textbackslash{}}\NormalTok{providecommand}\KeywordTok{\{\textbackslash{}}\NormalTok{tightlist}\KeywordTok{\}\{\%}
+  \KeywordTok{\textbackslash{}}\NormalTok{setlength}\KeywordTok{\{\textbackslash{}}\NormalTok{itemsep}\KeywordTok{\}\{}\NormalTok{0pt}\KeywordTok{\}\textbackslash{}}\NormalTok{setlength}\KeywordTok{\{\textbackslash{}}\NormalTok{parskip}\KeywordTok{\}\{}\NormalTok{0pt}\KeywordTok{\}\}}
 
 \KeywordTok{\%}\NormalTok{ build document index}
 \KeywordTok{\textbackslash{}}\NormalTok{usepackage}\KeywordTok{\{}\NormalTok{makeidx}\KeywordTok{\}}
@@ -349,6 +361,13 @@
 
 \begin{Shaded}
 \begin{Highlighting}[]
+\CommentTok{NB. default pandoc install location}
+\NormalTok{DEFAULTPANDOC}\AlertTok{=:}\index{DEFAULTPANDOC@\texttt{DEFAULTPANDOC}} \StringTok{\textquotesingle{}"C:\textbackslash{}Program Files\textbackslash{}Pandoc\textbackslash{}pandoc"\textquotesingle{}}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
 \CommentTok{NB. string marking end of LaTeX indexed word {-} see FAKETOKENS}
 \NormalTok{ENDINDEX}\AlertTok{=:}\index{ENDINDEX@\texttt{ENDINDEX}} \StringTok{\textquotesingle{}\textbackslash{}KeywordTok\{=..=..\}\textquotesingle{}}
 \end{Highlighting}
@@ -391,7 +410,8 @@
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\NormalTok{IFACEWORDSjodliterate}\AlertTok{=:}\index{IFACEWORDSjodliterate@\texttt{IFACEWORDSjodliterate}} \KeywordTok{<;.}\NormalTok{\_}\DecValTok{1} \StringTok{\textquotesingle{} THISPANDOC grplit ifacesection setjodliterate\textquotesingle{}}
+\CommentTok{NB. interface words for (jodliterate) group}
+\NormalTok{IFACEWORDSjodliterate}\AlertTok{=:}\index{IFACEWORDSjodliterate@\texttt{IFACEWORDSjodliterate}} \KeywordTok{<;.}\NormalTok{\_}\DecValTok{1} \StringTok{\textquotesingle{} THISPANDOC grplit ifacesection ifc setjodliterate\textquotesingle{}}
 \end{Highlighting}
 \end{Shaded}
 
@@ -406,6 +426,13 @@
 \begin{Highlighting}[]
 \CommentTok{NB. suffix of jodliterate code file}
 \NormalTok{JLCODEFILE}\AlertTok{=:}\index{JLCODEFILE@\texttt{JLCODEFILE}} \StringTok{\textquotesingle{}code.tex\textquotesingle{}}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. markdown text string that marks where generated group interface inserted}
+\NormalTok{JLINSERTIFACEMD}\AlertTok{=:}\index{JLINSERTIFACEMD@\texttt{JLINSERTIFACEMD}} \StringTok{\textquotesingle{}\textasciigrave{}\{\textasciitilde{}\{insert\_interface\_md\_\}\textasciitilde{}\}\textasciigrave{}\textquotesingle{}}
 \end{Highlighting}
 \end{Shaded}
 
@@ -467,14 +494,16 @@
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{NB. root words (ROOTWORDSjodliterate) group}
-\NormalTok{ROOTWORDSjodliterate}\AlertTok{=:}\index{ROOTWORDSjodliterate@\texttt{ROOTWORDSjodliterate}} \KeywordTok{<;.}\NormalTok{\_}\DecValTok{1} \StringTok{\textquotesingle{} IFACEWORDSjodliterate ROOTWORDSjodliterate grplit sbtokens setjodliterate\textquotesingle{}}
+\CommentTok{NB. root words for (jodliterate) group}
+\NormalTok{ROOTWORDSjodliterate}\AlertTok{=:}\index{ROOTWORDSjodliterate@\texttt{ROOTWORDSjodliterate}} \KeywordTok{<;.}\NormalTok{\_}\DecValTok{1}\NormalTok{ \textquotesingle{} DEFAULTPANDOC IFACEWORDSjodliterate ROOTWORDSjodliterate grplit sbtokens set}
+\AlertTok{>..>}\NormalTok{jodliterate\textquotesingle{}}
+
 \end{Highlighting}
 \end{Shaded}
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\CommentTok{NB. full pandoc executable path {-} use pandoc only if on shell path}
+\CommentTok{NB. full pandoc path {-} use (pandoc) if on shell path}
 \hypertarget{THISPANDOC}{\NormalTok{THISPANDOC}}\AlertTok{=:}\index{THISPANDOC@\texttt{THISPANDOC}} \StringTok{\textquotesingle{}"C:\textbackslash{}Program Files\textbackslash{}Pandoc\textbackslash{}pandoc"\textquotesingle{}}
 \end{Highlighting}
 \end{Shaded}
@@ -488,6 +517,7 @@
 
 \begin{Shaded}
 \begin{Highlighting}[]
+\CommentTok{NB. wrapped line prefix}
 \NormalTok{WRAPLEAD}\AlertTok{=:}\index{WRAPLEAD@\texttt{WRAPLEAD}} \StringTok{\textquotesingle{}>..>\textquotesingle{}}
 \end{Highlighting}
 \end{Shaded}
@@ -750,8 +780,8 @@
 \NormalTok{ntok}\KeywordTok{=.} \StringTok{\textquotesingle{}\textbackslash{}NormalTok\{\textquotesingle{}}
 \NormalTok{href}\KeywordTok{=.} \StringTok{\textquotesingle{}\textbackslash{}hyperlink\{\textquotesingle{}}
 
-\CommentTok{NB. fetch current short descriptions}
-\StringTok{\textquotesingle{}rc tab\textquotesingle{}}\KeywordTok{=.} \DecValTok{0} \DecValTok{8}\NormalTok{ get }\KeywordTok{y}
+\CommentTok{NB. fetch current short descriptions !(*)=. WORD\_ajod\_ EXPLAIN\_ajod\_}
+\StringTok{\textquotesingle{}rc tab\textquotesingle{}}\KeywordTok{=.} \RegionMarkerTok{(}\NormalTok{WORD\_ajod}\DecValTok{\_}\KeywordTok{,}\NormalTok{EXPLAIN\_ajod}\DecValTok{\_}\RegionMarkerTok{)}\NormalTok{ get }\KeywordTok{y}
 \NormalTok{words}\KeywordTok{=.} \DecValTok{0} \KeywordTok{\{"}\DecValTok{1}\NormalTok{ tab}
 \NormalTok{desc}\KeywordTok{=.}  \DecValTok{1} \KeywordTok{\{"}\DecValTok{1}\NormalTok{ tab}
 
@@ -800,6 +830,13 @@
 \begin{Highlighting}[]
 \CommentTok{NB. size of file in bytes}
 \NormalTok{fsize}\AlertTok{=:}\index{fsize@\texttt{fsize}} \DecValTok{1}\KeywordTok{!:}\DecValTok{4} \KeywordTok{::}\RegionMarkerTok{(}\KeywordTok{\_1:}\RegionMarkerTok{)}\KeywordTok{@}\RegionMarkerTok{(}\NormalTok{fboxname}\KeywordTok{\&>}\RegionMarkerTok{)}\KeywordTok{@}\NormalTok{boxopen}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. opens and catenates boxed lists on the last axis}
+\NormalTok{fuserows}\AlertTok{=:}\index{fuserows@\texttt{fuserows}} \KeywordTok{>@}\RegionMarkerTok{((}\KeywordTok{>@[} \KeywordTok{,"}\DecValTok{1} \KeywordTok{>@]}\RegionMarkerTok{)}\KeywordTok{/}\RegionMarkerTok{)}
 \end{Highlighting}
 \end{Shaded}
 
@@ -870,17 +907,7 @@
 \CommentTok{NB. jod refs !(*)=. badrc\_ajod\_ grp jderr\_ajod\_}
 \KeywordTok{if.}\NormalTok{ badrc\_ajod}\DecValTok{\_}\NormalTok{ gnames}\KeywordTok{=.}\NormalTok{ grp }\KeywordTok{y} \KeywordTok{do.}\NormalTok{ gnames }\KeywordTok{return.} \KeywordTok{end.}
 
-\NormalTok{ltx}\KeywordTok{=.} \RegionMarkerTok{(}\NormalTok{gheadlatex }\KeywordTok{;}\NormalTok{ gbodylatex }\KeywordTok{;}\NormalTok{ gpostlatex}\RegionMarkerTok{)} \KeywordTok{y}
-\NormalTok{ltx}\KeywordTok{=.} \KeywordTok{]\textasciigrave{}}\NormalTok{indexgrouptex}\KeywordTok{@.}\RegionMarkerTok{(}\DecValTok{1} \KeywordTok{{-}:} \KeywordTok{x}\RegionMarkerTok{)} \KeywordTok{;}\NormalTok{ tlf}\KeywordTok{\&.>}\NormalTok{ ltx }\KeywordTok{{-}.} \KeywordTok{a:}
-
-\CommentTok{NB. convert wrap marks to LaTeX fragments {-} handle trailing blank first}
-\NormalTok{ltx}\KeywordTok{=.} \RegionMarkerTok{(}\StringTok{\textquotesingle{}\#\textquotesingle{}}\KeywordTok{,}\NormalTok{WRAPPREFIXTEX}\KeywordTok{,}\StringTok{\textquotesingle{} \textquotesingle{}}\KeywordTok{,}\StringTok{\textquotesingle{}\#\textbackslash{}AlertTok\{\textquotesingle{}}\KeywordTok{,}\NormalTok{WRAPLEAD}\KeywordTok{,}\StringTok{\textquotesingle{}\}\textquotesingle{}}\RegionMarkerTok{)}\NormalTok{ changestr ltx}
-\NormalTok{ltx}\KeywordTok{=.} \RegionMarkerTok{(}\StringTok{\textquotesingle{}\#\textquotesingle{}}\KeywordTok{,}\NormalTok{WRAPPREFIXTEX}\KeywordTok{,}\StringTok{\textquotesingle{}\#\textbackslash{}AlertTok\{\textquotesingle{}}\KeywordTok{,}\NormalTok{WRAPLEAD}\KeywordTok{,}\StringTok{\textquotesingle{}\}\textquotesingle{}}\RegionMarkerTok{)}\NormalTok{ changestr ltx}
-
-\CommentTok{NB. NIMP: the next blank after \textbackslash{}AlertTok should be removed}
-\CommentTok{NB. if it\textquotesingle{}s the first blank in a \textbackslash{}NormalTok otherwise the}
-\CommentTok{NB. wrap introduces spurious blanks.}
-
+\NormalTok{ltx}\KeywordTok{=.} \KeywordTok{x}\NormalTok{ indexwraplatex }\RegionMarkerTok{(}\NormalTok{gheadlatex }\KeywordTok{;}\NormalTok{ gbodylatex }\KeywordTok{;}\NormalTok{ gpostlatex}\RegionMarkerTok{)} \KeywordTok{y}
 \StringTok{\textquotesingle{}\textbackslash{}section\{\textbackslash{}texttt\{\textquotesingle{}}\KeywordTok{,}\RegionMarkerTok{(}\NormalTok{alltrim }\KeywordTok{y}\RegionMarkerTok{)}\KeywordTok{,}\StringTok{\textquotesingle{}\} Source Code\}\textquotesingle{}}\KeywordTok{,}\NormalTok{LF}\KeywordTok{,}\NormalTok{LF}\KeywordTok{,}\NormalTok{ltx}
 \RegionMarkerTok{)}
 \end{Highlighting}
@@ -921,6 +948,10 @@
   \CommentTok{NB. no stored LaTeX generate LaTeX from group document markdown/latex}
   \KeywordTok{if.}\NormalTok{ badrc\_ajod}\DecValTok{\_}\NormalTok{ gdoc}\KeywordTok{=.} \RegionMarkerTok{(}\NormalTok{GROUP\_ajod}\DecValTok{\_}\KeywordTok{,}\NormalTok{DOCUMENT\_ajod}\DecValTok{\_}\RegionMarkerTok{)}\NormalTok{ get group }\KeywordTok{do.}\NormalTok{ gdoc }\KeywordTok{return.} \KeywordTok{end.}
   \KeywordTok{if.} \KeywordTok{\#}\NormalTok{gdoc}\KeywordTok{=.} \KeywordTok{;\{:,>}\DecValTok{1}\KeywordTok{\{}\NormalTok{gdoc }\KeywordTok{do.}
+    \CommentTok{NB. insert interface md based on IFACEWORDSgroup}
+    \KeywordTok{if.} \KeywordTok{+./}\NormalTok{JLINSERTIFACEMD }\KeywordTok{E.}\NormalTok{ gdoc }\KeywordTok{do.}
+\NormalTok{      gdoc}\KeywordTok{=.} \RegionMarkerTok{(}\StringTok{\textquotesingle{}/\textquotesingle{}}\KeywordTok{,}\NormalTok{JLINSERTIFACEMD}\KeywordTok{,}\StringTok{\textquotesingle{}/\textquotesingle{}}\KeywordTok{,}\NormalTok{ifacemarkd group}\RegionMarkerTok{)}\NormalTok{ changestr gdoc}
+    \KeywordTok{end.}
 \NormalTok{    gdoc}\KeywordTok{=.}\NormalTok{ latexfrmarkd gdoc}
 \NormalTok{    ifstr}\KeywordTok{=.}\NormalTok{ ifacesection group}
     \KeywordTok{if.} \RegionMarkerTok{(}\KeywordTok{+./}\NormalTok{ifstr }\KeywordTok{E.}\NormalTok{ gdoc}\RegionMarkerTok{)} \KeywordTok{*.} \RegionMarkerTok{(}\KeywordTok{<}\NormalTok{IFACEWORDSPFX}\KeywordTok{,}\NormalTok{group}\RegionMarkerTok{)} \KeywordTok{e.}\NormalTok{ glist }\KeywordTok{do.}
@@ -967,6 +998,21 @@
 
 \begin{Shaded}
 \begin{Highlighting}[]
+\NormalTok{ifacemarkd}\AlertTok{=:}\index{ifacemarkd@\texttt{ifacemarkd}} \DecValTok{3} \RegionMarkerTok{: 0}
+
+\CommentTok{NB.*ifacemarkd v{-}{-} generate word interface markdown section.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  clMd =. ifacemarkd clGroupName}
+\CommentTok{NB.}
+\CommentTok{NB.   ifacemarkd \textquotesingle{}jodliterate\textquotesingle{}}
+
+\NormalTok{LF}\KeywordTok{,}\StringTok{\textquotesingle{}\textasciitilde{}\textasciitilde{}\textasciitilde{}\textasciitilde{}\{ .j \}\textquotesingle{}}\KeywordTok{,}\NormalTok{LF}\KeywordTok{,}\RegionMarkerTok{(}\DecValTok{2}\NormalTok{ ifc }\KeywordTok{y}\RegionMarkerTok{)}\KeywordTok{,}\NormalTok{LF}\KeywordTok{,}\StringTok{\textquotesingle{}\textasciitilde{}\textasciitilde{}\textasciitilde{}\textasciitilde{}\textquotesingle{}}\KeywordTok{,}\NormalTok{LF}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
 \hypertarget{ifacesection}{\NormalTok{ifacesection}}\AlertTok{=:}\index{ifacesection@\texttt{ifacesection}} \DecValTok{3} \RegionMarkerTok{: 0}
 
 \CommentTok{NB.*ifacesection v{-}{-} interface section summary string.}
@@ -1007,6 +1053,47 @@
 
 \begin{Shaded}
 \begin{Highlighting}[]
+\hypertarget{ifc}{\NormalTok{ifc}}\AlertTok{=:}\index{ifc@\texttt{ifc}} \DecValTok{3} \RegionMarkerTok{: 0}
+
+\CommentTok{NB.*ifc v{-}{-} format interface comment text.}
+\CommentTok{NB.}
+\CommentTok{NB. Looks up interface  words  of a  group  and formats  text for}
+\CommentTok{NB. insertion into group headers and postprocessors.}
+\CommentTok{NB.}
+\CommentTok{NB. monad:  ifc clGroupName}
+\CommentTok{NB. dyad:   iaOption ifc clGroupName}
+
+\DecValTok{1}\NormalTok{ ifc }\KeywordTok{y}
+\KeywordTok{:}
+\CommentTok{NB. require \textquotesingle{}jod\textquotesingle{} !(*)=. badrc\_ajod\_ get jderr\_ajod\_ badcl\_ajod\_ badil\_ajod\_}
+\KeywordTok{if.}\NormalTok{ badcl\_ajod}\DecValTok{\_} \KeywordTok{y} \KeywordTok{do.}\NormalTok{ jderr\_ajod}\DecValTok{\_} \StringTok{\textquotesingle{}invalid group name\textquotesingle{}} \KeywordTok{return.}
+\KeywordTok{else.}
+\NormalTok{  iface}\KeywordTok{=.} \StringTok{\textquotesingle{}IFACEWORDS\textquotesingle{}}\KeywordTok{,}\NormalTok{alltrim }\KeywordTok{y}
+\KeywordTok{end.}
+
+\KeywordTok{x=.} \KeywordTok{\{.} \KeywordTok{,x} \KeywordTok{[}\NormalTok{ msg}\KeywordTok{=.} \StringTok{\textquotesingle{}invalid ifc options\textquotesingle{}}
+\KeywordTok{if.}\NormalTok{ badil\_ajod}\DecValTok{\_} \KeywordTok{x} \KeywordTok{do.}\NormalTok{ jderr\_ajod}\DecValTok{\_}\NormalTok{ msg }\KeywordTok{return.} \KeywordTok{end.}
+\KeywordTok{if.} \KeywordTok{{-}.x} \KeywordTok{e.} \KeywordTok{i.}\DecValTok{3}    \KeywordTok{do.}\NormalTok{ jderr\_ajod}\DecValTok{\_}\NormalTok{ msg }\KeywordTok{return.} \KeywordTok{end.}
+
+\CommentTok{NB. set comment style (header, postprocessor)}
+\NormalTok{cpx}\KeywordTok{=.} \KeywordTok{;} \KeywordTok{x} \KeywordTok{\{} \RegionMarkerTok{(}\KeywordTok{<}\StringTok{\textquotesingle{}NB.  \textquotesingle{}}\KeywordTok{;}\StringTok{\textquotesingle{} {-} \textquotesingle{}}\RegionMarkerTok{)}\KeywordTok{,}\RegionMarkerTok{(}\KeywordTok{<}\StringTok{\textquotesingle{}NB. \textquotesingle{}}\KeywordTok{;}\StringTok{\textquotesingle{}  NB. \textquotesingle{}}\RegionMarkerTok{)}\KeywordTok{,<}\StringTok{\textquotesingle{}\textquotesingle{}}\KeywordTok{;}\StringTok{\textquotesingle{} NB. \textquotesingle{}}
+
+\CommentTok{NB. define interface list in jod scratch locale}
+\CommentTok{NB. !(*)=. SO\_\_JODobj erase\_\_SO\_\_JODobj locsfx\_ajod\_ nl\_\_SO\_\_JODobj}
+\KeywordTok{if.}\NormalTok{ badrc\_ajod}\DecValTok{\_}\NormalTok{ rc}\KeywordTok{=.} \RegionMarkerTok{(}\KeywordTok{;}\NormalTok{SO}\DecValTok{\_\_}\NormalTok{JODobj}\RegionMarkerTok{)}\NormalTok{ get iface   }\KeywordTok{do.}\NormalTok{ rc   }\KeywordTok{return.}
+\KeywordTok{elseif.}\NormalTok{  ilist}\KeywordTok{=.} \KeywordTok{".}\NormalTok{iface }\KeywordTok{,} \KeywordTok{;}\NormalTok{locsfx\_ajod}\DecValTok{\_} \KeywordTok{;}\NormalTok{SO}\DecValTok{\_\_}\NormalTok{JODobj}
+\NormalTok{         erase}\DecValTok{\_\_}\NormalTok{SO}\DecValTok{\_\_}\NormalTok{JODobj nl}\DecValTok{\_\_}\NormalTok{SO}\DecValTok{\_\_}\NormalTok{JODobj }\KeywordTok{i.} \DecValTok{4}
+\NormalTok{         badrc\_ajod}\DecValTok{\_}\NormalTok{ rc}\KeywordTok{=.} \DecValTok{0} \DecValTok{8}\NormalTok{ get }\KeywordTok{/:\textasciitilde{}} \KeywordTok{\textasciitilde{}.}\NormalTok{ilist  }\KeywordTok{do.}\NormalTok{ rc }\KeywordTok{return.}
+\KeywordTok{elseif.}  \DecValTok{0}\KeywordTok{=\#}\NormalTok{txt}\KeywordTok{=.} \KeywordTok{>}\DecValTok{1}\KeywordTok{\{}\NormalTok{rc }\KeywordTok{do.}\NormalTok{ jderr\_ajod}\DecValTok{\_} \StringTok{\textquotesingle{}no interface words\textquotesingle{}} \KeywordTok{return.}
+\KeywordTok{elseif.do.}
+\NormalTok{   ctl fuserows }\KeywordTok{>\&.>} \KeywordTok{<"}\DecValTok{1} \KeywordTok{|:} \RegionMarkerTok{((}\KeywordTok{\#}\NormalTok{txt}\RegionMarkerTok{)}\KeywordTok{\#,:}\NormalTok{cpx}\RegionMarkerTok{)} \KeywordTok{,\&.>}\NormalTok{ txt}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
 \NormalTok{indexgrouptex}\AlertTok{=:}\index{indexgrouptex@\texttt{indexgrouptex}} \DecValTok{3} \RegionMarkerTok{: 0}
 
 \CommentTok{NB.*indexgrouptex v{-}{-} insert index commands in pandoc highlight group latex.}
@@ -1015,6 +1102,30 @@
 
 \StringTok{\textquotesingle{}pos ltx\textquotesingle{}}\KeywordTok{=.} \RegionMarkerTok{(}\NormalTok{BEGININDEX}\KeywordTok{;}\NormalTok{ENDINDEX}\RegionMarkerTok{)}\NormalTok{ cutnestidx }\KeywordTok{y}
 \KeywordTok{if.} \KeywordTok{\#}\NormalTok{pos }\KeywordTok{do.} \KeywordTok{;} \RegionMarkerTok{(}\NormalTok{formtexindexes pos}\KeywordTok{\{}\NormalTok{ltx}\RegionMarkerTok{)}\NormalTok{ pos}\KeywordTok{\}}\NormalTok{ ltx }\KeywordTok{else.} \KeywordTok{y} \KeywordTok{end.}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{indexwraplatex}\AlertTok{=:}\index{indexwraplatex@\texttt{indexwraplatex}} \DecValTok{4} \RegionMarkerTok{: 0}
+
+\CommentTok{NB.*indexwraplatex v{-}{-} insert index commands and handle spurious blanks.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  clLatex =. paIndex indexwraplatex clLatex}
+
+\NormalTok{ltx}\KeywordTok{=.} \KeywordTok{]\textasciigrave{}}\NormalTok{indexgrouptex}\KeywordTok{@.}\RegionMarkerTok{(}\DecValTok{1} \KeywordTok{{-}:} \KeywordTok{x}\RegionMarkerTok{)} \KeywordTok{;}\NormalTok{ tlf}\KeywordTok{\&.>} \KeywordTok{y} \KeywordTok{{-}.} \KeywordTok{a:}
+
+\CommentTok{NB. wrap prefix final LaTeX}
+\NormalTok{wpfx}\KeywordTok{=.} \StringTok{\textquotesingle{}\textbackslash{}AlertTok\{\textquotesingle{}}\KeywordTok{,}\NormalTok{WRAPLEAD}\KeywordTok{,}\StringTok{\textquotesingle{}\}\textquotesingle{}}
+
+\CommentTok{NB. convert wrap marks to LaTeX fragments {-} handle trailing blank first}
+\NormalTok{ltx}\KeywordTok{=.} \RegionMarkerTok{(}\StringTok{\textquotesingle{}\#\textquotesingle{}}\KeywordTok{,}\NormalTok{WRAPPREFIXTEX}\KeywordTok{,}\StringTok{\textquotesingle{} \textquotesingle{}}\KeywordTok{,}\StringTok{\textquotesingle{}\#\textquotesingle{}}\KeywordTok{,}\NormalTok{wpfx}\RegionMarkerTok{)}\NormalTok{ changestr ltx}
+\NormalTok{ltx}\KeywordTok{=.} \RegionMarkerTok{(}\StringTok{\textquotesingle{}\#\textquotesingle{}}\KeywordTok{,}\NormalTok{WRAPPREFIXTEX}\KeywordTok{,}\StringTok{\textquotesingle{}\#\textquotesingle{}}\KeywordTok{,}\NormalTok{wpfx}\RegionMarkerTok{)}\NormalTok{ changestr ltx}
+
+\CommentTok{NB. remove spurious normal token blanks}
+\NormalTok{sprb}\KeywordTok{=.}\NormalTok{ wpfx}\KeywordTok{,}\StringTok{\textquotesingle{}\textbackslash{}NormalTok\{\textquotesingle{}}
+\RegionMarkerTok{(}\StringTok{\textquotesingle{}\#\textquotesingle{}}\KeywordTok{,}\NormalTok{sprb}\KeywordTok{,}\StringTok{\textquotesingle{} \#\textquotesingle{}}\KeywordTok{,}\NormalTok{sprb}\RegionMarkerTok{)}\NormalTok{ changestr ltx}
 \RegionMarkerTok{)}
 \end{Highlighting}
 \end{Shaded}
@@ -1159,8 +1270,8 @@
 \CommentTok{NB.   NB. markdown text from JOD group words}
 \CommentTok{NB.   mtxt=. markdfrwords \}. grp \textquotesingle{}jod\textquotesingle{}}
 
-\CommentTok{NB. jod refs !(*)=. badrc\_ajod\_ get wttext\_\_MK\_\_JODobj}
-\KeywordTok{if.}\NormalTok{ badrc\_ajod}\DecValTok{\_}\NormalTok{ src}\KeywordTok{=.} \DecValTok{0} \DecValTok{10}\NormalTok{ get }\KeywordTok{y} \KeywordTok{do.}\NormalTok{ src }\KeywordTok{return.} \KeywordTok{end.}
+\CommentTok{NB. require \textquotesingle{}jod\textquotesingle{} !(*)=. WORD\_ajod\_ NVTABLE\_ajod\_ badrc\_ajod\_ get wttext\_\_MK\_\_JODobj}
+\KeywordTok{if.}\NormalTok{ badrc\_ajod}\DecValTok{\_}\NormalTok{ src}\KeywordTok{=.} \RegionMarkerTok{(}\NormalTok{WORD\_ajod}\DecValTok{\_}\KeywordTok{,}\NormalTok{NVTABLE\_ajod}\DecValTok{\_}\RegionMarkerTok{)}\NormalTok{ get }\KeywordTok{y} \KeywordTok{do.}\NormalTok{ src }\KeywordTok{return.} \KeywordTok{end.}
 
 \CommentTok{NB. commented source code (name,source) table.}
 \KeywordTok{if.}\NormalTok{ badrc\_ajod}\DecValTok{\_}\NormalTok{ src}\KeywordTok{=.} \DecValTok{0} \DecValTok{0} \DecValTok{1}\NormalTok{ wttext}\DecValTok{\_\_}\NormalTok{MK}\DecValTok{\_\_}\NormalTok{JODobj }\KeywordTok{>}\DecValTok{1}\KeywordTok{\{}\NormalTok{src }\KeywordTok{do.}\NormalTok{ src}
@@ -1324,7 +1435,7 @@
 \begin{Highlighting}[]
 \hypertarget{setjodliterate}{\NormalTok{setjodliterate}}\AlertTok{=:}\index{setjodliterate@\texttt{setjodliterate}} \DecValTok{3} \RegionMarkerTok{: 0}
 
-\CommentTok{NB.*setjodliterate v{-}{-} prepare for processing.}
+\CommentTok{NB.*setjodliterate v{-}{-} prepare LaTeX processing {-} sets out directory writes preamble.}
 \CommentTok{NB.}
 \CommentTok{NB. monad:  (paRc ; clDir) =. setjodliterate clWorkingDir | zl}
 \CommentTok{NB.}
@@ -1447,13 +1558,24 @@
 \NormalTok{smoutput IFACE}\AlertTok{=:}\index{IFACE@\texttt{IFACE}}  \RegionMarkerTok{(}\DecValTok{0} \RegionMarkerTok{: 0)}
 \CommentTok{NB. (jodliterate) interface word(s):}
 \CommentTok{NB. {-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}}
+\CommentTok{NB. THISPANDOC      NB. full pandoc path {-} use (pandoc) if on shell path}
 \CommentTok{NB. grplit          NB. make latex for group (y)}
 \CommentTok{NB. ifacesection    NB. interface section summary string}
-\CommentTok{NB. setjodliterate  NB. prepare for processing}
+\CommentTok{NB. ifc             NB. format interface comment text}
+\CommentTok{NB. setjodliterate  NB. prepare LaTeX processing {-} sets out directory writes preamble}
 \RegionMarkerTok{)}
 
 \NormalTok{cocurrent }\StringTok{\textquotesingle{}base\textquotesingle{}}
 \NormalTok{coinsert  }\StringTok{\textquotesingle{}ajodliterate\textquotesingle{}}
+
+\RegionMarkerTok{(}\DecValTok{3} \RegionMarkerTok{: 0)} \StringTok{\textquotesingle{}\textquotesingle{}}
+\KeywordTok{if.} \KeywordTok{+./@}\RegionMarkerTok{(}\StringTok{\textquotesingle{}pandoc\textquotesingle{}}\KeywordTok{\&E.}\RegionMarkerTok{)}\NormalTok{ panver}\KeywordTok{=.} \KeywordTok{;}\DecValTok{0}\KeywordTok{\{} \KeywordTok{<;.}\NormalTok{\_}\DecValTok{2}\NormalTok{ tlf }\RegionMarkerTok{(}\NormalTok{shell THISPANDOC}\KeywordTok{,}\StringTok{\textquotesingle{} {-}{-}version\textquotesingle{}}\RegionMarkerTok{)} \KeywordTok{{-}.}\NormalTok{ CR }\KeywordTok{do.}
+\NormalTok{  smoutput }\StringTok{\textquotesingle{}NOTE: adjust pandoc path if version (\textquotesingle{}}\KeywordTok{,}\NormalTok{panver}\KeywordTok{,}\StringTok{\textquotesingle{}) is not >= 2.9.1.1\textquotesingle{}}
+\KeywordTok{else.}
+\NormalTok{  smoutput }\StringTok{\textquotesingle{}ERROR: pandoc not set {-} adjust THISPANDOC\textquotesingle{}}
+\NormalTok{  smoutput }\StringTok{\textquotesingle{}THISPANDOC\_ajodliterate\_=: \textquotesingle{}\textquotesingle{}pandoc\textquotesingle{}\textquotesingle{} NB. use when proper pandoc on path\textquotesingle{}}
+\KeywordTok{end.}
+\RegionMarkerTok{)}
 \end{Highlighting}
 \end{Shaded}
 \end{JODPostProcessor}

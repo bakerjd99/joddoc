@@ -1,0 +1,217 @@
+% this jodliterate overview
+\section{\texttt{sunmoon} Overview}
+
+\texttt{sunmoon} is a collection of basic astronomical algorithms The
+key verbs are \texttt{moons}, \texttt{sunriseset0} and
+\texttt{sunriseset1.}\\
+All of these verbs were derived from BASIC programs published in
+\emph{Sky \& Telescope} magazine in the 1990's. The rest of the verbs in
+\texttt{sunmoon} are mostly date and trigonometric utilities.
+
+\subsection{\texttt{sunmoon} Interface}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\hyperlink{calmoons}{\NormalTok{calmoons    }}\CommentTok{calendar dates of new and full moons}
+\hyperlink{moons}{\NormalTok{moons       }}\CommentTok{times of new and full moons for n calendar years}
+\hyperlink{sunriseset0}{\NormalTok{sunriseset0 }}\CommentTok{computes sun rise and set times - see group documentation}
+\hyperlink{sunriseset1}{\NormalTok{sunriseset1 }}\CommentTok{computes sun rise and set times - see group documentation}
+\end{Highlighting}
+\end{Shaded}
+
+
+\subsection{\textbf\texttt{sunriseset0} \textsl{v--} sunrise and sunset times}
+
+This verb has been adapted from a BASIC program submitted by Robin G.
+Stuart \emph{Sky \& Telescope's} shortest sunrise/set program contest.
+Winning entries were listed in the March 1995 Astronomical Computing
+column.
+
+The J version of this algorithm has been vectorized. It can compute any
+number of sunrise and sunset times in one call.
+
+The \texttt{(y)} argument is a \texttt{5*n} floating point table where:
+
+\begin{verbatim}
+0{ is latitude in degrees with northern latitudes positive.
+1{ is longitude in degrees with western longitudes negative.
+2{ is western time zones expressed as positive whole hours.
+3{ is the month number.
+4{ is the day number.
+\end{verbatim}
+
+The result is a numeric table with four rows. To handle the cases when
+the sun never rises or sets the first two elements of the corresponding
+result columns are:
+
+\begin{verbatim}
+0{ is NORISESET an invalid hour indicating no rise or set
+1{ is 0 when the sun never rises
+1{ is 1 when the sun never sets
+\end{verbatim}
+
+Warning: this algorithm breaks for latitudes close to the South pole.
+
+The original BASIC code has been slightly modified to use control
+structures in place of GOTO's and line numbers.
+
+Adapted from:
+
+\begin{Shaded}
+\begin{Highlighting}[numbers=left,,]
+\NormalTok{/* Sunrise/set by R. G. Stuart,  Mexico City, Mexico */}
+\NormalTok{PI = }\DecValTok{3.14159265}\NormalTok{\#: DR = PI / }\DecValTok{180}\NormalTok{: RD = }\DecValTok{1}\NormalTok{ / DR}
+\FunctionTok{INPUT} \StringTok{"Lat, Long (deg)"}\CommentTok{; B5, L5}
+\FunctionTok{INPUT} \StringTok{"Time zone (hrs)"}\CommentTok{; H}
+\NormalTok{B5 = DR * B5}
+\FunctionTok{INPUT} \StringTok{"Month, day"}\CommentTok{; M, D}
+\NormalTok{N = }\FunctionTok{INT}\NormalTok{(}\DecValTok{275}\NormalTok{ * M / }\DecValTok{9}\NormalTok{) {-} }\DecValTok{2}\NormalTok{ * }\FunctionTok{INT}\NormalTok{((M + }\DecValTok{9}\NormalTok{) / }\DecValTok{12}\NormalTok{) + D {-} }\DecValTok{30}
+\NormalTok{L0 = }\DecValTok{4.8771}\NormalTok{ + .}\DecValTok{0172}\NormalTok{ * (N + .}\DecValTok{5}\NormalTok{ {-} L5 / }\DecValTok{360}\NormalTok{)}
+\NormalTok{C = .}\DecValTok{03342}\NormalTok{ * }\FunctionTok{SIN}\NormalTok{(L0 + }\DecValTok{1.345}\NormalTok{)}
+\NormalTok{C2 = RD * (ATN(}\FunctionTok{TAN}\NormalTok{(L0 + C)) {-} ATN(.}\DecValTok{9175}\NormalTok{ * }\FunctionTok{TAN}\NormalTok{(L0 + C)) {-} C)}
+\NormalTok{SD = .}\DecValTok{3978}\NormalTok{ * }\FunctionTok{SIN}\NormalTok{(L0 + C): CD = }\FunctionTok{SQR}\NormalTok{(}\DecValTok{1}\NormalTok{ {-} SD * SD)}
+\NormalTok{SC = (SD * }\FunctionTok{SIN}\NormalTok{(B5) + .}\DecValTok{0145}\NormalTok{) / (}\FunctionTok{COS}\NormalTok{(B5) * CD)}
+\KeywordTok{IF }\FunctionTok{ABS}\NormalTok{(SC) <= }\DecValTok{1}\NormalTok{ THEN}
+\NormalTok{  C3 = RD * ATN(SC / }\FunctionTok{SQR}\NormalTok{(}\DecValTok{1}\NormalTok{ {-} SC * SC))}
+\NormalTok{  R1 = }\DecValTok{6}\NormalTok{ {-} H {-} (L5 + C2 + C3) / }\DecValTok{15}
+\NormalTok{  HR = }\FunctionTok{INT}\NormalTok{(R1): MR = }\FunctionTok{INT}\NormalTok{((R1 {-} HR) * }\DecValTok{60}\NormalTok{)}
+  \FunctionTok{PRINT}\NormalTok{ USING }\StringTok{"Sunrise at \#\#:\#\#"}\CommentTok{; HR; MR}
+\NormalTok{  S1 = }\DecValTok{18}\NormalTok{ {-} H {-} (L5 + C2 {-} C3) / }\DecValTok{15}
+\NormalTok{  HS = }\FunctionTok{INT}\NormalTok{(S1): MS = }\FunctionTok{INT}\NormalTok{((S1 {-} HS) * }\DecValTok{60}\NormalTok{)}
+  \FunctionTok{PRINT}\NormalTok{ USING }\StringTok{"Sunset at \#\#:\#\#"}\CommentTok{; HS; MS}
+\KeywordTok{ELSEIF}\NormalTok{ SC > }\DecValTok{1}\NormalTok{ THEN}
+  \FunctionTok{PRINT} \StringTok{"Sun up all day"}
+\KeywordTok{ELSEIF}\NormalTok{ SC < {-}}\DecValTok{1}\NormalTok{ THEN}
+  \FunctionTok{PRINT} \StringTok{"Sun down all day"}
+\KeywordTok{END} \KeywordTok{IF}
+\KeywordTok{END}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{monad}\KeywordTok{:}\NormalTok{ ntRiseset }\KeywordTok{=.}\NormalTok{ sunriseset0 flBLHMD}
+
+  \CommentTok{NB. rise and set times at Dog Lake today (daylight savings)}
+\NormalTok{  td}\KeywordTok{=.} \RegionMarkerTok{(}\DecValTok{44} \KeywordTok{+} \DecValTok{19}\KeywordTok{\%}\DecValTok{60}\RegionMarkerTok{)}\KeywordTok{,}\RegionMarkerTok{(}\KeywordTok{{-}} \DecValTok{76} \KeywordTok{+} \DecValTok{21}\KeywordTok{\%}\DecValTok{60}\RegionMarkerTok{)}\KeywordTok{,} \DecValTok{4} \KeywordTok{,} \KeywordTok{\}.}\NormalTok{ today }\DecValTok{0}
+\NormalTok{  sunriseset0 td}
+
+  \CommentTok{NB. rise and set times on June 30 on Greenwich meridian}
+\NormalTok{  t0}\KeywordTok{=.}   \DecValTok{0} \DecValTok{0} \DecValTok{0} \DecValTok{6} \DecValTok{30}   \CommentTok{NB. equator}
+\NormalTok{  t1}\KeywordTok{=.}  \DecValTok{49} \DecValTok{0} \DecValTok{0} \DecValTok{6} \DecValTok{30}   \CommentTok{NB. north {-} lat of western US/Canada border}
+\NormalTok{  t2}\KeywordTok{=.} \DecValTok{\_47} \DecValTok{0} \DecValTok{0} \DecValTok{6} \DecValTok{30}   \CommentTok{NB. south {-} southern Chile and Argentina}
+\NormalTok{  t3}\KeywordTok{=.}  \DecValTok{75} \DecValTok{0} \DecValTok{0} \DecValTok{6} \DecValTok{30}   \CommentTok{NB. far north (sun always up)}
+\NormalTok{  t4}\KeywordTok{=.} \DecValTok{\_75} \DecValTok{0} \DecValTok{0} \DecValTok{6} \DecValTok{30}   \CommentTok{NB. far south (sun always down)}
+
+\NormalTok{  sunriseset0 t0}
+
+\NormalTok{  sunriseset0 t0 }\KeywordTok{,}\NormalTok{ t1 }\KeywordTok{,}\NormalTok{ t2 }\KeywordTok{,}\NormalTok{ t3 }\KeywordTok{,:}\NormalTok{ t4}
+
+  \CommentTok{NB. times on equator for March 21 for all 1 hour time zones}
+\NormalTok{  sunriseset0  }\DecValTok{0} \DecValTok{0} \KeywordTok{,"}\DecValTok{1} \RegionMarkerTok{(}\KeywordTok{,.i.} \DecValTok{24}\RegionMarkerTok{)} \KeywordTok{,"}\DecValTok{1} \KeywordTok{]} \DecValTok{3} \DecValTok{21}
+
+  \CommentTok{NB. times for calendar year 1995 on the Greenwich meridian}
+\NormalTok{  md95}\KeywordTok{=.}  \DecValTok{47} \DecValTok{0} \DecValTok{0} \KeywordTok{,"}\DecValTok{1} \KeywordTok{\}."}\DecValTok{1}\NormalTok{ yeardates }\DecValTok{1995}
+\NormalTok{  rs095}\KeywordTok{=.}\NormalTok{ sunriseset0 md95}
+\end{Highlighting}
+\end{Shaded}
+
+\subsection{\textbf\texttt{sunriseset1} \textsl{v--} sunrise and sunset times}
+
+This verb has been adapted from a BASIC program submitted by James
+Brimhall to \emph{Sky \& Telescope's} ``shortest sunrise/set program''
+contest. Winning entries were listed in the March 1995 Astronomical
+Computing column.
+
+The \texttt{(y)} argument of \texttt{sunriseset1} is a \texttt{6*n}
+floating point table where:
+
+\begin{verbatim}
+0{ is latitude in degrees with northern latitudes positive.
+1{ is longitude in degrees with western longitudes negative.
+2{ is western time zones expressed as positive whole hours.
+3{ is the month number.
+4{ is the day number.
+5{ is the year.
+\end{verbatim}
+
+The result is a numeric table with four rows. To handle the cases when
+the sun never rises or sets the first two elements of the corresponding
+result columns n are:
+
+\begin{verbatim}
+0{ is NORISESET an invalid hour that indicates no rise or set.
+1{ is 0 when the sun never rises.
+1{ is 1 when the sun never sets.
+\end{verbatim}
+
+Adapted from:
+
+\begin{Shaded}
+\begin{Highlighting}[numbers=left,,]
+\NormalTok{/* Sunrise/set by James Brimhall, St. Albans, WV */}
+\NormalTok{PI = }\DecValTok{3.1415927}\NormalTok{\#: DR = PI / }\DecValTok{180}\NormalTok{: DD = }\DecValTok{360}\NormalTok{ / }\DecValTok{365.25636}\NormalTok{\#: }\KeywordTok{DIM}\NormalTok{ D(}\DecValTok{20}\NormalTok{)}
+\KeywordTok{DATA} \DecValTok{0}\NormalTok{,}\DecValTok{31}\NormalTok{,}\DecValTok{59}\NormalTok{,}\DecValTok{90}\NormalTok{,}\DecValTok{120}\NormalTok{,}\DecValTok{151}\NormalTok{,}\DecValTok{181}\NormalTok{,}\DecValTok{212}\NormalTok{,}\DecValTok{243}\NormalTok{,}\DecValTok{273}\NormalTok{,}\DecValTok{304}\NormalTok{,}\DecValTok{334}
+\KeywordTok{FOR }\NormalTok{C = }\DecValTok{1} \KeywordTok{TO} \DecValTok{12}\NormalTok{: }\KeywordTok{READ}\NormalTok{ D(C): }\KeywordTok{NEXT }\NormalTok{C}
+\FunctionTok{INPUT} \StringTok{"Lat, long"}\CommentTok{; LA, LO}
+\FunctionTok{INPUT} \StringTok{"Month, day, year"}\CommentTok{; M, D, Y}
+\KeywordTok{IF }\NormalTok{Y / }\DecValTok{4}\NormalTok{ = }\FunctionTok{INT}\NormalTok{(Y / }\DecValTok{4}\NormalTok{) THEN }\KeywordTok{FOR }\NormalTok{C = }\DecValTok{3} \KeywordTok{TO} \DecValTok{12}\NormalTok{: D(C) = D(C) + }\DecValTok{1}\NormalTok{: }\KeywordTok{NEXT }\NormalTok{C}
+\NormalTok{DY = D(M) + D: DY = DY {-} LO / }\DecValTok{360}\NormalTok{: DY = DY + .}\DecValTok{5}
+\NormalTok{TH = }\DecValTok{9.357001}\NormalTok{ + DD * DY + }\DecValTok{1.914}\NormalTok{ * }\FunctionTok{SIN}\NormalTok{(DR * (DD * DY {-} }\DecValTok{3.97}\NormalTok{))}
+\NormalTok{C3 = .}\DecValTok{3978}\NormalTok{ * }\FunctionTok{COS}\NormalTok{(DR * TH)}
+\NormalTok{DC = {-}}\DecValTok{1}\NormalTok{ / DR * ATN(C3 / (}\FunctionTok{SQR}\NormalTok{(}\DecValTok{1}\NormalTok{ {-} C3 \^{} }\DecValTok{2}\NormalTok{)))}
+\KeywordTok{IF }\NormalTok{LA < }\DecValTok{0}\NormalTok{ THEN A1 = }\DecValTok{90}\NormalTok{ + LA {-} DC }\KeywordTok{ELSE}\NormalTok{ A1 = }\DecValTok{90}\NormalTok{ {-} LA + DC: }\FunctionTok{PRINT}
+\KeywordTok{IF }\NormalTok{A1 < {-}}\DecValTok{50}\NormalTok{ / }\DecValTok{60}\NormalTok{ THEN }\FunctionTok{PRINT} \StringTok{"Sun never rises"}\NormalTok{: }\KeywordTok{GOTO} \DecValTok{200}
+\KeywordTok{IF }\NormalTok{LA < }\DecValTok{0}\NormalTok{ THEN A2 = {-}}\DecValTok{90}\NormalTok{ {-} LA {-} DC }\KeywordTok{ELSE}\NormalTok{ A2 = LA {-} }\DecValTok{90}\NormalTok{ + DC}
+\KeywordTok{IF }\NormalTok{A2 >= {-}}\DecValTok{50}\NormalTok{ / }\DecValTok{60}\NormalTok{ THEN }\FunctionTok{PRINT} \StringTok{"Sun never sets"}\NormalTok{: }\KeywordTok{GOTO} \DecValTok{200}
+\NormalTok{C1 = (}\FunctionTok{SIN}\NormalTok{({-}DR * }\DecValTok{50}\NormalTok{ / }\DecValTok{60}\NormalTok{) {-} }\FunctionTok{SIN}\NormalTok{(DR * DC) * }\FunctionTok{SIN}\NormalTok{(DR * LA)) / (}\FunctionTok{COS}\NormalTok{(DR * DC) * }\FunctionTok{COS}\NormalTok{(DR * LA))}
+\NormalTok{T2 = (}\DecValTok{1}\NormalTok{ / DR) * ATN(}\FunctionTok{SQR}\NormalTok{(}\DecValTok{1}\NormalTok{ {-} C1 \^{} }\DecValTok{2}\NormalTok{) / C1): }\KeywordTok{IF }\NormalTok{C1 >= }\DecValTok{0}\NormalTok{ THEN T1 = }\DecValTok{360}\NormalTok{ {-} T2}
+\KeywordTok{IF }\NormalTok{C1 < }\DecValTok{0}\NormalTok{ THEN T2 = }\DecValTok{180}\NormalTok{ + T2: T1 = }\DecValTok{360}\NormalTok{ {-} T2}
+\NormalTok{TR = T1 / }\DecValTok{15}\NormalTok{ {-} }\DecValTok{12}\NormalTok{: TS = T2 / }\DecValTok{15}
+\NormalTok{ET = {-}.}\DecValTok{1276}\NormalTok{ * }\FunctionTok{SIN}\NormalTok{(DR * (DD * DY {-} }\DecValTok{3.97}\NormalTok{)) {-} .}\DecValTok{1511}\NormalTok{ * }\FunctionTok{SIN}\NormalTok{(DR * (}\DecValTok{2}\NormalTok{ * DD * DY + }\DecValTok{17.86}\NormalTok{))}
+\NormalTok{TR = TR {-} ET: TS = TS {-} ET}
+\FunctionTok{INPUT} \StringTok{"Time zone (h)"}\CommentTok{; TZ}
+\NormalTok{TC = {-}TZ {-} LO / }\DecValTok{15}\NormalTok{: R = TR + TC: S = TS + TC}
+\NormalTok{C2 = (}\FunctionTok{SIN}\NormalTok{(DR * DC) {-} }\FunctionTok{SIN}\NormalTok{(DR * LA) * }\FunctionTok{SIN}\NormalTok{({-}DR * }\DecValTok{50}\NormalTok{ / }\DecValTok{60}\NormalTok{)) / (}\FunctionTok{COS}\NormalTok{(DR * LA) {-} }\FunctionTok{SIN}\NormalTok{(DR * LA) * }\FunctionTok{SIN}\NormalTok{({-}DR * }\DecValTok{50}\NormalTok{ / }\DecValTok{60}\NormalTok{))}
+\NormalTok{Z1 = (}\DecValTok{1}\NormalTok{ / DR) * ATN(}\FunctionTok{SQR}\NormalTok{(}\DecValTok{1}\NormalTok{ {-} C2 \^{} }\DecValTok{2}\NormalTok{) / C2): }\KeywordTok{IF }\NormalTok{C2 >= }\DecValTok{0}\NormalTok{ THEN Z2 = }\DecValTok{360}\NormalTok{ {-} Z1}
+\KeywordTok{IF }\NormalTok{C2 < }\DecValTok{0}\NormalTok{ THEN Z1 = }\DecValTok{180}\NormalTok{ + Z1: Z2 = }\DecValTok{360}\NormalTok{ {-} Z1}
+\FunctionTok{PRINT} \StringTok{"Sunrise "}\CommentTok{; INT(R); "h"; INT(600 * (R {-} INT(R))) / 10;}
+\FunctionTok{PRINT} \StringTok{"m a.m., azimuth "}\CommentTok{; INT(10 * Z1) / 10}
+\FunctionTok{PRINT} \StringTok{"Sunset "}\CommentTok{; INT(S); "h"; INT(600 * (S {-} INT(S))) / 10;}
+\FunctionTok{PRINT} \StringTok{"m p.m., azimuth "}\CommentTok{; INT(10 * Z2) / 10}
+\DecValTok{200} \KeywordTok{END}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\NormalTok{monad}\KeywordTok{:}\NormalTok{  ntRiseset }\KeywordTok{=.}\NormalTok{ sunriseset1 flBLHMDY}
+
+  \CommentTok{NB. rise and set times at Dog Lake today (daylight savings)}
+\NormalTok{  td}\KeywordTok{=.} \RegionMarkerTok{(}\DecValTok{44} \KeywordTok{+} \DecValTok{19}\KeywordTok{\%}\DecValTok{60}\RegionMarkerTok{)}\KeywordTok{,}\RegionMarkerTok{(}\KeywordTok{{-}} \DecValTok{76} \KeywordTok{+} \DecValTok{21}\KeywordTok{\%}\DecValTok{60}\RegionMarkerTok{)}\KeywordTok{,} \DecValTok{4} \KeywordTok{,} \DecValTok{1} \KeywordTok{|.}\NormalTok{ today }\DecValTok{0}
+\NormalTok{  sunriseset1 td}
+
+  \CommentTok{NB. rise and set times on June 30 1995 on Greenwich meridian}
+\NormalTok{  t0}\KeywordTok{=.}   \DecValTok{0} \DecValTok{0} \DecValTok{0} \DecValTok{6} \DecValTok{30} \DecValTok{1995}  \CommentTok{NB. equator}
+\NormalTok{  t1}\KeywordTok{=.}  \DecValTok{49} \DecValTok{0} \DecValTok{0} \DecValTok{6} \DecValTok{30} \DecValTok{1995}  \CommentTok{NB. north {-} lat of western US/Canada border}
+\NormalTok{  t2}\KeywordTok{=.} \DecValTok{\_47} \DecValTok{0} \DecValTok{0} \DecValTok{6} \DecValTok{30} \DecValTok{1995}  \CommentTok{NB. south {-} southern Chile and Argentina}
+\NormalTok{  t3}\KeywordTok{=.}  \DecValTok{75} \DecValTok{0} \DecValTok{0} \DecValTok{6} \DecValTok{30} \DecValTok{1995}  \CommentTok{NB. far north (sun always up)}
+\NormalTok{  t4}\KeywordTok{=.} \DecValTok{\_75} \DecValTok{0} \DecValTok{0} \DecValTok{6} \DecValTok{30} \DecValTok{1995}  \CommentTok{NB. far south (sun always down)}
+
+\NormalTok{  sunriseset1 t0}
+
+\NormalTok{  sunriseset1 t0 }\KeywordTok{,}\NormalTok{ t1 }\KeywordTok{,}\NormalTok{ t2 }\KeywordTok{,}\NormalTok{ t3 }\KeywordTok{,:}\NormalTok{ t4}
+
+  \CommentTok{NB. compare algorithms}
+\NormalTok{  sun1}\KeywordTok{=.}\NormalTok{ sunriseset1 t0 }\KeywordTok{,}\NormalTok{ t1 }\KeywordTok{,}\NormalTok{ t2 }\KeywordTok{,}\NormalTok{ t3 }\KeywordTok{,:}\NormalTok{ t4}
+\NormalTok{  sun0}\KeywordTok{=.}\NormalTok{ sunriseset0 }\KeywordTok{\}:"}\DecValTok{1}\NormalTok{ t0 }\KeywordTok{,}\NormalTok{ t1 }\KeywordTok{,}\NormalTok{ t2 }\KeywordTok{,}\NormalTok{ t3 }\KeywordTok{,:}\NormalTok{ t4}
+\NormalTok{  sun1 }\KeywordTok{{-}}\NormalTok{ sun0}
+
+  \CommentTok{NB. times on equator for March 21 1995 for all 1 hour time zones}
+\NormalTok{  sunriseset1 }\DecValTok{0} \DecValTok{0} \KeywordTok{,"}\DecValTok{1} \RegionMarkerTok{(}\KeywordTok{,.i.} \DecValTok{24}\RegionMarkerTok{)} \KeywordTok{,"}\DecValTok{1} \KeywordTok{]} \DecValTok{3} \DecValTok{21} \DecValTok{1995}
+
+  \CommentTok{NB. times for calendar year 1995 on the Greenwich meridian}
+\NormalTok{  mdy95}\KeywordTok{=.} \DecValTok{47} \DecValTok{0} \DecValTok{0} \KeywordTok{,"}\DecValTok{1} \KeywordTok{]} \DecValTok{1} \KeywordTok{|."}\DecValTok{1}\NormalTok{ yeardates }\DecValTok{1995}
+\NormalTok{  rs195}\KeywordTok{=.}\NormalTok{ sunriseset1 mdy95}
+\end{Highlighting}
+\end{Shaded}
