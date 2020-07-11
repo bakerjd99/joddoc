@@ -15,6 +15,7 @@
 \CommentTok{NB. interface word(s):}
 \CommentTok{NB. {-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}}
 \CommentTok{NB.  THISPANDOC     {-} full pandoc path {-} use (pandoc) if on shell path}
+\CommentTok{NB.  formifacetex   {-} formats hyperlinked and highlighted interface words}
 \CommentTok{NB.  grplit         {-} make latex for group (y)}
 \CommentTok{NB.  ifacesection   {-} interface section summary string}
 \CommentTok{NB.  ifc            {-} format interface comment text}
@@ -34,6 +35,7 @@
 \CommentTok{NB. 13dec29 added to (jacks) GitHub repository}
 \CommentTok{NB. 20may07 adjusted word formation (wfl) for J 9.01}
 \CommentTok{NB. 20may08 updated for current (pandoc) versions}
+\CommentTok{NB. 20jun07 added (formifacetex) to interface words}
 
 \NormalTok{coclass  }\StringTok{\textquotesingle{}ajodliterate\textquotesingle{}}
 \NormalTok{coinsert }\StringTok{\textquotesingle{}ijod\textquotesingle{}}
@@ -439,7 +441,7 @@
 \begin{Shaded}
 \begin{Highlighting}[]
 \CommentTok{NB. interface words for (jodliterate) group}
-\NormalTok{IFACEWORDSjodliterate}\AlertTok{=:}\index{IFACEWORDSjodliterate@\texttt{IFACEWORDSjodliterate}} \KeywordTok{<;.}\NormalTok{\_}\DecValTok{1} \StringTok{\textquotesingle{} THISPANDOC grplit ifacesection ifc setjodliterate wordlit\textquotesingle{}}
+\NormalTok{IFACEWORDSjodliterate}\AlertTok{=:}\index{IFACEWORDSjodliterate@\texttt{IFACEWORDSjodliterate}} \KeywordTok{<;.}\NormalTok{\_}\DecValTok{1} \StringTok{\textquotesingle{} THISPANDOC formifacetex grplit ifacesection ifc setjodliterate wordlit\textquotesingle{}}
 \end{Highlighting}
 \end{Shaded}
 
@@ -795,11 +797,14 @@
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\NormalTok{formifacetex}\AlertTok{=:}\index{formifacetex@\texttt{formifacetex}} \DecValTok{3} \RegionMarkerTok{: 0}
+\hypertarget{formifacetex}{\NormalTok{formifacetex}}\AlertTok{=:}\index{formifacetex@\texttt{formifacetex}} \DecValTok{3} \RegionMarkerTok{: 0}
 
 \CommentTok{NB.*formifacetex v{-}{-} formats hyperlinked and highlighted interface words.}
 \CommentTok{NB.}
 \CommentTok{NB. monad:  cl =. formifacetex blclIwords}
+\CommentTok{NB.}
+\CommentTok{NB.   NB. inteface latex}
+\CommentTok{NB.   formifacetex IFACEWORDSjodliterate}
 
 \CommentTok{NB. require \textquotesingle{}jod\textquotesingle{} !(*)=. get}
 \NormalTok{head}\KeywordTok{=.} \StringTok{\textquotesingle{}\textbackslash{}begin\{Shaded\}\textquotesingle{}}\KeywordTok{,}\NormalTok{LF}\KeywordTok{,}\StringTok{\textquotesingle{}\textbackslash{}begin\{Highlighting\}[]\textquotesingle{}}\KeywordTok{,}\NormalTok{LF}
@@ -1660,6 +1665,7 @@
 \CommentTok{NB. (jodliterate) interface word(s):}
 \CommentTok{NB. {-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}{-}}
 \CommentTok{NB. THISPANDOC      NB. full pandoc path {-} use (pandoc) if on shell path}
+\CommentTok{NB. formifacetex    NB. formats hyperlinked and highlighted interface words}
 \CommentTok{NB. grplit          NB. make latex for group (y)}
 \CommentTok{NB. ifacesection    NB. interface section summary string}
 \CommentTok{NB. ifc             NB. format interface comment text}
