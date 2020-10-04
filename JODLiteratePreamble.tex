@@ -45,6 +45,10 @@
 }\makeatother
 \usepackage{enumerate}
 
+% tightlist command for list spacing
+\providecommand{\tightlist}{%
+  \setlength{\itemsep}{0pt}\setlength{\parskip}{0pt}}
+
 % build document index
 \usepackage{makeidx}
 
@@ -106,6 +110,9 @@
 
 \usepackage{fancyhdr}
 \pagestyle{fancy}
+
+% date each page
+\rfoot{\emph{\today}}
 
 \ifxetex
   \usepackage[setpagesize=false, % page size defined by xetex

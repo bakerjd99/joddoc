@@ -296,6 +296,9 @@
 \KeywordTok{\textbackslash{}}\NormalTok{usepackage}\KeywordTok{\{}\NormalTok{fancyhdr}\KeywordTok{\}}
 \KeywordTok{\textbackslash{}}\NormalTok{pagestyle}\KeywordTok{\{}\NormalTok{fancy}\KeywordTok{\}}
 
+\KeywordTok{\%}\NormalTok{ date each page}
+\KeywordTok{\textbackslash{}}\NormalTok{rfoot}\KeywordTok{\{\textbackslash{}}\NormalTok{emph}\KeywordTok{\{\textbackslash{}}\NormalTok{today}\KeywordTok{\}\}}
+
 \KeywordTok{\textbackslash{}}\NormalTok{ifxetex}
   \KeywordTok{\textbackslash{}}\NormalTok{usepackage}\KeywordTok{[}\NormalTok{setpagesize}\KeywordTok{=}\NormalTok{false}\KeywordTok{,} \KeywordTok{\%}\NormalTok{ page size defined by xetex}
 \NormalTok{              unicode}\KeywordTok{=}\NormalTok{false}\KeywordTok{,}     \KeywordTok{\%}\NormalTok{ unicode breaks when used with xetex}
@@ -447,6 +450,13 @@
 
 \begin{Shaded}
 \begin{Highlighting}[]
+\CommentTok{NB. interface words \textbackslash{}pageref \textbackslash{}label prefix}
+\NormalTok{IFCPFX}\AlertTok{=:}\index{IFCPFX@\texttt{IFCPFX}} \StringTok{\textquotesingle{}ifc:\textquotesingle{}}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
 \CommentTok{NB. jodliterate author {-} inserted in latex \textbackslash{}author\{\}}
 \NormalTok{JLAUTHOR}\AlertTok{=:}\index{JLAUTHOR@\texttt{JLAUTHOR}} \StringTok{\textquotesingle{}John D. Baker\textquotesingle{}}
 \end{Highlighting}
@@ -534,7 +544,14 @@
 \begin{Shaded}
 \begin{Highlighting}[]
 \CommentTok{NB. full pandoc path {-} use (pandoc) if on shell path}
-\hypertarget{THISPANDOC}{\NormalTok{THISPANDOC}}\AlertTok{=:}\index{THISPANDOC@\texttt{THISPANDOC}} \StringTok{\textquotesingle{}"C:\textbackslash{}Program Files\textbackslash{}Pandoc\textbackslash{}pandoc"\textquotesingle{}}
+\hypertarget{THISPANDOC}{\NormalTok{THISPANDOC}}\AlertTok{=:}\phantomsection\label{ifc:THISPANDOC}\index{THISPANDOC@\texttt{THISPANDOC}} \StringTok{\textquotesingle{}"C:\textbackslash{}Program Files\textbackslash{}Pandoc\textbackslash{}pandoc"\textquotesingle{}}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
+\CommentTok{NB. interface word \_ character replacement}
+\NormalTok{UBARSUB}\AlertTok{=:}\index{UBARSUB@\texttt{UBARSUB}} \StringTok{\textquotesingle{}\_:\textquotesingle{}}
 \end{Highlighting}
 \end{Shaded}
 
@@ -661,6 +678,22 @@
 
 \begin{Shaded}
 \begin{Highlighting}[]
+\NormalTok{charsub}\AlertTok{=:}\index{charsub@\texttt{charsub}} \DecValTok{4} \RegionMarkerTok{: 0}
+
+\CommentTok{NB.*charsub v{-}{-} single character pair replacements.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  clPairs charsub cu}
+\CommentTok{NB.}
+\CommentTok{NB.   \textquotesingle{}{-}\_$ \textquotesingle{} charsub \textquotesingle{}$123 {-}456 {-}789\textquotesingle{}}
+
+\StringTok{\textquotesingle{}f t\textquotesingle{}}\KeywordTok{=.} \RegionMarkerTok{((}\KeywordTok{\#x}\RegionMarkerTok{)}\KeywordTok{$}\DecValTok{0} \DecValTok{1}\RegionMarkerTok{)}\KeywordTok{<@,\&a./.x}
+\NormalTok{t }\KeywordTok{\{\textasciitilde{}}\NormalTok{ f }\KeywordTok{i.} \KeywordTok{y}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
 \CommentTok{NB. character table to newline delimited list}
 \NormalTok{ctl}\AlertTok{=:}\index{ctl@\texttt{ctl}} \KeywordTok{\}.@}\RegionMarkerTok{(}\KeywordTok{,@}\RegionMarkerTok{(}\DecValTok{1}\KeywordTok{\&}\RegionMarkerTok{(}\KeywordTok{,"}\DecValTok{1}\RegionMarkerTok{)}\KeywordTok{@}\RegionMarkerTok{(}\KeywordTok{{-}.@}\RegionMarkerTok{(}\KeywordTok{*./\textbackslash{}."}\DecValTok{1}\KeywordTok{@}\RegionMarkerTok{(}\KeywordTok{=\&}\StringTok{\textquotesingle{} \textquotesingle{}}\KeywordTok{@]}\RegionMarkerTok{))))} \KeywordTok{\#} \KeywordTok{,@}\RegionMarkerTok{((}\DecValTok{10}\KeywordTok{\{a.}\RegionMarkerTok{)}\KeywordTok{\&}\RegionMarkerTok{(}\KeywordTok{,"}\DecValTok{1}\RegionMarkerTok{)}\KeywordTok{@]}\RegionMarkerTok{))}
 \end{Highlighting}
@@ -755,10 +788,10 @@
 \NormalTok{c}\KeywordTok{=.} \KeywordTok{+./\textbackslash{}"}\DecValTok{1}\NormalTok{ c }\KeywordTok{>} \KeywordTok{\textasciitilde{}:/\textbackslash{}"}\DecValTok{1} \KeywordTok{y} \KeywordTok{e.} \StringTok{\textquotesingle{}\textquotesingle{}\textquotesingle{}\textquotesingle{}}
 
 \CommentTok{NB. ,, work around for j8.05 bug {-} remove when fixed}
-\KeywordTok{y=.} \KeywordTok{,,y}
+\CommentTok{NB. y=. ,,y}
 
 \CommentTok{NB. blank out comments}
-\KeywordTok{y=.} \StringTok{\textquotesingle{} \textquotesingle{}} \RegionMarkerTok{(}\KeywordTok{I.} \KeywordTok{,}\NormalTok{c}\RegionMarkerTok{)}\KeywordTok{\}} \KeywordTok{y}
+\KeywordTok{y=.} \StringTok{\textquotesingle{} \textquotesingle{}} \RegionMarkerTok{(}\KeywordTok{I.} \KeywordTok{,}\NormalTok{c}\RegionMarkerTok{)}\KeywordTok{\}} \KeywordTok{,y}
 \KeywordTok{y=.} \KeywordTok{y} \KeywordTok{$\textasciitilde{}} \KeywordTok{$}\NormalTok{c}
 
 \CommentTok{NB. remove blank lines {-} default}
@@ -797,7 +830,7 @@
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\hypertarget{formifacetex}{\NormalTok{formifacetex}}\AlertTok{=:}\index{formifacetex@\texttt{formifacetex}} \DecValTok{3} \RegionMarkerTok{: 0}
+\hypertarget{formifacetex}{\NormalTok{formifacetex}}\AlertTok{=:}\phantomsection\label{ifc:formifacetex}\index{formifacetex@\texttt{formifacetex}} \DecValTok{3} \RegionMarkerTok{: 0}
 
 \CommentTok{NB.*formifacetex v{-}{-} formats hyperlinked and highlighted interface words.}
 \CommentTok{NB.}
@@ -813,15 +846,25 @@
 \NormalTok{ntok}\KeywordTok{=.} \StringTok{\textquotesingle{}\textbackslash{}NormalTok\{\textquotesingle{}}
 \NormalTok{href}\KeywordTok{=.} \StringTok{\textquotesingle{}\textbackslash{}hyperlink\{\textquotesingle{}}
 
+\CommentTok{NB. using [] brackets for page references}
+\NormalTok{pgrefhd}\KeywordTok{=.} \StringTok{\textquotesingle{}[\textbackslash{}pageref\{\textquotesingle{}}\KeywordTok{,}\NormalTok{IFCPFX}
+\NormalTok{pgreftl}\KeywordTok{=.} \StringTok{\textquotesingle{}\}] \textquotesingle{}}
+
 \CommentTok{NB. fetch current short descriptions !(*)=. WORD\_ajod\_ EXPLAIN\_ajod\_}
 \StringTok{\textquotesingle{}rc tab\textquotesingle{}}\KeywordTok{=.} \RegionMarkerTok{(}\NormalTok{WORD\_ajod}\DecValTok{\_}\KeywordTok{,}\NormalTok{EXPLAIN\_ajod}\DecValTok{\_}\RegionMarkerTok{)}\NormalTok{ get }\KeywordTok{y}
 \NormalTok{words}\KeywordTok{=.} \DecValTok{0} \KeywordTok{\{"}\DecValTok{1}\NormalTok{ tab}
 \NormalTok{desc}\KeywordTok{=.}  \DecValTok{1} \KeywordTok{\{"}\DecValTok{1}\NormalTok{ tab}
 
+\CommentTok{NB. \_ chars create problems with page and hyperref}
+\NormalTok{hlwords}\KeywordTok{=.}\NormalTok{ UBARSUB}\KeywordTok{\&}\NormalTok{charsub}\KeywordTok{\&.>}\NormalTok{ words}
+
+\CommentTok{NB. page references}
+\NormalTok{pgref}\KeywordTok{=.} \RegionMarkerTok{(}\KeywordTok{<}\NormalTok{pgrefhd}\RegionMarkerTok{)} \KeywordTok{,\&.>}\NormalTok{ hlwords }\KeywordTok{,\&.>} \KeywordTok{<}\NormalTok{pgreftl}
+
 \CommentTok{NB. set hyperlinks on words {-} colors on comments}
-\NormalTok{words}\KeywordTok{=.} \RegionMarkerTok{(}\KeywordTok{<}\NormalTok{href}\RegionMarkerTok{)} \KeywordTok{,\&.>}\NormalTok{ words }\KeywordTok{,\&.>} \RegionMarkerTok{(}\KeywordTok{<}\StringTok{\textquotesingle{}\}\{\textquotesingle{}}\KeywordTok{,}\NormalTok{ntok}\RegionMarkerTok{)} \KeywordTok{,\&.>} \RegionMarkerTok{(}\KeywordTok{<"}\DecValTok{1} \RegionMarkerTok{(}\KeywordTok{>}\NormalTok{words}\RegionMarkerTok{)}\KeywordTok{,"}\DecValTok{1} \StringTok{\textquotesingle{} \textquotesingle{}}\RegionMarkerTok{)} \KeywordTok{,\&.>} \KeywordTok{<}\StringTok{\textquotesingle{}\}\}\textquotesingle{}}
+\NormalTok{words}\KeywordTok{=.} \RegionMarkerTok{(}\KeywordTok{<}\NormalTok{href}\RegionMarkerTok{)} \KeywordTok{,\&.>}\NormalTok{ hlwords }\KeywordTok{,\&.>} \RegionMarkerTok{(}\KeywordTok{<}\StringTok{\textquotesingle{}\}\{\textquotesingle{}}\KeywordTok{,}\NormalTok{ntok}\RegionMarkerTok{)} \KeywordTok{,\&.>} \RegionMarkerTok{(}\KeywordTok{<"}\DecValTok{1} \RegionMarkerTok{(}\KeywordTok{>}\NormalTok{words}\RegionMarkerTok{)}\KeywordTok{,"}\DecValTok{1} \StringTok{\textquotesingle{} \textquotesingle{}}\RegionMarkerTok{)} \KeywordTok{,\&.>} \KeywordTok{<}\StringTok{\textquotesingle{}\}\}\textquotesingle{}}
 \NormalTok{desc}\KeywordTok{=.} \RegionMarkerTok{(}\KeywordTok{<}\NormalTok{ctok}\RegionMarkerTok{)} \KeywordTok{,\&.>} \RegionMarkerTok{(}\NormalTok{alltrim}\KeywordTok{\&.>}\NormalTok{ desc}\RegionMarkerTok{)} \KeywordTok{,\&.>} \StringTok{\textquotesingle{}\}\textquotesingle{}}
-\NormalTok{tex}\KeywordTok{=.} \KeywordTok{;}\NormalTok{words }\KeywordTok{,\&.>}\NormalTok{ desc }\KeywordTok{,\&.>}\NormalTok{ LF}
+\NormalTok{tex}\KeywordTok{=.} \KeywordTok{;}\NormalTok{words }\KeywordTok{,\&.>}\NormalTok{ pgref }\KeywordTok{,\&.>}\NormalTok{ desc }\KeywordTok{,\&.>}\NormalTok{ LF}
 \NormalTok{head}\KeywordTok{,}\NormalTok{tex}\KeywordTok{,}\NormalTok{tail}
 \RegionMarkerTok{)}
 \end{Highlighting}
@@ -948,7 +991,7 @@
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\hypertarget{grplit}{\NormalTok{grplit}}\AlertTok{=:}\index{grplit@\texttt{grplit}} \DecValTok{3} \RegionMarkerTok{: 0}
+\hypertarget{grplit}{\NormalTok{grplit}}\AlertTok{=:}\phantomsection\label{ifc:grplit}\index{grplit@\texttt{grplit}} \DecValTok{3} \RegionMarkerTok{: 0}
 
 \CommentTok{NB.*grplit v{-}{-} make latex for group (y).}
 \CommentTok{NB.}
@@ -983,7 +1026,7 @@
   \KeywordTok{if.} \KeywordTok{\#}\NormalTok{gdoc}\KeywordTok{=.} \KeywordTok{;\{:,>}\DecValTok{1}\KeywordTok{\{}\NormalTok{gdoc }\KeywordTok{do.}
     \CommentTok{NB. insert interface md based on IFACEWORDSgroup}
     \KeywordTok{if.} \KeywordTok{+./}\NormalTok{JLINSERTIFACEMD }\KeywordTok{E.}\NormalTok{ gdoc }\KeywordTok{do.}
-\NormalTok{      gdoc}\KeywordTok{=.} \RegionMarkerTok{(}\StringTok{\textquotesingle{}/\textquotesingle{}}\KeywordTok{,}\NormalTok{JLINSERTIFACEMD}\KeywordTok{,}\StringTok{\textquotesingle{}/\textquotesingle{}}\KeywordTok{,}\NormalTok{ifacemarkd group}\RegionMarkerTok{)}\NormalTok{ changestr gdoc}
+\NormalTok{      gdoc}\KeywordTok{=.}\NormalTok{ group setifacesummary gdoc}
     \KeywordTok{end.}
 \NormalTok{    gdoc}\KeywordTok{=.}\NormalTok{ latexfrmarkd gdoc}
 \NormalTok{    ifstr}\KeywordTok{=.}\NormalTok{ ifacesection group}
@@ -1046,7 +1089,7 @@
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\hypertarget{ifacesection}{\NormalTok{ifacesection}}\AlertTok{=:}\index{ifacesection@\texttt{ifacesection}} \DecValTok{3} \RegionMarkerTok{: 0}
+\hypertarget{ifacesection}{\NormalTok{ifacesection}}\AlertTok{=:}\phantomsection\label{ifc:ifacesection}\index{ifacesection@\texttt{ifacesection}} \DecValTok{3} \RegionMarkerTok{: 0}
 
 \CommentTok{NB.*ifacesection v{-}{-} interface section summary string.}
 \CommentTok{NB.}
@@ -1086,7 +1129,7 @@
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\hypertarget{ifc}{\NormalTok{ifc}}\AlertTok{=:}\index{ifc@\texttt{ifc}} \DecValTok{3} \RegionMarkerTok{: 0}
+\hypertarget{ifc}{\NormalTok{ifc}}\AlertTok{=:}\phantomsection\label{ifc:ifc}\index{ifc@\texttt{ifc}} \DecValTok{3} \RegionMarkerTok{: 0}
 
 \CommentTok{NB.*ifc v{-}{-} format interface comment text.}
 \CommentTok{NB.}
@@ -1450,15 +1493,39 @@
 
 \begin{Shaded}
 \begin{Highlighting}[]
+\NormalTok{setifacesummary}\AlertTok{=:}\index{setifacesummary@\texttt{setifacesummary}} \DecValTok{4} \RegionMarkerTok{: 0}
+
+\CommentTok{NB.*setifacesummary v{-}{-} replace markdown interface summary tag with text.}
+\CommentTok{NB.}
+\CommentTok{NB. dyad:  cl =. clGname setifacesummary clMd}
+
+\RegionMarkerTok{(}\NormalTok{JLINSERTIFACEMD beforestr }\KeywordTok{y}\RegionMarkerTok{)}\KeywordTok{,}\RegionMarkerTok{(}\NormalTok{ifacemarkd }\KeywordTok{x}\RegionMarkerTok{)}\KeywordTok{,}\NormalTok{JLINSERTIFACEMD afterstr }\KeywordTok{y}
+\RegionMarkerTok{)}
+\end{Highlighting}
+\end{Shaded}
+
+\begin{Shaded}
+\begin{Highlighting}[]
 \NormalTok{setifacetargs}\AlertTok{=:}\index{setifacetargs@\texttt{setifacetargs}} \DecValTok{4} \RegionMarkerTok{: 0}
 
 \CommentTok{NB.*setifacetargs v{-}{-} set hyperlink targets in group latex.}
 \CommentTok{NB.}
 \CommentTok{NB. dyad:  cl =. blclIwords setifacetargs clTex}
 
-\NormalTok{targs}\KeywordTok{=.} \RegionMarkerTok{(}\KeywordTok{<}\StringTok{\textquotesingle{}\textbackslash{}NormalTok\{\textquotesingle{}}\RegionMarkerTok{)} \KeywordTok{,\&.>} \KeywordTok{x} \KeywordTok{,\&.>} \KeywordTok{<}\StringTok{\textquotesingle{}\}\textbackslash{}AlertTok\{=:\}\textbackslash{}index\textquotesingle{}}
-\NormalTok{rstrs}\KeywordTok{=.} \RegionMarkerTok{(}\KeywordTok{<}\StringTok{\textquotesingle{}\textbackslash{}hypertarget\{\textquotesingle{}}\RegionMarkerTok{)} \KeywordTok{,\&.>} \KeywordTok{x} \KeywordTok{,\&.>} \RegionMarkerTok{(}\KeywordTok{<}\StringTok{\textquotesingle{}\}\{\textbackslash{}NormalTok\{\textquotesingle{}}\RegionMarkerTok{)} \KeywordTok{,\&.>} \KeywordTok{x} \KeywordTok{,\&.>} \KeywordTok{<}\StringTok{\textquotesingle{}\}\}\textbackslash{}AlertTok\{=:\}\textbackslash{}index\textquotesingle{}}
-\NormalTok{chgs}\KeywordTok{=.}  \KeywordTok{;}\RegionMarkerTok{(}\StringTok{\textquotesingle{}\#\textquotesingle{}} \KeywordTok{,\&.>}\NormalTok{ targs}\RegionMarkerTok{)} \KeywordTok{,\&.>} \StringTok{\textquotesingle{}\#\textquotesingle{}} \KeywordTok{,\&.>}\NormalTok{ rstrs}
+\CommentTok{NB. replace troublesome \_ in names}
+\NormalTok{hlwords}\KeywordTok{=.}\NormalTok{ UBARSUB}\KeywordTok{\&}\NormalTok{charsub}\KeywordTok{\&.>} \KeywordTok{x}
+
+\CommentTok{NB. any \_ chars are expanded to \textbackslash{}\_ at this stage}
+\NormalTok{wnames}\KeywordTok{=.} \StringTok{\textquotesingle{}\#\_\#\textbackslash{}\_\textquotesingle{}}\KeywordTok{\&}\NormalTok{changestr }\KeywordTok{\&.>} \KeywordTok{x}
+\NormalTok{targs}\KeywordTok{=.} \RegionMarkerTok{(}\KeywordTok{<}\StringTok{\textquotesingle{}\textbackslash{}NormalTok\{\textquotesingle{}}\RegionMarkerTok{)} \KeywordTok{,\&.>}\NormalTok{ wnames }\KeywordTok{,\&.>} \KeywordTok{<}\StringTok{\textquotesingle{}\}\textbackslash{}AlertTok\{=:\}\textbackslash{}index\textquotesingle{}}
+
+\NormalTok{labels}\KeywordTok{=.} \RegionMarkerTok{(}\KeywordTok{<}\StringTok{\textquotesingle{}\}\}\textbackslash{}AlertTok\{=:\}\textbackslash{}phantomsection\textbackslash{}label\{\textquotesingle{}}\KeywordTok{,}\NormalTok{IFCPFX}\RegionMarkerTok{)}\KeywordTok{,\&.>}\NormalTok{ hlwords }\KeywordTok{,\&.>} \KeywordTok{<}\StringTok{\textquotesingle{}\}\textbackslash{}index\textquotesingle{}}
+\NormalTok{rstrs}\KeywordTok{=.} \RegionMarkerTok{(}\KeywordTok{<}\StringTok{\textquotesingle{}\textbackslash{}hypertarget\{\textquotesingle{}}\RegionMarkerTok{)} \KeywordTok{,\&.>}\NormalTok{ hlwords }\KeywordTok{,\&.>} \RegionMarkerTok{(}\KeywordTok{<}\StringTok{\textquotesingle{}\}\{\textbackslash{}NormalTok\{\textquotesingle{}}\RegionMarkerTok{)} \KeywordTok{,\&.>}\NormalTok{ wnames }\KeywordTok{,\&.>}\NormalTok{ labels}
+
+\CommentTok{NB. delimter character cannot be in text}
+\KeywordTok{assert.} \KeywordTok{{-}.}\StringTok{\textquotesingle{}\#\textquotesingle{}} \KeywordTok{e.} \KeywordTok{;}\NormalTok{targs}\KeywordTok{,}\NormalTok{rstrs}
+
+\NormalTok{chgs}\KeywordTok{=.} \KeywordTok{;}\StringTok{\textquotesingle{}\#\textquotesingle{}} \KeywordTok{,\&.>}\NormalTok{ targs }\KeywordTok{,.}\NormalTok{ rstrs}
 \NormalTok{chgs changestr }\KeywordTok{y}
 \RegionMarkerTok{)}
 \end{Highlighting}
@@ -1466,7 +1533,7 @@
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\hypertarget{setjodliterate}{\NormalTok{setjodliterate}}\AlertTok{=:}\index{setjodliterate@\texttt{setjodliterate}} \DecValTok{3} \RegionMarkerTok{: 0}
+\hypertarget{setjodliterate}{\NormalTok{setjodliterate}}\AlertTok{=:}\phantomsection\label{ifc:setjodliterate}\index{setjodliterate@\texttt{setjodliterate}} \DecValTok{3} \RegionMarkerTok{: 0}
 
 \CommentTok{NB.*setjodliterate v{-}{-} prepare LaTeX processing {-} sets out directory writes preamble.}
 \CommentTok{NB.}
@@ -1557,7 +1624,7 @@
 
 \begin{Shaded}
 \begin{Highlighting}[]
-\hypertarget{wordlit}{\NormalTok{wordlit}}\AlertTok{=:}\index{wordlit@\texttt{wordlit}} \DecValTok{3} \RegionMarkerTok{: 0}
+\hypertarget{wordlit}{\NormalTok{wordlit}}\AlertTok{=:}\phantomsection\label{ifc:wordlit}\index{wordlit@\texttt{wordlit}} \DecValTok{3} \RegionMarkerTok{: 0}
 
 \CommentTok{NB.*wordlit v{-}{-} make latex from word list (y).}
 \CommentTok{NB.}
