@@ -6,12 +6,18 @@ graphics files for building the JOD manual [`jod.pdf`](https://bakerjd99.files.w
 
 `jod.pdf` is distributed by the [Pacman](https://code.jsoftware.com/wiki/Pacman) J addon 
 [`joddocument`](http://www.jsoftware.com/jwiki/Addons/general/joddocument).
-A printed and bound manual version is available on 
-[Lulu](http://www.lulu.com/shop/john-baker/jod-j-object-dictionary/paperback/product-20076245.html).
+
+A printed and bound manual version is available on
+[Amazon](https://amazon.com). Amazon varies from country to
+country; search your Amazon in books for ISBN-13: 979-8554921117.
+You can also search with Amazon's ASIN key B08M2KBMND.
 
 Building `jod.pdf` requires a current `LaTeX` distribution.
 I mainly use [MikTeX 2.9](http://www.miktex.org/) on Windows but I have tested
 building `jod.pdf` on Linux using [TeX Live](http://www.tug.org/texlive/).
+`jod.pdf` can also be built on [OverLeaf.com](https://OverLeaf.com). This
+repository is synched with an OverLeaf project and OverLeaf is used
+to prepare Amazon print PDFs.
 
 The following sequence of commands builds `jod.pdf`.
 
@@ -27,4 +33,4 @@ The following sequence of commands builds `jod.pdf`.
 See the batch file [`0ajod.bat`](https://github.com/bakerjd99/joddoc/blob/master/0ajod.bat).
 
 John Baker
-March 28, 2020
+October 29, 2020
