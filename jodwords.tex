@@ -28,7 +28,37 @@ for defining a \emph{non-error-trapping} interface exist in JOD source code.}  I
 word fails \texttt{jodsf} will catch the error and return JOD's standard \verb|(paRc;clMessage)|
 result.
 
-\subsection{\texttt{addgrp} --- add words/tests to group/suite}
+
+\subsection{\texttt{abv} --- all backup versions}\label{ss:abv}\index{backup!\texttt{abv}} 
+
+  \hypertarget{il:abv}{\texttt{abv}} searches \emph{binary} backups and returns lists
+  of \emph{backup names}. \texttt{abv} is used with \hyperlink{il:bget}{\texttt{bget}}, see page~\pageref{ss:bget},
+  to recover objects in backups.
+  
+    \begin{wordhead}
+\monad & abv clPstr \argsep blclBNames \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt]
+  NB. list all backup words from most recent to oldest
+  abv ''
+
+  NB. list backup words starting well
+  abv 'well'
+  
+  NB. get scary backup words 
+  'rc ncv'=. bget }. abv 'scary'
+\end{lstlisting}
+
+\begin{wordhead}
+\dyad & iaObject abv clPstr  \\
+      & (iaObject,iaOption) abv clPstr \\
+\end{wordhead}
+\begin{lstlisting}[frame=single,framerule=0pt]
+  NB. list backup macro post processors
+  4 abv  'POST_'   
+\end{lstlisting}
+ 
+\subsection{\texttt{addgrp} --- add words/tests to group/suite}\label{ss:addgrp}\index{group!\texttt{addgrp}} 
 
 \texttt{addgrp} adds words to a group\index{group!\texttt{addgrp}} and tests to a suite. 
 
