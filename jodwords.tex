@@ -47,6 +47,9 @@ result.
   
   NB. get scary backup words 
   'rc ncv'=. bget }. abv 'scary'
+  
+  NB. edit all backup words starting out
+  ed > 1 { bget }. abv 'out' 
 \end{lstlisting}
 
 \begin{wordhead}
@@ -54,8 +57,15 @@ result.
       & (iaObject,iaOption) abv clPstr \\
 \end{wordhead}
 \begin{lstlisting}[frame=single,framerule=0pt]
+  NB. backup smoke tests 
+  1 abv 'smoke' 
+  
   NB. list backup macro post processors
-  4 abv  'POST_'   
+  4 abv 'POST_'   
+  
+  NB. edit all group headers with prefix foo 
+  'rc ncv'=. 2 bget }. 2 abv 'foo'
+  ed ncv
 \end{lstlisting}
  
 \subsection{\texttt{addgrp} --- add words/tests to group/suite}\label{ss:addgrp}\index{group!\texttt{addgrp}} 
