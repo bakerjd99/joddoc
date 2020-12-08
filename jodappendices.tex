@@ -496,19 +496,12 @@ ERRIJOD00=: 'current group name (jodg_ijod_) not set'
 ERRIJOD01=: 'current suite name (jods_ijod_) not set'
 OKIJOD00=:  'no matches'
 
-NB. add delete objects from current group or current suite
-ag=: 3 : 0
-if. wex_ajod_ <'jodg' do. jodg addgrp y else. jderr_ajod_ ERRIJOD00 end.
-)
-as=: 3 : 0
-if. wex_ajod_ <'jods' do. (jods;3) addgrp y else. jderr_ajod_ ERRIJOD01 end.
-)
-dg=: 3 : 0
-if. wex_ajod_ <'jodg' do. jodg delgrp y else. jderr_ajod_ ERRIJOD00 end.
-)
-ds=: 3 : 0
-if. wex_ajod_ <'jods' do. (jods;3) delgrp y else. jderr_ajod_ ERRIJOD01 end. 
-)
+NB. add delete from current group or current suite 
+NB. requires direct definition introduced with J 9.02
+ag=: {{if. wex_ajod_ <'jodg' do. jodg addgrp y else. jderr_ajod_ ERRIJOD00 end.}}
+as=: {{if. wex_ajod_ <'jods' do. (jods;3) addgrp y else. jderr_ajod_ ERRIJOD01 end.}}
+dg=: {{if. wex_ajod_ <'jodg' do. jodg delgrp y else. jderr_ajod_ ERRIJOD00 end.}}
+ds=: {{if. wex_ajod_ <'jods' do. (jods;3) delgrp y else. jderr_ajod_ ERRIJOD01 end.}}
    
 NB. referenced words not in current group
 nx=: 3 : 0
@@ -525,9 +518,7 @@ y usedby }. gn
 )
    
 NB. generate current group and save load script
-sg=: 3 : 0
-if. wex_ajod_ <'jodg' do. mls jodg else. jderr_ajod_ ERRIJOD01 end. 
-)
+sg=: {{if. wex_ajod_ <'jodg' do. mls jodg else. jderr_ajod_ ERRIJOD01 end.}} 
 
 NB. top (put dictionary) words, groups in revision order
 tw=: revo
@@ -586,8 +577,8 @@ if. badrc_ajod_ n=. revo '' do. n return. end.
 )
 
 NB. handy cl doc helpers
-docscr=: 3 : 'ctl_ajod_ (61;0;0;''NB.'') docct2__UT__JODobj ];._1 LF,y-.CR'
-doctxt=: 3 : 'ctl_ajod_ (61;0;0;'''') docct2__UT__JODobj ];._1 LF,y-.CR'
+docscr=: {{ctl_ajod_ (61;0;0;'NB.') docct2__UT__JODobj ];._1 LF,y-.CR}}
+doctxt=: {{ctl_ajod_ (61;0;0;'') docct2__UT__JODobj ];._1 LF,y-.CR}}
 
 NB. display noun on screen and return noun value
 showpass=:] [ 1!:2&2
