@@ -4,6 +4,8 @@ jodcode.pdf
 zzzjodmain.pdf
 jl*.markdown
 Thumbs.db
+.DS_Store
+*.fls
 *.aux
 *.bbl
 *.blg
