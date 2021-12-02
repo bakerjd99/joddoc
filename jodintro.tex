@@ -107,6 +107,13 @@ To configure and maintain JOD you must be aware of the following:
    JODTEST           c:/jodtest/test
   \end{lstlisting}
   \emph{Use fully qualified directory paths that are not in the J install tree.}
+  For macOS and Linux systems use paths like:
+  \begin{lstlisting}[frame=single,framerule=0pt,label=lst:foldercfgunix]
+   JOD               /users/john/jod
+   JODDUMPS          /users/john/jod/joddumps
+   JODSOURCE         /users/john/jodtest/labtesting
+   JODTEST           /users/john/jodtest/test
+  \end{lstlisting}
   \item \hyperlink{il:jodhelp}{\texttt{jodhelp}} (\pageref{ss:jodhelp}) uses a 
   PDF reader to display JOD documentation. Use J's configuration tool to set 
   your preferred PDF reader.\footnote{See the blog post \href{https://bakerjd99.wordpress.com/2015/03/22/jod-update-version-0-9-97/}{JOD Update: Version \texttt{0.9.97*}} for J configuration advice.
