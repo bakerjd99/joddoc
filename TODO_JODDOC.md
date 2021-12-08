@@ -20,4 +20,6 @@ and may appear in other TODO lists.
 
 5. `<_6kfjobpvb6ikszgzq1m9t9aub_>` Consider adding a new appendix to `jod.pdf` describing how to run JOD tests.
 
+6. `<_cs3tdm8qn71elxercfl04ov5h_>` Consider adding an appendix to `jod.pdf` describing how references inside direct definitions are handled.  
+
 `[end-todo]`
