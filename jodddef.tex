@@ -1,0 +1,100 @@
+
+
+\section{JOD Direct Definition Support}\label{ap:jodddef}
+
+J version 9.02 (February 2021) introduced \index{direct definition} \emph{direct definitions}. The
+designers of APL languages, of which J is a member, introduced direct definitions
+long after \emph{canonical} or notorious ``$\pmb\triangledown$ editor'' style definitions. In retrospect,
+most agree the entire family of languages would be better off if direct definition
+had come first. Direct definitions are more elegant, concise, versatile, and beautiful than
+clunky canonical equivalents. They're also easier to comprehend and compose than
+long J tacit definitions. But history is history, and software history is hard to ignore because of the \emph{installed base}\footnote{Also known as \emph{users}}.
+We're stuck with our kludges!
+
+In JOD's case this shows up in how \hyperlink{il:globs}{\texttt{globs}}, see page~\pageref{ss:globs}, classifies global and local names in words
+that contain direct definitions.  Consider the following:
+
+
+\begin{lstlisting}[frame=single,framerule=0pt,basicstyle=\ttfamily\footnotesize]
+make_my_def=: 3 : 0
+
+NB. local to make_my_def
+here=. we=. 2 + are=. 3 * local=. 4
+
+global_adv=: {{*./"1 u/&> 2 <\"1 y}}
+
+local_verb=. {{)d
+  NB. not local to make_my_def
+  we=. are=. not=. make_my_def=. local=. x
+  if. 1-:y do.
+    NB. deep global to make_my_def
+    {{deep_gbl=: 'deep';":y}} y  
+  end.
+}}
+
+0 local_verb y
+)
+\end{lstlisting}
+
+\texttt{make\_my\_def} contains local and global direct definitions. When executed it creates  \texttt{global\_adv}
+and runs \texttt{local\_verb} which in turn creates \texttt{deep\_gbl}.  When \texttt{local\_verb} runs it creates
+a local namespace like any explicit J verb. Hence \texttt{not} and \texttt{make\_my\_def}  are not \emph{strictly} \texttt{make\_my\_def} locals.  \emph{The
+execution of  directly defined local words is equivalent to calling explicit words.}  \texttt{globs} does not track direct definition name scopes. 
+It views all direct definition names as if they belonged to the topmost word.  For \texttt{make\_my\_def}  \texttt{globs} this gives:
+
+\begin{lstlisting}[frame=single,framerule=0pt,basicstyle=\ttfamily\footnotesize]   
+   NB. JOD name classification
+   11 globs 'make_my_def' 
+\end{lstlisting}
+
+\newpage
+
+\begin{lstlisting}[frame=single,framerule=0pt,basicstyle=\ttfamily\footnotesize]   
++-+-------------------------------------------------------+
+|1|+------+----------------------------------------------+|
+| ||Global|+--------+----------+                         ||
+| ||      ||deep_gbl|global_adv|                         ||
+| ||      |+--------+----------+                         ||
+| |+------+----------------------------------------------+|
+| ||Local |+---+----+-----+----------+-----------+---+--+||
+| ||      ||are|here|local|local_verb|make_my_def|not|we|||
+| ||      |+---+----+-----+----------+-----------+---+--+||
+| |+------+----------------------------------------------+|
+| ||(*)=: |                                              ||
+| |+------+----------------------------------------------+|
+| ||(*)=. |                                              ||
+| |+------+----------------------------------------------+|
+| ||for.  |                                              ||
+| |+------+----------------------------------------------+|
++-+-------------------------------------------------------+
+   
+   NB. execute and show name classes
+   make_my_def 1
++----+-+
+|deep|1|
++----+-+
+   nc ;:'local_verb global_adv deep_gbl' 
+_1 1 0
+\end{lstlisting}
+
+When embedding direct defintions in explicit words, or within other direct definitions, it's a good idea to make names distinct.
+For example, in embedded \texttt{local\_verb} do something like:
+
+\begin{lstlisting}[frame=single,framerule=0pt,basicstyle=\ttfamily\footnotesize]   
+local_verb=. {{)d
+  weLv=. areLv=. notLv=. make_my_defLv=. localLv=. x
+  if. 1-:y do.
+    NB. deep global to make_my_def
+    {{deep_gbl=: 'deep';":y}} y  
+  end.
+}}
+\end{lstlisting}
+
+
+
+
+
+
+
+
+
