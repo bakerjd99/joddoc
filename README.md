@@ -14,7 +14,7 @@ You can also search with Amazon's ASIN key B08M2KBMND.
 
 Building `jod.pdf` requires a current `LaTeX` distribution.
 I mainly use [MikTeX 2.9](http://www.miktex.org/) on Windows but I have tested
-building `jod.pdf` on Linux using [TeX Live](http://www.tug.org/texlive/).
+building `jod.pdf` on Linux and macOS using [TeX Live](http://www.tug.org/texlive/).
 `jod.pdf` can also be built on [OverLeaf.com](https://OverLeaf.com). This
 repository is synched with an OverLeaf project and OverLeaf is used
 to prepare Amazon print PDFs.
@@ -30,7 +30,8 @@ The following sequence of commands builds `jod.pdf`.
         dvips jod
         ps2pdf jod.ps
 
-See the batch file [`0ajod.bat`](https://github.com/bakerjd99/joddoc/blob/master/0ajod.bat).
+See the shell scripts [`0ajod.bat`](https://github.com/bakerjd99/joddoc/blob/master/0ajod.bat) and
+[`0ajod.sh`](https://github.com/bakerjd99/joddoc/blob/master/0ajod.sh).
 
 John Baker
-October 29, 2020
+December 11, 2021
