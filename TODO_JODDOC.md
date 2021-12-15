@@ -16,10 +16,6 @@ and may appear in other TODO lists.
 
 3. `<_6r09m9nqhz2ma75ttxxhrmbhq_>` Review how to fully embed all referenced fonts in print PDFs.
 
-4. `<_cee5z04ltg7qm8m8chp70ujv5_>` Consider adding `abv` (all backup versions) to JODDOC.
-
-5. `<_6kfjobpvb6ikszgzq1m9t9aub_>` Consider adding a new appendix to `jod.pdf` describing how to run JOD tests.
-
-6. `<_cs3tdm8qn71elxercfl04ov5h_>` Consider adding an appendix to `jod.pdf` describing how references inside direct definitions are handled.  
+4. `<_6kfjobpvb6ikszgzq1m9t9aub_>` Consider adding a new appendix to `jod.pdf` describing how to run JOD tests.
 
 `[end-todo]`
