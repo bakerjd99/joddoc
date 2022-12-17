@@ -18,6 +18,7 @@ rem copy jod.pdf to working jod directories
 if exist C:\j64\j901\addons\general\joddocument\pdfdoc\jod.pdf copy jod.pdf C:\j64\j901\addons\general\joddocument\pdfdoc\jod.pdf
 if exist C:\j64\j902\addons\general\joddocument\pdfdoc\jod.pdf copy jod.pdf C:\j64\j902\addons\general\joddocument\pdfdoc\jod.pdf
 if exist C:\j64\j903\addons\general\joddocument\pdfdoc\jod.pdf copy jod.pdf C:\j64\j903\addons\general\joddocument\pdfdoc\jod.pdf
+if exist C:\j64\j904\addons\general\joddocument\pdfdoc\jod.pdf copy jod.pdf C:\j64\j904\addons\general\joddocument\pdfdoc\jod.pdf
 
 rem update stage and git release directories
 if exist C:\jod\joddev\alien\stage\joddocument\pdfdoc\jod.pdf copy jod.pdf C:\jod\joddev\alien\stage\joddocument\pdfdoc\jod.pdf
