@@ -34,4 +34,4 @@ See the shell scripts [`0ajod.bat`](https://github.com/bakerjd99/joddoc/blob/mas
 [`0ajod.sh`](https://github.com/bakerjd99/joddoc/blob/master/0ajod.sh).
 
 John Baker
-December 11, 2021
+December 17, 2022
