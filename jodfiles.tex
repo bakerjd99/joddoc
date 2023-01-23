@@ -177,7 +177,7 @@ $c_{3}$  &  \texttt{bluu}   &
 \verb|0  { - cl| ; dictionary name \\
 \verb|1  { - Xa| ; dictionary number \texttt{DIDNUM} (extended precision) \\
 \verb|2  { - il| ; dictionary creation date \\
-\verb|3  { - il| ; last dump date (NOT UPDATED) \\
+\verb|3  { - il| ; last dump date \textit{(not updated)} \\
 \verb|4  { - cl| ; script directory \\
 \verb|5  { - cl| ; suite directory \\
 \verb|6  { - cl| ; macro directory \\
@@ -186,7 +186,7 @@ $c_{3}$  &  \texttt{bluu}   &
 \verb|9  { - cl| ; alien directory \\
 \verb|10 { - cl| ; J version that created dictionary \\
 \verb|11 { - ia| ; J system code that created dictionary \\
-\verb|12 { - uu| ; unused - reserved \\
+\verb|12 { - uu| ; unused - \textit{reserved} \\
 \verb|13 { - bt| ; user dictionary parameters see: \hyperlink{il:jmaster}{\texttt{jmaster.ijf}} (pp.~\pageref{tab:jmaster}). \\
 \hspace{\JFILESHSP}  \verb|0 { cl| ; parameter \\
 \hspace{\JFILESHSP}  \verb|1 { uu| ; value \\
@@ -221,19 +221,19 @@ $c_{9}$  &  \texttt{il}   &
     \end{tabular} \\ \hline 
 $c_{10}$  &     & 
     \begin{tabular}{p{\JFILESTPS\textwidth}}
-    Reserved.\\
+    \textit{Reserved.}\\
     \end{tabular} \\ \hline 
 $c_{11}$  &  \texttt{blcl}   & 
     \begin{tabular}{p{\JFILESTPS\textwidth}}
     Short word explanations.\\
     \end{tabular} \\ \hline 
-$c_{12}\rightarrow c_{38}$ &  &     
+$c_{12}$ &  \texttt{cl} &     
    \begin{tabular}{p{\JFILESTPS\textwidth}}
-   Reserved. \\
+   J version string \verb|9!:14 ''| or empty.\\
    \end{tabular} \\ \hline 
-    & &
+$c_{13}\rightarrow c_{38}$    & &
    \begin{tabular}{p{\JFILESTPS\textwidth}}
-    The remaining component pairs contain word data.
+    \textit{Reserved.} The remaining component pairs contain word data.
     The word names match the entries in the word index list.\\
    \end{tabular} \\ \hline
 $c_{39}$  &  \texttt{bluu}   & 
