@@ -220,6 +220,46 @@ pages~\pageref{tab:objcodes}, \pageref{tab:qualcodes} and \pageref{tab:objneg}.
   \label{tab:objcodes}
 \end{table}
 
+The meaning of negative option and qualifier codes depends on the word.  For 
+\hyperlink{il:dnl}{\texttt{dnl}} a negative option requests a \emph{path order list.}\index{path order list}
+For \hyperlink{il:get}{\texttt{get}} and \hyperlink{il:put}{\texttt{put}} a negative
+option code gets and puts timestamp arrays.
+
+\begin{table}[htbp]
+  \centering
+   \scriptsize
+\begin{tabular}{|l|l|p{4.7in}|} \hline
+   \multicolumn{3}{|c|}{\textbf{\normalsize Negative Codes\T\B}} \\ \hline
+   \multicolumn{1}{|c|}{\textbf{\normalsize Code\T}} & 
+   \multicolumn{1}{|c|}{\textbf{\normalsize Use}} & 
+   \multicolumn{1}{|c|}{\textbf{\normalsize Example\B}} \\ \hline
+   \verb|_1|\T\B & path order list & \begin{minipage}{3.9in}
+\begin{tabular}{l}
+\verb|0 _1 dnl ''  | \textcolor{CodeComment}{\ttfamily\textsl{NB. path order list of words}} \\
+\end{tabular} 
+\end{minipage} \\ \hline
+\verb|_2|\T\B & path order list & \begin{minipage}{3.9in}
+\begin{tabular}{l}
+\verb|1 _2 dnl 'boo'  | \textcolor{CodeComment}{\ttfamily\textsl{NB. path order list of test names containing boo}} \\
+\end{tabular} 
+\end{minipage} \\ \hline
+\verb|_14|\T\B & names and timestamps & \begin{minipage}{3.9in}
+\begin{tabular}{l}
+\verb|1 _14 get }. revo''  | \textcolor{CodeComment}{\ttfamily\textsl{NB. names and timestamps array}} \\
+\end{tabular} 
+\end{minipage} \\ \hline
+\verb|_14|\T\B & names and timestamps & \begin{minipage}{3.9in}
+\begin{tabular}{l}
+\verb|4 _14 put tsarray  | \textcolor{CodeComment}{\ttfamily\textsl{NB. update macro timestamps}} \\
+\end{tabular} 
+\end{minipage} \\ \hline
+\end{tabular}
+   \caption{JOD Negative Codes}
+   \label{tab:objneg}
+\end{table}
+
+\newpage
+
 \begin{table}[htbp]
   \centering
    \scriptsize
@@ -249,11 +289,37 @@ pages~\pageref{tab:objcodes}, \pageref{tab:qualcodes} and \pageref{tab:objneg}.
 \verb|0 10 get }. dnl ''  | \textcolor{CodeComment}{\ttfamily\textsl{NB. return all words in table}} \\
 \end{tabular} 
 \end{minipage} \\ \hline
+
  \texttt{REFERENCE\T\B} & 11 & reference code & \begin{minipage}{3.9in}
 \begin{tabular}{l}
 \verb|11 del 'earthdist'  | \textcolor{CodeComment}{\ttfamily\textsl{NB. delete word references}} \\
 \end{tabular} 
 \end{minipage} \\ \hline
+
+ \texttt{NAMECLASS\T\B} & 12 & J name class code & \begin{minipage}{3.9in}
+\begin{tabular}{l}
+\verb|0 12 get }. dnl ''| \textcolor{CodeComment}{\ttfamily\textsl{NB. fetch J name class codes}} \\
+\end{tabular} 
+\end{minipage} \\ \hline
+
+ \texttt{CREATION\T\B} & 13 & creation date & \begin{minipage}{3.9in}
+\begin{tabular}{l}
+\verb|0 13 get }. dnl ''| \textcolor{CodeComment}{\ttfamily\textsl{NB. word creation dates}} \\
+\end{tabular} 
+\end{minipage} \\ \hline
+
+ \texttt{LASTPUT\T\B} & 14 & last change date & \begin{minipage}{3.9in}
+\begin{tabular}{l}
+\verb|0 14 get }. dnl ''| \textcolor{CodeComment}{\ttfamily\textsl{NB. recent changes}} \\
+\end{tabular} 
+\end{minipage} \\ \hline
+
+ \texttt{BYTESIZE\T\B} & 15 & object byte size & \begin{minipage}{3.9in}
+\begin{tabular}{l}
+\verb|0 15 get }. dnl ''| \textcolor{CodeComment}{\ttfamily\textsl{NB. word byte sizes}} \\
+\end{tabular} 
+\end{minipage} \\ \hline
+
  \texttt{JSCRIPT\T\B} & 21 &  J script code\index{postprocessor} & \begin{minipage}{3.9in}
 \begin{tabular}{l}
 \verb|4 1 21 dnl 'POST_'  | \textcolor{CodeComment}{\ttfamily\textsl{NB. list postprocessors}} \\
@@ -315,6 +381,12 @@ pages~\pageref{tab:objcodes}, \pageref{tab:qualcodes} and \pageref{tab:objneg}.
 \end{tabular} 
 \end{minipage} \\ \hline
 
+\texttt{IPYNB\T\B} & 32 & Jupyter notebook & \begin{minipage}{3.9in}
+\begin{tabular}{l}
+\verb|4 put 'JupyterNb';IPYNB_ajod_;'... ipynb ...'  |  \\
+\end{tabular} 
+\end{minipage} \\ \hline
+
 
 %\texttt{PYTHON\T\B} & 29 & Python script text & \begin{minipage}{3.9in}
 %\begin{tabular}{l}
@@ -326,45 +398,6 @@ pages~\pageref{tab:objcodes}, \pageref{tab:qualcodes} and \pageref{tab:objneg}.
   \label{tab:qualcodes}
 \end{table}
 
-\newpage
-
-The meaning of negative option and qualifier codes depends on the word.  For 
-\hyperlink{il:dnl}{\texttt{dnl}} a negative option requests a \emph{path order list.}\index{path order list}
-For \hyperlink{il:get}{\texttt{get}} and \hyperlink{il:put}{\texttt{put}} a negative
-option code gets and puts timestamp arrays.
-
-\begin{table}[htbp]
-  \centering
-   \scriptsize
-\begin{tabular}{|l|l|p{4.7in}|} \hline
-   \multicolumn{3}{|c|}{\textbf{\normalsize Negative Codes\T\B}} \\ \hline
-   \multicolumn{1}{|c|}{\textbf{\normalsize Code\T}} & 
-   \multicolumn{1}{|c|}{\textbf{\normalsize Use}} & 
-   \multicolumn{1}{|c|}{\textbf{\normalsize Example\B}} \\ \hline
-   \verb|_1|\T\B & path order list & \begin{minipage}{3.9in}
-\begin{tabular}{l}
-\verb|0 _1 dnl ''  | \textcolor{CodeComment}{\ttfamily\textsl{NB. path order list of words}} \\
-\end{tabular} 
-\end{minipage} \\ \hline
-\verb|_2|\T\B & path order list & \begin{minipage}{3.9in}
-\begin{tabular}{l}
-\verb|1 _2 dnl 'boo'  | \textcolor{CodeComment}{\ttfamily\textsl{NB. path order list of test names containing boo}} \\
-\end{tabular} 
-\end{minipage} \\ \hline
-\verb|_14|\T\B & names and timestamps & \begin{minipage}{3.9in}
-\begin{tabular}{l}
-\verb|1 _14 get }. revo''  | \textcolor{CodeComment}{\ttfamily\textsl{NB. names and timestamps array}} \\
-\end{tabular} 
-\end{minipage} \\ \hline
-\verb|_14|\T\B & names and timestamps & \begin{minipage}{3.9in}
-\begin{tabular}{l}
-\verb|4 _14 put tsarray  | \textcolor{CodeComment}{\ttfamily\textsl{NB. update macro timestamps}} \\
-\end{tabular} 
-\end{minipage} \\ \hline
-\end{tabular}
-   \caption{JOD Negative Codes}
-   \label{tab:objneg}
-\end{table}
  
    \newpage
    \section{\texttt{jodparms.ijs}}\label{ap:jodparms}
@@ -434,15 +467,15 @@ NB.        only (+integer) is currently executed other types will
 NB.        be passed as character lists (see dptable).
 NB.     value is an executable J expression that produces a value
 
-ASCII85    ; (+integer) when 1 use ascii85 in dumps (0 or 1)            ; 1  
+ASCII85    ; (+integer) when 1 use ascii85 in dumps (0 or 1)  ; 1  
 COPYFACTOR ; (+integer) components copied in one loop pass  (1<y<240)   ; 100
 DOCUMENTDICT ; (+integer) when 1 dictionary document is put (0 or 1)    ; 1
 DOCUMENTWIDTH ; (+integer) width of justified document text  (20<y<255) ; 61
-DUMPFACTOR ; (+integer) objects dumped in one loop pass (1<y<240)       ; 50
+DUMPFACTOR ; (+integer) objects dumped in one loop pass (1<y<240)     ; 50
 GETFACTOR  ; (+integer) words retrieved in one loop pass (10<y<2048)    ; 250
-PUTFACTOR  ; (+integer) words stored in one loop pass  (10<y<2048)      ; 100
+PUTFACTOR  ; (+integer) words stored in one loop pass  (10<y<2048)       ; 100
 RETAINAGE  ; (+integer) when 1 timestamps are saved in dumps (0 or 1)   ; 1
-HASHDUMP   ; (+integer) when 1 a hash is prefixed to dumps (0 or 1)     ; 0
+HASHDUMP   ; (+integer) when 1 a hash is prefixed to dumps (0 or 1)        ; 1
 
 NB. ROOTFOLDER is empty by default. If it is set to a (jpath) J configured 
 NB. folder ROOTFOLDER overrides default locations for (mls) generated scripts 
