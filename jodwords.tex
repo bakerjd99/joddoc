@@ -811,7 +811,7 @@ If JOD, or the host OS crashes, the master file could be
 
 Note: if a JOD dictionary is being used 
 by more than one task never use \texttt{RESETALL} unless 
-you are absolutely sure you will not reset other tasks! 
+you are absolutely sure you will not reset other tasks!\index{hash}
 
 \begin{lstlisting}[frame=single,framerule=0pt]
   NB. clears the put dictionary reference path
@@ -824,7 +824,10 @@ you are absolutely sure you will not reset other tasks!
   dpset 'READWRITE'   
   
   NB. use ascii85 in dump scripts 
-  dpset 'ASCII85';1   
+  dpset 'ASCII85';1  
+
+  NB. turn off SHA-256 hash on dump scripts
+  dpset 'HASHDUMP';0
   
   NB. retain age of objects in dump scripts
   dpset 'RETAINAGE';1
