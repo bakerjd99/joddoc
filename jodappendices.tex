@@ -62,13 +62,18 @@ JOD code see:
     JOD is an open-source system. Anyone is free to examine and modify JOD source code. 
     All JOD source is stored in JOD development dictionaries. Installing the
     \href{https://www.jsoftware.com/jwiki/Addons/general/jodsource}{\texttt{jodsource}}\index{dictionary!source!\texttt{jodsource}}
-    addon makes this code available.
+    addon makes this code available. 
     
     JOD dictionaries also contain utilities for building\index{building!JOD distribution} and distributing JOD. 
     
 \begin{lstlisting}[frame=single,framerule=0pt,basicstyle=\ttfamily\footnotesize]    
 NB. open JOD development dictionaries
 od ;:'joddev jod utils' [ 3 od ''
+
+NB. before building create required directories
+NB. directory creation is a one time step
+'test' getrx 'setbuilddirs'
+1 setbuilddirs_test_ 0
 
 NB. build JOD
 rm 'buildjoddistribution'
@@ -94,7 +99,7 @@ NB. get JOD build utilities and version tracking nouns
 tmploc get }. grp 'buildjod'
 
 NB. set distribution directories
-jddir=: 'JODSTAGEDIR JODGITDIR JODSOURCESTAGEDIR JODSTAGEPDFDIR JODSTAGEDOCDIR'
+jddir=: 'JODDOCDIR JODSTAGEDIR JODGITDIR JODSOURCESTAGEDIR JODSTAGEPDFDIR JODSTAGEDOCDIR'
 jddir=: jddir , ' JODGITDOCDIR JODADDONDIR JODSCRIPTDIR JODEXTSDIR' 
 (jddir)=: setbuilddirs 0
 
@@ -102,7 +107,7 @@ NB. generate distribution scripts
 updatejodmanifest 0
 JODVMD buildjodcompressed JODSTAGEDIR;JODGITDIR;JODADDONDIR;JODSCRIPTDIR
 JODTOOLSVMD buildjodtoolscompressed JODSTAGEDIR;JODEXTSDIR;JODSCRIPTDIR
-JODVMD updatejoddistribution JODSTAGEDIR;JODGITDIR
+JODVMD updatejoddistribution JODSTAGEDIR;JODGITDIR;JODDOCDIR
 JODVMD updatejodsourcedumps JODSOURCESTAGEDIR
 JODVMD releasejod JODSTAGEDIR;JODSTAGEPDFDIR;JODSTAGEDOCDIR;JODGITDOCDIR
 
@@ -110,6 +115,11 @@ NB. destroy build locale
 cocurrent 'base'
 coerase <tmploc_AAAjodbuild999_
 \end{lstlisting}
+
+   \newpage
+    \section{NIMP: Testing JOD}
+
+   NIMP: Describe how to run JOD tests.
     
      
    \newpage
@@ -364,25 +374,37 @@ option code gets and puts timestamp arrays.
 
 \texttt{PYTHON\T\B} & 29 & Python script text & \begin{minipage}{3.9in}
 \begin{tabular}{l}
-\verb|4 put 'PYTHONtext';PYTHON_ajod_;'2 ** 1024'  |  \\
+\verb|4 put 'big_py';PYTHON_ajod_;'2 ** 1024'  |  \\
 \end{tabular} 
 \end{minipage} \\ \hline
 
 \texttt{SQL\T\B} & 30 & SQL script text & \begin{minipage}{3.9in}
 \begin{tabular}{l}
-\verb|4 put 'SQLtext';SQL_ajod_;'select * from yada'  |  \\
+\verb|4 put 'yada_sql';SQL_ajod_;'select * from yada'  |  \\
 \end{tabular} 
 \end{minipage} \\ \hline
 
 \texttt{JSON\T\B} & 31 & JSON text & \begin{minipage}{3.9in}
 \begin{tabular}{l}
-\verb|4 put 'JSONtext';JSON_ajod_;'{"json": "golden-fleece"}'  |  \\
+\verb|4 put 'fleece_json';JSON_ajod_;'{"json": "golden-fleece"}'  |  \\
 \end{tabular} 
 \end{minipage} \\ \hline
 
-\texttt{IPYNB\T\B} & 32 & Jupyter notebook & \begin{minipage}{3.9in}
+\texttt{IPYNB\T\B} & 32 & \href{https://jupyter.org/}{Jupyter} notebook & \begin{minipage}{3.9in}
 \begin{tabular}{l}
-\verb|4 put 'JupyterNb';IPYNB_ajod_;'... ipynb ...'  |  \\
+\verb|4 put 'notebook_ipynb';IPYNB_ajod_;'... ipynb ...'  |  \\
+\end{tabular} 
+\end{minipage} \\ \hline
+
+\texttt{LEAN\T\B} & 33 & \href{https://leanprover-community.github.io/}{LEAN} source code & \begin{minipage}{3.9in}
+\begin{tabular}{l}
+\verb|4 put 'theorem_lean';LEAN_ajod_;'... lean on me ...'  |  \\
+\end{tabular} 
+\end{minipage} \\ \hline
+
+\texttt{ZIG\T\B} & 34 & \href{https://ziglang.org/}{ZIG} source code & \begin{minipage}{3.9in}
+\begin{tabular}{l}
+\verb|4 put 'code_zig';ZIG_ajod_;'... ziggy code stuff ...'  |  \\
 \end{tabular} 
 \end{minipage} \\ \hline
 
@@ -396,6 +418,8 @@ option code gets and puts timestamp arrays.
    \caption{JOD Qualifier Codes}
   \label{tab:qualcodes}
 \end{table}
+
+\textbf{Note:} suffixes like \texttt{notebook\_ipynb} are not required. I use them to make it easier to see what type of code is stored in a JOD macro.
 
  
    \newpage
