@@ -761,7 +761,10 @@ text in that it is not prefixed with leading \verb|NB.|'s.
 \hypertarget{il:dpset}{\texttt{dpset}} modifies dictionary parameters. JOD uses a 
 variety of values that control putting, getting and generating objects. 
 Parameters\index{dictionary!parameters} are stored in individual dictionaries and 
-the master file. Master file\index{master file} parameters\index{parameters|see{dictionary}} are initially 
+the master file.\footnote{
+  JOD's \textit{master file} will not be renamed. See the blog post
+  \href{https://analyzethedatanotthedrivel.org/2020/06/20/githubs-silly-master-plan/}{GitHub's Silly Master Plan} for details.
+} Master file\index{master file} parameters\index{parameters|see{dictionary}} are initially 
 set from the \verb|jodparms.ijs| file, see appendix~\ref{ap:jodparms}, on
 page~\pageref{ap:jodparms}, and cannot be reset without 
 editing \verb|jodparms.ijs| and recreating the master file. Individual 
@@ -784,7 +787,7 @@ If JOD, or the host OS crashes, the master file could be
    \texttt{RESETME} resets all dictionaries recently opened from the current machine. 
    \texttt{RESETALL} resets all dictionaries in the master file.  
    In the worst case you can rebuild the master file by:
-\begin{quotation}
+%\begin{quotation}
 	\noindent\begin{enumerate}
 	  \item Exiting J.
 	  \item Deleting the files:
@@ -795,7 +798,7 @@ If JOD, or the host OS crashes, the master file could be
 	  \item Restarting J.
 	  \item Reloading JOD with: \verb|load 'general/jod'|
 	\end{enumerate}  
-\end{quotation}
+%\end{quotation}
 
 \begin{wordhead}
 \monad & dpset zl \argsep clName \argsep (clName;uuParm) \\
