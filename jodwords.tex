@@ -2107,7 +2107,7 @@ Finally \texttt{put} can store timestamps in the form returned by \hyperlink{il:
 
 \subsection{\texttt{restd} --- restore backup dictionaries}\label{ss:restd} 
 
-\hypertarget{il:restd}{\texttt{restd}}  restores the last backup\index{backup!\texttt{restd}} created by
+\hypertarget{il:restd}{\texttt{restd}}  restores  backups\index{backup!\texttt{restd}} created by
  \hyperlink{il:packd}{\texttt{packd}}. 
 
 \begin{wordhead}
@@ -2120,6 +2120,12 @@ Finally \texttt{put} can store timestamps in the form returned by \hyperlink{il:
 
   NB. restore last dictionary backup
   restd 'lastbackup' 
+
+  NB. restore backup 19 
+  restd 'lastbackup';19
+
+  NB. restore backup 19 ignoring hashes
+  restd 'lastbackup';19 17
 \end{lstlisting}                   
 
 
