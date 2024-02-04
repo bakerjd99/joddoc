@@ -117,9 +117,38 @@ coerase <tmploc_AAAjodbuild999_
 \end{lstlisting}
 
    \newpage
-    \section{NIMP: Testing JOD}
+    \section{Testing JOD}
 
-   NIMP: Describe how to run JOD tests.
+ Software is either \emph{tested} or \emph{trash}! There are no other
+options! JOD aspires to be more than trash. So, it shouldn't surprise
+anyone to learn that JOD development dictionaries contain many test
+scripts. Test scripts are organized into \emph{suites}. Suites are
+collections of test scripts.
+
+\begin{lstlisting}[frame=single,framerule=0pt,basicstyle=\ttfamily\footnotesize]    
+    NB. open JOD development dictionaries
+    od ;:'joddev jod utils' [ 3 od ''
+
+    NB. make jodtester script - used by most test scripts
+    mls 'jodtester'
+
+    NB. list JOD test suites
+    80 list }. 3 dnl 'jod'
+jodbasictests     jodcrushtests     joddualsystests   jodextensiontests 
+jodlargetests     jodmanwintests    jodpjmtest        jodpreparetests   
+jodpurgetests     jodsmoketests     jodstresstests  
+\end{lstlisting} 
+
+\noindent Because test scripts are often more revealing and informative than
+standard documentation, I have posted them on GitHub at
+
+\medskip
+\small \url{https://github.com/bakerjd99/jod/tree/master/jodunit}. \normalsize 
+\medskip
+
+\noindent The majority
+of the scripts can be run with JOD's \hyperlink{il:rtt}{\texttt{rtt}} verb, see page~\pageref{ss:rtt}.
+
     
      
    \newpage
@@ -320,6 +349,12 @@ option code gets and puts timestamp arrays.
  \texttt{LASTPUT\T\B} & 14 & last change date & \begin{minipage}{3.9in}
 \begin{tabular}{l}
 \verb|0 14 get }. dnl ''| \textcolor{CodeComment}{\ttfamily\textsl{NB. recent changes}} \\
+\end{tabular} 
+\end{minipage} \\ \hline
+
+\texttt{HASH\T\B} & 17 & hash code & \begin{minipage}{3.9in}
+\begin{tabular}{l}
+\verb|17 bnl '.'| \textcolor{CodeComment}{\ttfamily\textsl{NB. check backup files against hashes}} \\
 \end{tabular} 
 \end{minipage} \\ \hline
 
