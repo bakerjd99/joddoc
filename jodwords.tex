@@ -243,7 +243,7 @@ JOD argument codes have noun definitions see JOD Argument Codes on page~\pageref
 
   NB. check put dictionary backup files against hashes in (n)jhashes.txt
   17 bnl '.'
-\end{lstlisting}
+\end{lstlisting}\index{hash}
  
 
 \subsection{\texttt{compj} --- compress J code}
@@ -1900,18 +1900,19 @@ Because most updates are puts the first dictionary is called the \emph{put dicti
 
 \hypertarget{il:packd}{\texttt{packd}}\index{backup!\texttt{packd}} removes all unused space 
 from dictionary files by copying active components to new files.
- After the \texttt{packd} operation is complete the new dictionary files 
- are renamed to match the original files. During the copy operation directories 
+ After the \texttt{packd} operation is complete, the new dictionary files 
+ are renamed to match the original files. During the copy operation, directories 
  are checked against the items in dictionary files. If 
- a directory data discrepancy is detected
+ a directory data discrepancy is detected,
  the pack operation ends with an error. Old files are renamed 
- with an increasing sequential backup number prefix, e.g.: \verb|13jwords.ijf| and 
- retained in the backup subdirectory. If a \texttt{packd} operation succeeds 
+ with an increasing sequential backup number prefix, e.g., \verb|13jwords.ijf|, and 
+ retained in the backup subdirectory. Every successful backup is paired
+with a sidecar text file of SHA-256 hashes.\index{hash} Backup 13's sidecar file is \verb|13jhashes.txt|. If a \texttt{packd} operation succeeds, 
  the backup dictionary has no directory data inconsistencies. 
 
 A \texttt{packd} operation can be reversed with \hyperlink{il:restd}{\texttt{restd}}.
 Individual objects in backups can be retrieved with \hyperlink{il:bget}{\texttt{bget}}, see page~\pageref{ss:bget}.
-There is no JOD facility for deleting  backup files. To erase backup files use OS facilities. 
+There is no JOD facility for deleting backup files. To erase backup files, use OS facilities. 
 
 The read/write status of a dictionary is recorded in 
 the master file. JOD assumes all tasks point to the same master file.\index{master file}\footnote{There is one
