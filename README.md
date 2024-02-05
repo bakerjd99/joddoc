@@ -2,13 +2,13 @@
 ===============================================================================================
 
 This repository contains the `LaTeX` source and supporting
-graphics files for building the JOD manual [`jod.pdf`](https://bakerjd99.files.wordpress.com/2020/03/jod.pdf).
+graphics files for building the JOD manual [`jod.pdf`](https://bakerjd99.files.wordpress.com/2024/02/jod.pdf).
 
 `jod.pdf` is distributed by the [Pacman](https://code.jsoftware.com/wiki/Pacman) J addon 
 [`joddocument`](http://www.jsoftware.com/jwiki/Addons/general/joddocument).
 
 A printed and bound manual version is available on
-[Amazon](https://amazon.com). Amazon varies from country to
+[Amazon](https://www.amazon.com/dp/B08M2KBMND). Amazon varies from country to
 country; search your Amazon in books for ISBN-13: 979-8554921117.
 You can also search with Amazon's ASIN key B08M2KBMND.
 
@@ -34,4 +34,4 @@ See the shell scripts [`0ajod.bat`](https://github.com/bakerjd99/joddoc/blob/mas
 [`0ajod.sh`](https://github.com/bakerjd99/joddoc/blob/master/0ajod.sh).
 
 John Baker
-December 17, 2022
+February 5, 2024
