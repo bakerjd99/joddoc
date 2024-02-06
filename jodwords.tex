@@ -244,7 +244,7 @@ JOD argument codes have noun definitions see JOD Argument Codes on page~\pageref
   NB. check put dictionary backup files against hashes in (n)jhashes.txt
   17 bnl '.'
   
-  NB. scan all registered dictionaries listing backups and checking hashes
+  NB. scan all dictionaries listing backups and checking hashes
   {{y;<14 17 bnl"0 '.' [ od y [ 3 od ''}}&> }. od ''
 \end{lstlisting}\index{hash}
  
@@ -262,9 +262,9 @@ JOD argument codes have noun definitions see JOD Argument Codes on page~\pageref
   ~addons/general/jod/jod.ijs
 \end{verbatim}
 
-  is an example of a compressed J script. In its fully commented
-  form this script is about 230 kilobytes when squeezed with
-  \texttt{compj} it shrinks to about 84 kilobytes.
+ \noindent is an example of a compressed J script. In its fully commented
+  form this script is about 244 kilobytes when squeezed with
+  \texttt{compj} it shrinks to about 85 kilobytes.
   \texttt{compj} does not compress words in JOD
   dictionaries it returns a compressed script result.
   
@@ -305,11 +305,9 @@ JOD argument codes have noun definitions see JOD Argument Codes on page~\pageref
 \begin{lstlisting}[frame=single,framerule=0pt]  
 indirectassignments=: 4 : 0
 
-NB. Indirect assignments ()=: create objects 
-NB. that elude static cross referencing. 
-NB. Declaring the names global and local
-NB. makes it possible to cross reference 
-NB. this verb with (globs)
+NB. Indirect assignments often create objects that elude static 
+NB. cross referencing. Declaring the names global and local 
+NB. makes it possible to cross reference this verb with (globs) 
 globref=.  ;:'one two three'
 
 NB. declared global (*)=: one two three
@@ -330,10 +328,9 @@ we + are + hidden + locals
 \begin{lstlisting}[frame=single,framerule=0pt]    
 createobject=: 3 : 0
 
-NB. Object initialization often creates
-NB. global nouns that are not really globals.
-NB. They only exist within the the scope of
-NB. the object. Tags can over ride J's 
+NB. Object initialization often creates global nouns
+NB. that are not really globals. They only exist within
+NB. the scope of the object. Tags can over ride J's 
 NB. global scope for cross referencing.
 
 NB. create "globals" in an object instance
@@ -401,10 +398,10 @@ NB. running (script) may clash with local (script)
       JOD source code.  JOD source code is not 
      distributed with JOD.  You can get JOD source code by installing
      the  \href{https://www.jsoftware.com/jwiki/Addons/general/jodsource}{\texttt{jodsource}}
-     addon or by downloading \href{https://bakerjd99.wordpress.com/the-jod-page/}{\texttt{jodijs.zip}} from %point directly to box file
+     addon or by downloading from 
      \href{https://bakerjd99.wordpress.com/the-jod-page/}{\emph{The JOD Page}} \cite{baker:jodpages}.  
-     JOD source is distributed as JOD dictionary dump scripts and as fully commented
-	 class files in \texttt{jodijs.zip}.
+     JOD source is distributed as JOD dictionary dump scripts and as fully commented 
+     scripts at \jodurl{https://github.com/bakerjd99/jod/tree/master/jodijs}.
 
 \begin{wordhead}
 \monad & compj clName \argsep blclNames \\
