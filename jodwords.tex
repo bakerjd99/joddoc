@@ -7,7 +7,7 @@ are omitted.  Word arguments are summarized with a form of \emph{Hungarian}
 notation: see appendix~\ref{ap:jodhung} on
 page~\pageref{ap:jodhung}.
 
-When JOD loads it creates a number of locale classes,  (see appendix~\ref{ap:classes}
+When JOD loads, it creates several locale classes (see appendix~\ref{ap:classes}
 on page~\pageref{ap:classes}), and defines an \texttt{\textbf{ijod}}\index{ijod interface} user 
 interface locale: \texttt{\textbf{ijod}} 
 is placed on the \texttt{\textbf{base}} locale's path.
@@ -303,7 +303,7 @@ JOD argument codes have noun definitions see JOD Argument Codes on page~\pageref
    The following examples show how to use these tags:
 
 \begin{lstlisting}[frame=single,framerule=0pt]  
-indirectassignments=: 4 : 0
+indirectassignments=: 3 : 0
 
 NB. Indirect assignments often create objects that elude static 
 NB. cross referencing. Declaring the names global and local 
@@ -350,9 +350,10 @@ NB. !(*)=. THIS STUFF IS INSIDE AN OBJECT
 \item
   \texttt{compj} compression can be limited to \emph{white space removal} by
   marking explicit words with the comment tag \textcolor{CodeComment}{\texttt{\textsl{(-.)=:}}}.\index{comment tag!\texttt{(-.)=:}}
+ Consider the following verb \texttt{donotsqueeze}.\footnote{Direct definition of \texttt{donotsqueeze}.  Requires J version 9.02 or newer.} 
 
 \begin{lstlisting}[frame=single,framerule=0pt]
-donotsqueeze=: 4 : 0
+donotsqueeze=: {{
 
 NB. I have local names that occur in quoted strings.
 NB. Compressing me will end civilization as we know it.
@@ -366,7 +367,7 @@ if. 0=|home do.
 else.
   'heart health helps'
 end.
-)
+}}
 \end{lstlisting}
 
 \item
@@ -857,8 +858,8 @@ dictionaries. Close and reopen forced dictionaries to activate changes.
  
 \begin{lstlisting}[frame=single,framerule=0pt]
   NB. force the master path into the put dictionary even
-  NB. even if the put dictionary is READONLY - used to
-  NB. reset paths when dictionary files are moved
+  NB. if the put dictionary is READONLY - used to reset
+  NB. paths when dictionary files are moved
   dpset 'FORCEMASTERPATH'
 \end{lstlisting}
 

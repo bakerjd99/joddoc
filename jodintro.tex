@@ -11,63 +11,63 @@
    
    Programming in J 
    has a charming and distinctive flavor.  Tasks decompose into scores of tiny
-   programs that are called \emph{words}. JOD stores and organizes
+   programs called \emph{words}. JOD stores and organizes
    J words and other objects in a dictionary database: hence the 
    name \textbf{J} \textbf{O}bject \textbf{D}ictionary.
    
    Code  databases are not new.  Similar systems have 
    been developed for many programming
    environments. Storing code in a database might strike you as obtuse.  
-   Why compromise the ease, portability, and broad support of standard source code  
+   Why compromise the ease of use, portability, and broad support of standard source code  
    files? Believe me,
    there are good reasons.
    
 \begin{itemize}
 	\item J encourages brevity: microscopic programs, words, accumulate rapidly.  
-	\emph{Short J words are often general purpose words. } They can be used in many contexts.  How  
+	\emph{Short J words are often general-purpose words. } They can be used in many contexts.  How  
 	are scores of terse words best employed? Scattering them in many scripts leads
-	to error prone \emph{copy-and-pasting} or 
+	to error-prone \emph{copy-and-pasting} or 
 	 \emph{rampant over-inclusion}.\footnote{Over-inclusion occurs when you load 
 	an entire class and only use a tiny portion of it.  Unused code is not harmless. It always confuses programmers.}  
 	 The best way to reuse short words is to put
-	 them in a system like JOD and fetch as required.   
-	\item With JOD there is only \emph{one definition} for a given word. When word copies are
-	 found in many files it's not always easy to find the current version.
-	\item With JOD there are no significant limits on vocabulary size.  Scripts \emph{can} hold thousands
-	of words but it's a nuisance to maintain and include such large files.
+	 them in a system like JOD and fetch them as required.   
+	\item With JOD, there is only \emph{one definition} for a given word. When word copies are
+	 found in many files, it's not always easy to find the current version.
+	\item With JOD, there are no significant limits on vocabulary size.  Scripts \emph{can} hold thousands
+	of words, but it's a nuisance to maintain and include such large files.
 	\item The \emph{complete definition} of a word can 
 	be quickly examined.  Good English dictionaries contain far more than
-	definitions.  There are etymologies, synonyms, usage comments and illustrations.  Similarly,
+	definitions.  There are etymologies, synonyms, usage comments, and illustrations.  Similarly,
 	\emph{literate} software documentation contains far more than source code.  You will find
 	descriptions of basic algorithms, remarks about coding techniques, references to
 	published material, program test suites,\index{test suite} detailed error
-	logs and germane diagrams. Storing such material in source code would 
+	logs, and germane diagrams. Storing such material in source code would 
 	horribly clutter programs.  A dictionary is where this material belongs.
 	\item \emph{Relationships between words} can be stored.  Accurate word references
 	 make it easier to understand code.  This is especially true if references 
 	  and documentation are linked. 
 	\item JOD facilitates the \emph{generation of scripts and the distribution} of code. When I
-	program with JOD I rarely write \texttt{load} scripts.  I use JOD to generate and distribute
-  J scripts.  JOD can fetch and execute arbitrary J scripts so you can manage
-  very elaborate generation and distribution procedures.
+	program with JOD, I rarely write \texttt{load} scripts.  I use JOD to generate and distribute
+  J scripts.  JOD can fetch and execute arbitrary J scripts, so you can manage
+  elaborate generation and distribution procedures.
    \item Finally, \emph{JOD encourages a different way to think about programming.} When programs are
    reduced to their primary reusable units, words in J's case, many traditional software engineering problems
-   almost disappear. With JOD code reuse and refactoring is fluid, natural and darn near unavoidable.
+   almost disappear. With JOD, code reuse and refactoring are fluid, natural, and darn near unavoidable.
 \end{itemize}
 
 \section{Installing and Configuring JOD}\label{ss:jodcfgdesc}
 
-Before using JOD you need to install the current Windows, Linux or Mac version of J.\footnote{JOD runs on 
- J \texttt{8.x} and J \texttt{9.x} systems. Currently there are no \texttt{IOS} or \texttt{Android} versions of JOD. Porting JOD 
+Before using JOD, you need to install the current Windows, Linux, or Mac version of J.\footnote{JOD runs on 
+ J \texttt{8.x} and J \texttt{9.x} systems. Currently, there are no \texttt{IOS} or \texttt{Android} versions of JOD. Porting JOD 
 to any J system is a simple task.
-If you are interested in helping me create ports please contact me at:  
+If you are interested in helping me create ports, please get in touch with me at:  
 \texttt{bakerjd99@gmail.com}
 } J can be downloaded from \href{https://www.jsoftware.com}{\texttt{www.jsoftware.com}}.
 
-In addition to J you need to install a number of J \emph{addons}. JOD uses the
-\texttt{jfiles}, \texttt{regex} and \texttt{task} addons.  Some J versions
+In addition to J, you need to install several J \emph{addons}. JOD uses the
+\texttt{jfiles}, \texttt{regex}, and \texttt{task} addons.  Some J versions
 include these addons as part of the basic J system. If you can run the following J command
-without errors your system is ready for JOD. 
+without errors, your system is ready for JOD. 
 \begin{lstlisting}[frame=single,framerule=0pt,label=lst:reqaddons]
    require 'jfiles regex task'
 \end{lstlisting}
@@ -82,13 +82,13 @@ JOD can be installed in two ways.
 \end{enumerate}
 
 After installation JOD can be loaded with:\footnote{\textcolor{red}{The \texttt{'} character 
-is a single quote: in J notation it is: \texttt{39 \{ a.}}
+is a single quote: in J notation, it is: \texttt{39 \{ a.}}
 }
 \begin{lstlisting}[frame=single,framerule=0pt,label=lst:loadjod00]
    load 'general/jod'
 \end{lstlisting}
 
-To configure and maintain JOD you must be aware of the following:
+To configure and maintain JOD, you must be aware of the following:
 \begin{enumerate}
 	\item JOD uses the J startup file \verb|~config/startup.ijs| to store load scripts: see 
 	\hyperlink{il:mls}{\texttt{mls}} on page~\pageref{ss:mls}.  Exercise caution when manually
@@ -107,7 +107,7 @@ To configure and maintain JOD you must be aware of the following:
    JODTEST           c:/jodtest/test
   \end{lstlisting}
   \emph{Use fully qualified directory paths that are not in the J install tree.}
-  For macOS and Linux systems use paths like:
+  For macOS and Linux systems, use paths like:
   \begin{lstlisting}[frame=single,framerule=0pt,label=lst:foldercfgunix]
    JOD               /users/john/jod
    JODDUMPS          /users/john/jod/joddumps
@@ -145,6 +145,6 @@ To configure and maintain JOD you must be aware of the following:
 \caption[JOD Folders]{This folder configuration\index{configuration!J folders} is recommended for 
 running JOD labs and test scripts. 
 When defining JOD folders the full path, including the drive letter on Windows and a
-leading / for Linux and the Mac must be used: see page~\pageref{lst:foldercfg}.} 
+leading / for Linux and the Mac, must be used: see page~\pageref{lst:foldercfg}.} 
   \label{eps:jodfolders}
 \end{figure}
