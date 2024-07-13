@@ -931,6 +931,16 @@ them in an edit\index{edit!\texttt{ed}} window for editing.\index{test suite}
   et (1!:1) <'c:\temp\text.txt' 
 \end{lstlisting}
 
+\begin{wordhead}
+\dyad & clFile et clText \\
+\end{wordhead}
+
+\begin{lstlisting}[frame=single,framerule=0pt]
+  NB. (x) argument is a temporary edit file name
+  text=. ,10000 # ,: 'all work and no play make Jack a dull boy',LF
+  'ShiningMagumOpus' et text
+\end{lstlisting}
+
 \subsection{\texttt{gdeps} --- group dependents}\label{ss:gdeps}
 
 \hypertarget{il:gdeps}{\texttt{gdeps}} returns lists of global names\index{dependent section} 
