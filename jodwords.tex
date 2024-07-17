@@ -1478,7 +1478,8 @@ tests, groups and suites.
 When generating groups and suites \texttt{make} returns an error if the current 
 path does not match the reference path. By default dyadic \texttt{make} generates 
 objects that exist in the current put dictionary. 
-This can be overridden with a negative option code. 
+This can be overridden with a negative option code.  \texttt{make}'s dyad also
+checks dump script hashes against file contents: see below.
 
 \begin{wordhead}
 \monad & make zl \argsep clDumpfile \\
@@ -1510,7 +1511,10 @@ This can be overridden with a negative option code.
   
   NB. make J script that defines a suite 
   3 make 'suite' 
-\end{lstlisting}
+
+  NB. check dump script hash 
+  17 make '~JODDUMPS/utils.ijs'
+\end{lstlisting}\index{hash}
 
 An option code controls whether 
 results are written to file, (1 default),
